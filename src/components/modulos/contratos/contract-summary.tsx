@@ -8,7 +8,7 @@ import { Badge } from "../../ui/badge";
 import { Separator } from "../../ui/separator";
 import { EditableField } from "./editable-field";
 import { contratoMock, ContratoData } from "../../../types/contrato";
-import { FileText, User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail } from "lucide-react";
+import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText } from "lucide-react";
 
 const ContractSummary = () => {
   const router = useRouter();
@@ -70,27 +70,18 @@ const ContractSummary = () => {
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
         <div className="bg-white rounded-lg shadow-md border-0 p-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">
-                    Contrato #{contratoData.numero}
-                  </h1>
-                </div>
-              </div>
-            </div>
-            
+          <div className="flex items-center justify-end">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <Badge className={`${getStatusColor(contratoData.status)} px-3 py-1 text-sm font-medium border`}>
                 {getStatusText(contratoData.status)}
               </Badge>
-              <Button size="sm" onClick={() => router.push('/painel/contratos/visualizar')} className="bg-blue-600 hover:bg-blue-600">
+              <Button 
+                size="lg" 
+                onClick={() => router.push('/painel/contratos/visualizar')} 
+                className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
+              >
                 Avançar para Contrato
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -384,10 +375,10 @@ const ContractSummary = () => {
             <Button 
               size="lg" 
               onClick={() => router.push('/painel/contratos/visualizar')} 
-              className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-base font-medium"
+              className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
             >
-              Gerar Contrato
-              <ArrowRight className="ml-2 h-5 w-5" />
+              Avançar para Contrato
+              <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
         </div>

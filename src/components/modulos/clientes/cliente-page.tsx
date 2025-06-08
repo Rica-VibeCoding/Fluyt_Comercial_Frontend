@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Card } from '../../ui/card';
 import { ClienteHeader } from './cliente-header';
 import { ClienteFiltrosModerno } from './cliente-filtros-moderno';
 import { ClienteTabela } from './cliente-tabela';
@@ -47,8 +48,8 @@ export function ClientePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="p-6 space-y-8">
+      <div className="max-w-7xl mx-auto space-y-4">
         <ClienteHeader 
           totalClientes={totalClientes}
           onNovoCliente={handleNovoCliente}
@@ -60,14 +61,14 @@ export function ClientePage() {
           vendedores={vendedores}
         />
         
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <Card className="shadow-md border-0 bg-white dark:bg-slate-800">
           <ClienteTabela 
             clientes={clientes}
             isLoading={isLoading}
             onEditarCliente={handleEditarCliente}
             onRemoverCliente={removerCliente}
           />
-        </div>
+        </Card>
 
         <ClienteModal
           aberto={modalAberto}

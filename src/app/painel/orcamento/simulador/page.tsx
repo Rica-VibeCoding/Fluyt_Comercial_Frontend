@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Trash2 } from 'lucide-react';
 import { FormaPagamento } from '../../../../types/simulador';
 
+
 type TipoFormaPagamento = 'ENTRADA' | 'FINANCEIRA' | 'CARTAO' | 'BOLETO';
 
 interface NovaFormaState {
@@ -214,15 +215,7 @@ export default function SimuladorPage() {
   const valorFormaInput = useCurrencyInput(novaForma.valor, (valor) => setNovaForma(prev => ({ ...prev, valor })));
 
   return (
-    <div className="bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <header className="text-center py-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🧮 Simulador Financeiro de Proposta
-          </h1>
-          <p className="text-gray-600">Sistema de Validação - Fluyt</p>
-        </header>
+    <div className="max-w-7xl mx-auto space-y-4 p-4">
 
         {/* Input Section */}
         <InputSection
@@ -418,6 +411,5 @@ export default function SimuladorPage() {
         {/* Cronograma de Recebimento */}
         <CronogramaRecebimento formasPagamento={simulacao.formasPagamento} />
       </div>
-    </div>
   );
 }

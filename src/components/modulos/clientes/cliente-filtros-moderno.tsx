@@ -35,9 +35,9 @@ export function ClienteFiltrosModerno({ filtros, onFiltrosChange, vendedores }: 
   const filtrosAtivos = Object.values(filtros).filter(Boolean).length;
 
   return (
-    <Card className="p-4 bg-white dark:bg-slate-800 border shadow-sm">
-      <div className="space-y-3">
-        {/* Busca principal - mais compacta */}
+    <Card className="shadow-md border-0 bg-white dark:bg-slate-800">
+      <div className="px-4 pt-4 pb-4 space-y-3">
+        {/* Busca principal */}
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -67,7 +67,7 @@ export function ClienteFiltrosModerno({ filtros, onFiltrosChange, vendedores }: 
           </Button>
         </div>
 
-        {/* Filtros avançados - mais compactos */}
+        {/* Filtros avançados */}
         {mostrarFiltrosAvancados && (
           <div className="space-y-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -169,7 +169,7 @@ export function ClienteFiltrosModerno({ filtros, onFiltrosChange, vendedores }: 
               </div>
             </div>
 
-            {/* Filtros ativos e botão limpar - mais compacto */}
+            {/* Filtros ativos e botão limpar */}
             {filtrosAtivos > 0 && (
               <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">

@@ -176,10 +176,12 @@ const menuItems = [
 - Dados: termos, valores, prazos, assinaturas
 
 ### ⚙️ Sistema
-- Configurações gerais
-- Gestão de usuários
-- Dados da empresa
-- Integrações e backups
+- **Dashboard Principal** (`/painel/sistema`) - Visão geral com cards de módulos
+- **Configurações** (`/painel/sistema/configuracoes`) - Funcionalidades administrativas:
+  - **Pessoas**: Empresas, Lojas, Equipe, Setores
+  - **Financeiro**: Regras de Comissão, Configurações da Loja, Status de Orçamento
+  - **Operacional**: Prestadores (Montadores/Transportadoras)
+  - **Sistema**: Logs de Auditoria
 
 ## 🔧 Regras de Migração
 
@@ -207,22 +209,67 @@ const menuItems = [
 - **Ações em lote** - Operações múltiplas
 - **Histórico e logs** - Rastreabilidade de ações
 
-## 🚀 Próximas Etapas
+## 🚀 Status de Implementação
 
-### Fase 1: Estrutura Base (Em andamento)
-- [ ] Configurar layout principal com sidebar
-- [ ] Criar componentes base do design system
-- [ ] Definir roteamento e navegação
+### ✅ Fase 1: Estrutura Base (CONCLUÍDA)
+- [x] Configurar layout principal com sidebar
+- [x] Criar componentes base do design system  
+- [x] Definir roteamento e navegação
 
-### Fase 2: Módulo Clientes (Próximo)
-- [ ] Migrar componentes do fluyt-cliente-manager
-- [ ] Adaptar para Next.js App Router
-- [ ] Integrar com o layout principal
+### ✅ Fase 2: Módulos Principais (CONCLUÍDOS)
+- [x] **Clientes** - Migração completa do fluyt-cliente-manager
+- [x] **Ambientes** - Gestão de projetos e ambientes
+- [x] **Orçamentos** - Simulador financeiro funcional
+- [x] **Contratos** - Sistema de geração e gestão
 
-### Fase 3: Módulos Restantes
-- [ ] Ambientes (fluyt-config-control-center)
-- [ ] Orçamentos (fluyt-proposta-simulador)
-- [ ] Contratos (contrato)
+### 🔄 Fase 3: Módulo Sistema (EM ANDAMENTO)
+- [x] Estrutura de rotas: `/painel/sistema` (dashboard) + `/painel/sistema/configuracoes`
+- [x] **Gestão de Empresas** - CRUD completo com tabela tradicional
+- [ ] **Gestão de Lojas** - A implementar
+- [ ] **Gestão de Equipe** - A implementar  
+- [ ] **Gestão de Setores** - A implementar
+- [ ] **Regras de Comissão** - A implementar
+- [ ] **Configurações da Loja** - A implementar
+- [ ] **Status de Orçamento** - A implementar
+- [ ] **Prestadores (Montadores/Transportadoras)** - A implementar
+- [ ] **Logs de Auditoria** - A implementar
+
+## 🎯 Missão Atual
+**Completar a migração fiel do módulo Sistema** baseado no template `fluyt-config-control-center-main`, seguindo exatamente:
+- Estrutura de tabelas HTML (não cards)
+- Formulários simplificados
+- Funcionalidades completas de CRUD
+- Switch para ativar/desativar itens
+- Validações e feedback com toasts
+
+## 📋 Padrão Específico - Módulo Sistema
+
+### Estrutura de Componentes (Template Original)
+```
+src/components/settings/
+├── CompanyManagement.tsx       # → gestao-empresas.tsx
+├── StoreManagement.tsx         # → gestao-lojas.tsx  
+├── TeamManagement.tsx          # → gestao-equipe.tsx
+├── SectorManagement.tsx        # → gestao-setores.tsx
+├── CommissionRules.tsx         # → regras-comissao.tsx
+├── StoreConfig.tsx             # → config-loja.tsx
+├── StatusConfig.tsx            # → status-orcamento.tsx
+├── ContractorManagement.tsx    # → gestao-prestadores.tsx
+├── TransportManagement.tsx     # → gestao-transportadoras.tsx
+└── AuditLogs.tsx              # → logs-auditoria.tsx
+```
+
+### Padrão de Tabelas (Implementado em Empresas)
+- **Header**: Empresa | CNPJ | Contato | Status | Ações
+- **Linha**: Nome + endereço | CNPJ formatado | Email + telefone | Switch + Badge | Botões Editar/Excluir
+- **Empty State**: Ícone + mensagem + CTA
+- **Loading**: Spinner centralizado
+
+### Padrão de Formulários (Implementado em Empresas)  
+- **Layout**: Campos simples, sem cards decorativos
+- **Grid**: 2 colunas para campos relacionados (email/telefone)
+- **Botões**: Cancelar (outline) | Salvar (primary)
+- **Validação**: Toast errors + loading states
 
 ## ⚡ Comandos Úteis
 

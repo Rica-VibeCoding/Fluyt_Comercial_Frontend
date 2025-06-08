@@ -56,7 +56,8 @@ const menuItems = [
     titulo: 'Sistema', 
     icone: Settings, 
     href: '/painel/sistema',
-    descricao: 'Configurações'
+    descricao: 'Configurações',
+    ativo: true // Módulo migrado
   }
 ];
 

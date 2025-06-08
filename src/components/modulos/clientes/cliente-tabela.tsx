@@ -43,7 +43,7 @@ export function ClienteTabela({
 
   if (isLoading) {
     return (
-      <div className="space-y-3 p-6">
+      <div className="px-4 pt-4 pb-4 space-y-3">
         {[...Array(5)].map((_, i) => (
           <Skeleton key={i} className="h-16 w-full" />
         ))}
@@ -53,7 +53,7 @@ export function ClienteTabela({
 
   if (clientes.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="px-4 pt-4 pb-4 text-center py-12">
         <div className="text-muted-foreground">
           <p className="text-lg font-medium mb-2">Nenhum cliente encontrado</p>
           <p>Ajuste os filtros ou cadastre um novo cliente</p>
@@ -63,19 +63,20 @@ export function ClienteTabela({
   }
 
   return (
-    <div className="overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/30">
-            <TableHead className="font-semibold">Cliente</TableHead>
-            <TableHead className="font-semibold">Documento</TableHead>
-            <TableHead className="font-semibold">Contato</TableHead>
-            <TableHead className="font-semibold">Tipo</TableHead>
-            <TableHead className="font-semibold">Procedência</TableHead>
-            <TableHead className="font-semibold">Vendedor</TableHead>
-            <TableHead className="font-semibold text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
+    <div className="px-4 pt-4 pb-4">
+      <div className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/30">
+              <TableHead className="font-semibold">Cliente</TableHead>
+              <TableHead className="font-semibold">Documento</TableHead>
+              <TableHead className="font-semibold">Contato</TableHead>
+              <TableHead className="font-semibold">Tipo</TableHead>
+              <TableHead className="font-semibold">Procedência</TableHead>
+              <TableHead className="font-semibold">Vendedor</TableHead>
+              <TableHead className="font-semibold text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
         <TableBody>
           {clientes.map((cliente) => (
             <TableRow 
@@ -166,6 +167,7 @@ export function ClienteTabela({
           ))}
         </TableBody>
       </Table>
+    </div>
     </div>
   );
 }
