@@ -16,12 +16,16 @@ import { ClienteSelectorUniversal } from '../../shared/cliente-selector-universa
 
 export function AmbientePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { clienteId, cliente: clienteCarregado, isLoading: clienteLoading } = useClienteSelecionadoRealista();
+  
+  // Verificar se deve forçar troca de cliente
+  const forcarTroca = searchParams.get('forcar') === 'true';
   
   // Debug: monitorar mudanças de clienteId
   useEffect(() => {
-    console.log('🔍 AmbientePage: clienteId mudou para:', clienteId);
-  }, [clienteId]);
+    console.log('🔍 AmbientePage: clienteId mudou para:', clienteId, { forcarTroca });
+  }, [clienteId, forcarTroca]);
   const { clientes } = useClientesRealista();
   const {
     cliente,
@@ -53,32 +57,40 @@ export function AmbientePage() {
 
   // Sincronizar cliente carregado com a sessão
   useEffect(() => {
-    // NOVA LÓGICA: Só sincronizar se a sessão estiver VAZIA
-    // Se já há um cliente na sessão, NÃO sobrescrever
-    // Isso mantém a continuidade da sessão entre navegações
-    if (clienteCarregado && !clienteLoading && !cliente) {
-      console.log('🔄 AmbientePage: Inicializando sessão vazia com cliente da URL:', {
+    // LÓGICA INTELIGENTE: Respeitar intenção do usuário
+    
+    // 1. Se sessão vazia OU forçar troca → Definir cliente da URL
+    if (clienteCarregado && !clienteLoading && (!cliente || forcarTroca)) {
+      console.log('🔄 AmbientePage: Definindo cliente da URL:', {
         clienteCarregado: clienteCarregado.nome,
         clienteCarregadoId: clienteCarregado.id,
-        acao: 'INICIALIZANDO_SESSAO'
+        motivo: !cliente ? 'SESSAO_VAZIA' : 'FORCAR_TROCA',
+        forcarTroca
       });
       definirCliente(clienteCarregado);
-    } else if (clienteCarregado && cliente && cliente.id !== clienteCarregado.id) {
-      console.log('🛡️ AmbientePage: Cliente diferente na URL, mas mantendo sessão atual:', {
+      
+      // Limpar parâmetro forcar da URL após usar
+      if (forcarTroca) {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('forcar');
+        router.replace(newUrl.pathname + newUrl.search, { scroll: false });
+      }
+    } 
+    // 2. Se há cliente diferente na URL mas não forçar → Manter sessão atual
+    else if (clienteCarregado && cliente && cliente.id !== clienteCarregado.id && !forcarTroca) {
+      console.log('🔄 AmbientePage: Cliente diferente detectado, mantendo sessão atual:', {
         clienteURL: clienteCarregado.nome,
         clienteSessao: cliente.nome,
-        acao: 'MANTENDO_SESSAO'
+        acao: 'MANTENDO_SESSAO_ATUAL'
       });
-      // NÃO fazer nada - manter o cliente da sessão
+      // Manter cliente da sessão (usuário deve usar "Criar Ambientes" para trocar)
     }
-    
-    // PROTEÇÃO: Se temos cliente na sessão mas não temos na URL, NÃO limpar
-    // Isso preserva a sessão mesmo se a URL perder o parâmetro
-    if (!clienteCarregado && !clienteLoading && cliente && !clienteId) {
+    // 3. Se não há cliente na URL mas há na sessão → Manter sessão
+    else if (!clienteCarregado && !clienteLoading && cliente && !clienteId) {
       console.log('🛡️ Protegendo cliente da sessão (sem clienteId na URL):', cliente.nome);
-      // NÃO fazer nada - manter o cliente na sessão
+      // Manter o cliente na sessão
     }
-  }, [clienteCarregado, clienteLoading, cliente, clienteId, definirCliente]);
+  }, [clienteCarregado, clienteLoading, cliente, clienteId, forcarTroca, definirCliente, router]);
 
   const handleAdicionarAmbiente = (data: any) => {
     adicionarAmbiente(data);
@@ -154,7 +166,8 @@ export function AmbientePage() {
                   size="sm" 
                   disabled={!podeGerarOrcamento}
                   variant="default"
-                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={!podeGerarOrcamento ? "Adicione pelo menos um ambiente para continuar" : "Avançar para orçamento"}
                 >
                   Orçamento
                   <ArrowRight className="h-4 w-4" />

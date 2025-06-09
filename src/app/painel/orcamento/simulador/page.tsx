@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSimulador } from '../../../../hooks/modulos/orcamento/use-simulador';
-import { useSessaoIntegrada } from '../../../../hooks/modulos/orcamento/use-sessao-integrada';
+import { useSessao } from '../../../../store/sessao-store';
 import { InputSection } from '../../../../components/modulos/orcamento/input-section';
 import { Dashboard } from '../../../../components/modulos/orcamento/dashboard-orcamento';
 import { FormaPagamentoCard } from '../../../../components/modulos/orcamento/forma-pagamento-card';
@@ -98,8 +98,9 @@ export default function SimuladorPage() {
     cliente,
     ambientes,
     valorTotalAmbientes,
-    podeGerarOrcamento
-  } = useSessaoIntegrada();
+    podeGerarOrcamento,
+    definirOrcamento
+  } = useSessao();
   const [modalOpen, setModalOpen] = useState(false);
   const [editandoForma, setEditandoForma] = useState<FormaPagamento | null>(null);
   const [novaForma, setNovaForma] = useState<NovaFormaState>({
@@ -235,6 +236,11 @@ export default function SimuladorPage() {
     }
   }, [valorTotalAmbientes, recalcularSimulacao, simulacao.valorBruto]);
 
+  // Sincronizar estado do orçamento com a store
+  useEffect(() => {
+    definirOrcamento(simulacao.valorNegociado, simulacao.formasPagamento.length);
+  }, [simulacao.valorNegociado, simulacao.formasPagamento.length, definirOrcamento]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
@@ -269,7 +275,14 @@ export default function SimuladorPage() {
                 onClick={() => router.push('/painel/contratos')} 
                 size="sm" 
                 disabled={!podeGerarOrcamento || simulacao.formasPagamento.length === 0}
-                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white disabled:opacity-50"
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  !podeGerarOrcamento 
+                    ? "Adicione ambientes para continuar" 
+                    : simulacao.formasPagamento.length === 0 
+                      ? "Adicione pelo menos uma forma de pagamento" 
+                      : "Avançar para contratos"
+                }
               >
                 Avançar para Contratos
               </Button>
@@ -299,6 +312,15 @@ export default function SimuladorPage() {
               >
                 Clique aqui para adicionar ambientes.
               </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {cliente && ambientes.length > 0 && simulacao.formasPagamento.length === 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Cliente e ambientes configurados! Para avançar aos contratos, adicione pelo menos uma forma de pagamento.
             </AlertDescription>
           </Alert>
         )}

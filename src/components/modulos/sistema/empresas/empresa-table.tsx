@@ -35,7 +35,7 @@ export function EmpresaTable({
 
   if (empresas.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
         <Building2 className="h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma empresa cadastrada</h3>
         <p className="text-gray-500 text-center max-w-sm">
@@ -46,50 +46,52 @@ export function EmpresaTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Empresa</TableHead>
-            <TableHead>CNPJ</TableHead>
-            <TableHead>Contato</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10">Empresa</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">CNPJ</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {empresas.map((empresa) => (
-            <TableRow key={empresa.id}>
-              <TableCell>
+            <TableRow key={empresa.id} className="h-12 bg-white hover:bg-blue-50/50">
+              <TableCell className="py-2">
                 <div>
                   <div className="font-medium">{empresa.nome}</div>
                   <div className="text-sm text-muted-foreground">{empresa.endereco}</div>
                 </div>
               </TableCell>
-              <TableCell>{empresa.cnpj}</TableCell>
-              <TableCell>
+              <TableCell className="py-2">{empresa.cnpj}</TableCell>
+              <TableCell className="py-2">
                 <div className="text-sm">
                   <div>{empresa.email}</div>
                   <div className="text-muted-foreground">{empresa.telefone}</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={empresa.ativo}
                     onCheckedChange={() => onToggleStatus(empresa.id)}
+                    className="data-[state=checked]:bg-slate-600"
                   />
-                  <Badge variant={empresa.ativo ? "default" : "secondary"}>
+                  <Badge variant={empresa.ativo ? "default" : "secondary"} className={empresa.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
                     {empresa.ativo ? 'Ativa' : 'Inativa'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-2">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(empresa)}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -98,6 +100,7 @@ export function EmpresaTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

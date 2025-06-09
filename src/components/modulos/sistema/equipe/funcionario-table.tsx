@@ -62,7 +62,7 @@ export function FuncionarioTable({
 
   if (funcionarios.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
         <UserCog className="h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum funcionário cadastrado</h3>
         <p className="text-gray-500 text-center max-w-sm">
@@ -73,83 +73,69 @@ export function FuncionarioTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Funcionário</TableHead>
-            <TableHead>Tipo/Nível</TableHead>
-            <TableHead>Loja/Setor</TableHead>
-            <TableHead>Financeiro</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10">Funcionário</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Cargo</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Performance</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {funcionarios.map((funcionario) => (
-            <TableRow key={funcionario.id}>
-              <TableCell>
+            <TableRow key={funcionario.id} className="h-12 bg-white hover:bg-blue-50/50">
+              <TableCell className="py-2">
                 <div>
                   <div className="font-medium">{funcionario.nome}</div>
-                  <div className="text-sm text-muted-foreground">{funcionario.email}</div>
-                  <div className="text-sm text-muted-foreground">{funcionario.telefone}</div>
+                  <div className="text-sm text-muted-foreground">{funcionario.loja || 'Loja não informada'}</div>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="flex gap-1">
-                    <Badge variant={getTipoFuncionarioBadge(funcionario.tipoFuncionario)} className="text-xs">
-                      {funcionario.tipoFuncionario}
-                    </Badge>
-                    <Badge variant={getNivelAcessoBadge(funcionario.nivelAcesso)} className="text-xs">
-                      {funcionario.nivelAcesso}
-                    </Badge>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="text-sm">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Store className="h-3 w-3 text-gray-400" />
-                    <span className="font-medium">{funcionario.loja}</span>
-                  </div>
+                  <div>{funcionario.email}</div>
+                  <div className="text-muted-foreground">{funcionario.telefone}</div>
+                </div>
+              </TableCell>
+              <TableCell className="py-2">
+                <div className="text-sm">
+                  <div>{funcionario.tipoFuncionario}</div>
                   <div className="text-muted-foreground">{funcionario.setor}</div>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="text-sm">
-                  <div className="font-medium">{formatCurrency(funcionario.salario)}</div>
-                  {funcionario.comissao > 0 && (
-                    <div className="text-muted-foreground">Comissão: {funcionario.comissao}%</div>
-                  )}
-                  {funcionario.configuracoes?.valorMedicao && (
-                    <div className="text-green-600">Medição: {formatCurrency(funcionario.configuracoes.valorMedicao)}</div>
-                  )}
-                  {funcionario.performance !== undefined && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="h-3 w-3 text-yellow-500" />
-                      <span className="text-xs">{funcionario.performance}%</span>
+              <TableCell className="py-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full" 
+                      style={{ width: `${funcionario.performance}%` }}
+                    ></div>
                     </div>
-                  )}
+                  <span className="text-sm font-medium">{funcionario.performance}%</span>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={funcionario.ativo}
                     onCheckedChange={() => onToggleStatus(funcionario.id)}
+                    className="data-[state=checked]:bg-slate-600"
                   />
-                  <Badge variant={funcionario.ativo ? "default" : "secondary"}>
+                  <Badge variant={funcionario.ativo ? "default" : "secondary"} className={funcionario.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
                     {funcionario.ativo ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-2">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(funcionario)}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -158,6 +144,7 @@ export function FuncionarioTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -167,7 +154,7 @@ export function FuncionarioTable({
                         <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                         <AlertDialogDescription>
                           Tem certeza que deseja excluir o funcionário <strong>{funcionario.nome}</strong>?
-                          Esta ação não pode ser desfeita e removerá todos os dados associados.
+                          Esta ação não pode ser desfeita.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

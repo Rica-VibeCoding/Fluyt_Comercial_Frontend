@@ -10,11 +10,11 @@ export default function SistemaPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Building2 className="h-8 w-8 text-primary" />
+              <Building2 className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold">Sistema Fluyt</h1>
-              <p className="text-xl text-muted-foreground">Sistema de Validação</p>
+              <h1 className="text-2xl font-bold">Sistema Fluyt</h1>
+              <p className="text-base text-muted-foreground">Sistema de Validação</p>
             </div>
           </div>
         </div>

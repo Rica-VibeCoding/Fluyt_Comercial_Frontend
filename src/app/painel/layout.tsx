@@ -4,6 +4,8 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from '../../components/layout/sidebar';
 import { ProgressStepper } from '../../components/layout/progress-stepper';
+import { DebugPersistenciaCompacto } from '../../components/shared/debug-persistencia';
+import { usePersistenciaBasica } from '../../hooks/globais/use-persistencia-sessao';
 
 export default function PainelLayout({
   children,
@@ -12,18 +14,24 @@ export default function PainelLayout({
 }) {
   const pathname = usePathname();
   
+  // Ativar persistência automática em todo o painel
+  usePersistenciaBasica();
+  
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1">
+      <div className="md:ml-64">
         {shouldShowProgressStepper && <ProgressStepper />}
         <main className="bg-gray-50">
           {children}
         </main>
       </div>
+      
+      {/* Debug de persistência - só aparece em desenvolvimento */}
+      {process.env.NODE_ENV === 'development' && <DebugPersistenciaCompacto />}
     </div>
   );
 }

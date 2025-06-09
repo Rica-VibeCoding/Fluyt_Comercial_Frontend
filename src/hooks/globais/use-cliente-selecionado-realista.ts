@@ -57,6 +57,7 @@ export const useClienteSelecionadoRealista = () => {
               id: clienteId,
               nome: decodeURIComponent(clienteNome),
               cpf_cnpj: '',
+              rg_ie: '',
               email: '',
               telefone: '',
               tipo_venda: 'NORMAL',

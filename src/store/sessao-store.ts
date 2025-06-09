@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { Cliente } from '@/types/cliente';
 import { Ambiente } from '@/types/ambiente';
+import { persistenciaInteligente, SessaoCliente } from '../lib/persistencia-inteligente';
 
 interface SessaoState {
   // Estado da sessão
@@ -9,6 +10,11 @@ interface SessaoState {
   ambientes: Ambiente[];
   valorTotalAmbientes: number;
   ultimaAtualizacao: string;
+  
+  // Estado do orçamento
+  orcamentoConfigurado: boolean;
+  valorNegociado: number;
+  formasPagamento: number; // Quantidade de formas de pagamento
   
   // Ações para gerenciar cliente
   definirCliente: (cliente: Cliente | null) => void;
@@ -19,8 +25,17 @@ interface SessaoState {
   adicionarAmbiente: (ambiente: Ambiente) => void;
   removerAmbiente: (ambienteId: string) => void;
   
+  // Ações para gerenciar orçamento
+  definirOrcamento: (valorNegociado: number, formasPagamento: number) => void;
+  limparOrcamento: () => void;
+  
   // Ações para gerenciar sessão
   limparSessaoCompleta: () => void;
+  
+  // Ações para persistência inteligente
+  carregarSessaoCliente: (clienteId: string) => void;
+  salvarSessaoAtual: () => void;
+  iniciarNovoFluxoCliente: (cliente: Cliente) => void;
   
   // Getters computados
   podeGerarOrcamento: () => boolean;
@@ -41,6 +56,11 @@ export const useSessaoStore = create<SessaoState>()(
       ambientes: [],
       valorTotalAmbientes: 0,
       ultimaAtualizacao: new Date().toISOString(),
+      
+      // Estado inicial do orçamento
+      orcamentoConfigurado: false,
+      valorNegociado: 0,
+      formasPagamento: 0,
 
       // === AÇÕES PARA CLIENTE ===
       definirCliente: (cliente) => {
@@ -49,17 +69,47 @@ export const useSessaoStore = create<SessaoState>()(
           novo: cliente?.nome || 'null'
         });
 
-        set((state) => {
-          const clienteMudou = cliente?.id !== state.cliente?.id;
+        const state = get();
+        const clienteMudou = cliente?.id !== state.cliente?.id;
+
+        if (clienteMudou && cliente?.id) {
+          // Tentar carregar sessão existente primeiro (apenas no cliente)
+          const sessaoExistente = typeof window !== 'undefined' 
+            ? persistenciaInteligente.recuperarSessaoCliente(cliente.id)
+            : null;
           
+          if (sessaoExistente) {
+            console.log('🔄 Carregando sessão existente do cliente:', cliente.nome);
+            set({
+              cliente: sessaoExistente.cliente,
+              ambientes: sessaoExistente.ambientes,
+              valorTotalAmbientes: sessaoExistente.ambientes.reduce((total, amb) => total + amb.valorTotal, 0),
+              orcamentoConfigurado: sessaoExistente.orcamento.configurado,
+              valorNegociado: sessaoExistente.orcamento.valorNegociado,
+              formasPagamento: sessaoExistente.orcamento.formasPagamento,
+              ultimaAtualizacao: new Date().toISOString()
+            }, false, 'definirCliente');
+            return;
+          }
+        }
+
+        set((state) => {
           return {
             cliente,
-            // Limpar ambientes se cliente mudou
+            // Limpar ambientes e orçamento se cliente mudou
             ambientes: clienteMudou ? [] : state.ambientes,
             valorTotalAmbientes: clienteMudou ? 0 : state.valorTotalAmbientes,
+            orcamentoConfigurado: clienteMudou ? false : state.orcamentoConfigurado,
+            valorNegociado: clienteMudou ? 0 : state.valorNegociado,
+            formasPagamento: clienteMudou ? 0 : state.formasPagamento,
             ultimaAtualizacao: new Date().toISOString()
           };
         }, false, 'definirCliente');
+
+        // Salvar automaticamente após mudança
+        setTimeout(() => {
+          get().salvarSessaoAtual();
+        }, 100);
       },
 
       limparCliente: () => {
@@ -68,6 +118,9 @@ export const useSessaoStore = create<SessaoState>()(
           cliente: null,
           ambientes: [],
           valorTotalAmbientes: 0,
+          orcamentoConfigurado: false,
+          valorNegociado: 0,
+          formasPagamento: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'limparCliente');
       },
@@ -111,6 +164,11 @@ export const useSessaoStore = create<SessaoState>()(
             ultimaAtualizacao: new Date().toISOString()
           };
         }, false, 'adicionarAmbiente');
+
+        // Salvar automaticamente após mudança
+        setTimeout(() => {
+          get().salvarSessaoAtual();
+        }, 100);
       },
 
       removerAmbiente: (ambienteId) => {
@@ -128,15 +186,132 @@ export const useSessaoStore = create<SessaoState>()(
         }, false, 'removerAmbiente');
       },
 
+      // === AÇÕES PARA ORÇAMENTO ===
+      definirOrcamento: (valorNegociado, formasPagamento) => {
+        console.log('💰 SessaoStore.definirOrcamento:', { valorNegociado, formasPagamento });
+        
+        set({
+          orcamentoConfigurado: formasPagamento > 0,
+          valorNegociado,
+          formasPagamento,
+          ultimaAtualizacao: new Date().toISOString()
+        }, false, 'definirOrcamento');
+
+        // Salvar automaticamente após mudança
+        setTimeout(() => {
+          get().salvarSessaoAtual();
+        }, 100);
+      },
+
+      limparOrcamento: () => {
+        console.log('🧹 SessaoStore.limparOrcamento');
+        set({
+          orcamentoConfigurado: false,
+          valorNegociado: 0,
+          formasPagamento: 0,
+          ultimaAtualizacao: new Date().toISOString()
+        }, false, 'limparOrcamento');
+      },
+
       // === AÇÕES PARA SESSÃO ===
       limparSessaoCompleta: () => {
         console.log('🧹 SessaoStore.limparSessaoCompleta');
+        const state = get();
+        
+        // Limpar persistência se houver cliente ativo (apenas no cliente)
+        if (state.cliente?.id && typeof window !== 'undefined') {
+          persistenciaInteligente.limparSessaoCliente(state.cliente.id);
+        }
+        
         set({
           cliente: null,
           ambientes: [],
           valorTotalAmbientes: 0,
+          orcamentoConfigurado: false,
+          valorNegociado: 0,
+          formasPagamento: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'limparSessaoCompleta');
+      },
+
+      // === AÇÕES PARA PERSISTÊNCIA INTELIGENTE ===
+      carregarSessaoCliente: (clienteId: string) => {
+        console.log('📂 SessaoStore.carregarSessaoCliente:', clienteId);
+        
+        // Só carregar no cliente para evitar erros SSR
+        if (typeof window === 'undefined') {
+          console.log('⚠️ carregarSessaoCliente ignorado durante SSR');
+          return;
+        }
+        
+        const sessaoSalva = persistenciaInteligente.recuperarSessaoCliente(clienteId);
+        
+        if (sessaoSalva) {
+          console.log('✅ Sessão recuperada do cache:', sessaoSalva);
+          set({
+            cliente: sessaoSalva.cliente,
+            ambientes: sessaoSalva.ambientes,
+            valorTotalAmbientes: sessaoSalva.ambientes.reduce((total, amb) => total + amb.valorTotal, 0),
+            orcamentoConfigurado: sessaoSalva.orcamento.configurado,
+            valorNegociado: sessaoSalva.orcamento.valorNegociado,
+            formasPagamento: sessaoSalva.orcamento.formasPagamento,
+            ultimaAtualizacao: new Date().toISOString()
+          }, false, 'carregarSessaoCliente');
+        } else {
+          console.log('📭 Nenhuma sessão encontrada para cliente:', clienteId);
+        }
+      },
+
+      salvarSessaoAtual: () => {
+        const state = get();
+        
+        if (!state.cliente?.id) {
+          console.log('⚠️ Tentativa de salvar sessão sem cliente ativo');
+          return;
+        }
+
+        const sessaoParaSalvar: SessaoCliente = {
+          cliente: state.cliente,
+          ambientes: state.ambientes,
+          orcamento: {
+            valorNegociado: state.valorNegociado,
+            formasPagamento: state.formasPagamento,
+            configurado: state.orcamentoConfigurado
+          },
+          metadata: {
+            iniciadoEm: Date.now(),
+            ultimaAtividade: Date.now(),
+            versaoApp: '1.0.0'
+          }
+        };
+
+        // Só salvar no cliente para evitar erros SSR
+        if (typeof window !== 'undefined') {
+          persistenciaInteligente.salvarSessaoCliente(state.cliente.id, sessaoParaSalvar);
+          console.log('💾 Sessão atual salva para cliente:', state.cliente.nome);
+        } else {
+          console.log('⚠️ salvarSessaoAtual ignorado durante SSR');
+        }
+      },
+
+      iniciarNovoFluxoCliente: (cliente: Cliente) => {
+        console.log('🆕 SessaoStore.iniciarNovoFluxoCliente:', cliente.nome);
+        
+        // Limpar estado atual
+        set({
+          cliente,
+          ambientes: [],
+          valorTotalAmbientes: 0,
+          orcamentoConfigurado: false,
+          valorNegociado: 0,
+          formasPagamento: 0,
+          ultimaAtualizacao: new Date().toISOString()
+        }, false, 'iniciarNovoFluxoCliente');
+
+        // Salvar novo fluxo limpo na persistência (apenas no cliente)
+        if (typeof window !== 'undefined') {
+          persistenciaInteligente.iniciarNovoFluxo(cliente.id, { cliente });
+        }
       },
 
       // === GETTERS COMPUTADOS ===
@@ -146,7 +321,8 @@ export const useSessaoStore = create<SessaoState>()(
       },
 
       podeGerarContrato: () => {
-        return get().podeGerarOrcamento();
+        const state = get();
+        return state.podeGerarOrcamento() && state.orcamentoConfigurado && state.formasPagamento > 0;
       },
 
       obterResumo: () => {
@@ -155,7 +331,10 @@ export const useSessaoStore = create<SessaoState>()(
           temCliente: !!state.cliente,
           quantidadeAmbientes: state.ambientes.length,
           valorTotal: state.valorTotalAmbientes,
-          podeAvancar: state.podeGerarOrcamento()
+          orcamentoConfigurado: state.orcamentoConfigurado,
+          formasPagamento: state.formasPagamento,
+          podeAvancar: state.podeGerarOrcamento(),
+          podeFinalizarContrato: state.podeGerarContrato()
         };
       }
     }),
@@ -169,12 +348,12 @@ export const useSessaoStore = create<SessaoState>()(
 export const useSessao = () => {
   const store = useSessaoStore();
   
-  // Debug: monitorar estado
-  console.log('🔄 useSessao estado:', {
-    cliente: store.cliente?.nome || 'null',
-    clienteId: store.cliente?.id || 'null',
-    ambientes: store.ambientes.length
-  });
+  // Debug opcional: monitorar estado (pode ser removido em produção)
+  // console.log('🔄 useSessao estado:', {
+  //   cliente: store.cliente?.nome || 'null',
+  //   clienteId: store.cliente?.id || 'null',
+  //   ambientes: store.ambientes.length
+  // });
   
   return store;
 };

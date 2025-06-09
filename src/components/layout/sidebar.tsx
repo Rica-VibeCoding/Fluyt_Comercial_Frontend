@@ -70,7 +70,7 @@ function SidebarContent({ className, onItemClick }: SidebarContentProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("pb-12 min-h-screen", className)}>
+    <div className={cn("h-full", className)}>
       <div className="space-y-4 py-4">
         {/* Logo/Header */}
         <div className="px-3 py-2">
@@ -152,7 +152,7 @@ export function Sidebar() {
   return (
     <>
       {/* Sidebar Desktop */}
-      <div className="hidden border-r bg-gray-50/40 md:block">
+      <div className="hidden border-r bg-gray-50/40 md:block fixed left-0 top-0 h-screen overflow-y-auto z-30">
         <SidebarContent className="w-64" />
       </div>
 

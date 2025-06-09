@@ -21,7 +21,8 @@ export function ClienteActionsMenu({ cliente, onEditar, onRemover }: ClienteActi
   const router = useRouter();
 
   const handleCriarAmbientes = () => {
-    router.push(`/painel/ambientes?clienteId=${cliente.id}&clienteNome=${encodeURIComponent(cliente.nome)}`);
+    // Adicionar parâmetro de intenção para forçar troca de cliente
+    router.push(`/painel/ambientes?clienteId=${cliente.id}&clienteNome=${encodeURIComponent(cliente.nome)}&forcar=true`);
   };
 
   return (

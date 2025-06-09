@@ -75,18 +75,16 @@ export function GestaoSetores() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header com Ações */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestão de Setores</h2>
-          <p className="text-gray-600">Organize a equipe em setores especializados</p>
-        </div>
-        
+    <div className="space-y-3">
+      {/* Ações */}
+      <div className="flex justify-end">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleNewSetor} className="gap-2 bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4" />
+            <Button 
+              onClick={handleNewSetor}
+              className="gap-1.5 h-8 px-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white text-xs"
+            >
+              <Layers className="h-3.5 w-3.5" />
               Novo Setor
             </Button>
           </DialogTrigger>
@@ -109,7 +107,7 @@ export function GestaoSetores() {
       </div>
 
       {/* Filtros e Busca */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -121,7 +119,7 @@ export function GestaoSetores() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold">
               <Filter className="h-4 w-4" />
               Filtros
             </Button>

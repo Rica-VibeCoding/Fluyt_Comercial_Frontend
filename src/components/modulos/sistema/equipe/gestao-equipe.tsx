@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Plus, UserCog, Search, Filter } from 'lucide-react';
+import { Plus, UserCog, Search, Filter, UserPlus } from 'lucide-react';
 import { useEquipe } from '@/hooks/modulos/sistema/use-equipe';
 import { FuncionarioForm } from './funcionario-form';
 import { FuncionarioTable } from './funcionario-table';
@@ -110,18 +110,16 @@ export function GestaoEquipe() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header com Ações */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gestão de Equipe</h2>
-          <p className="text-gray-600">Gerencie todos os colaboradores da empresa</p>
-        </div>
-        
+    <div className="space-y-3">
+      {/* Ações */}
+      <div className="flex justify-end">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleNewFuncionario} className="gap-2 bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4" />
+            <Button 
+              onClick={handleNewFuncionario}
+              className="gap-1.5 h-8 px-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white text-xs"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
               Novo Colaborador
             </Button>
           </DialogTrigger>
@@ -145,9 +143,8 @@ export function GestaoEquipe() {
         </Dialog>
       </div>
 
-
       {/* Filtros e Busca */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -159,7 +156,7 @@ export function GestaoEquipe() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold">
               <Filter className="h-4 w-4" />
               Filtros
             </Button>

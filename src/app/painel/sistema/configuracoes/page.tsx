@@ -19,6 +19,7 @@ export default function ConfiguracoesPage() {
     id: 'pessoas',
     label: 'Pessoas',
     icon: Users,
+    iconColor: 'blue',
     description: 'Gestão de empresas, lojas, equipe e setores',
     items: [{
       id: 'empresas',
@@ -41,6 +42,7 @@ export default function ConfiguracoesPage() {
     id: 'financeiro',
     label: 'Financeiro',
     icon: DollarSign,
+    iconColor: 'green',
     description: 'Configurações críticas do sistema',
     adminOnly: true,
     items: [{
@@ -57,6 +59,7 @@ export default function ConfiguracoesPage() {
     id: 'operacional',
     label: 'Operacional',
     icon: SettingsIcon,
+    iconColor: 'orange',
     description: 'Prestadores de serviços',
     items: [{
       id: 'montadores',
@@ -69,6 +72,7 @@ export default function ConfiguracoesPage() {
     id: 'sistema',
     label: 'Sistema',
     icon: FileText,
+    iconColor: 'purple',
     description: 'Auditoria e logs',
     items: [{
       id: 'auditoria',
@@ -99,7 +103,7 @@ export default function ConfiguracoesPage() {
         return <ConfigLoja />;
       case 'financeiro-status':
         return (
-          <Card>
+          <Card className="shadow-md border-0 bg-white">
             <CardContent className="p-6">
               <div className="text-center text-muted-foreground">
                 <div className="text-lg font-medium mb-2">Status de Orçamento</div>
@@ -114,7 +118,7 @@ export default function ConfiguracoesPage() {
         return <GestaoTransportadoras />;
       case 'sistema-auditoria':
         return (
-          <Card>
+          <Card className="shadow-md border-0 bg-white">
             <CardContent className="p-6">
               <div className="text-center text-muted-foreground">
                 <div className="text-lg font-medium mb-2">Logs de Auditoria</div>
@@ -129,7 +133,7 @@ export default function ConfiguracoesPage() {
         return <TesteConectividade />;
       default:
         return (
-          <Card>
+          <Card className="shadow-md border-0 bg-white">
             <CardContent className="p-6">
               <div className="text-center text-muted-foreground">
                 <div className="text-lg font-medium mb-2">
@@ -144,33 +148,34 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header moderno inspirado no original */}
-      <div className="bg-white border-b">
-              <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4">
+        {/* Header padronizado seguindo padrão da página sistema */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
           <Link href="/painel/sistema">
             <Button variant="ghost" size="sm" className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
           </Link>
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <SettingsIcon className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <SettingsIcon className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">Configurações do Sistema</h1>
-              <p className="text-slate-600 mt-1">Gerencie todos os aspectos da sua aplicação</p>
-            </div>
+              <h1 className="text-2xl font-bold">Configurações do Sistema</h1>
+              <p className="text-base text-muted-foreground">Gerencie todos os aspectos da sua aplicação</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-4">
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
-          {/* Navegação principal com estilo modernizado */}
-          <div className="bg-white rounded-lg border shadow-sm">
-            <TabsList className="grid w-full grid-cols-4 h-14 bg-transparent">
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
+          {/* Navegação principal com estilo padronizado */}
+          <Card className="shadow-md border-0 bg-white">
+            <CardContent className="p-3">
+              <TabsList className="grid w-full grid-cols-4 h-10 bg-transparent">
               {sections.map(section => {
                 const Icon = section.icon;
                 const isDisabled = section.adminOnly && userProfile !== 'ADMIN_MASTER';
@@ -179,56 +184,69 @@ export default function ConfiguracoesPage() {
                     key={section.id} 
                     value={section.id} 
                     disabled={isDisabled} 
-                    className="flex items-center gap-3 h-12 px-4 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                      className="flex items-center gap-1.5 h-8 px-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-600 data-[state=active]:to-slate-700 data-[state=active]:text-white rounded-lg transition-all duration-200 text-xs font-medium"
                   >
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium">{section.label}</span>
+                      <Icon className="h-3.5 w-3.5" />
+                      <span>{section.label}</span>
                   </TabsTrigger>
                 );
               })}
             </TabsList>
-          </div>
+            </CardContent>
+          </Card>
 
           {sections.map(section => (
-            <TabsContent key={section.id} value={section.id} className="space-y-6">
-              {/* Card de informação da seção */}
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <section.icon className="h-5 w-5 text-blue-600" />
+            <TabsContent key={section.id} value={section.id} className="space-y-4">
+              {/* Card de informação da seção com estilo padronizado */}
+              <Card className="shadow-md border-0 bg-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 ${
+                      section.iconColor === 'blue' ? 'bg-blue-50' :
+                      section.iconColor === 'green' ? 'bg-green-50' :
+                      section.iconColor === 'orange' ? 'bg-orange-50' :
+                      section.iconColor === 'purple' ? 'bg-purple-50' : 'bg-primary/10'
+                    } rounded-lg flex items-center justify-center`}>
+                      <section.icon className={`h-4 w-4 ${
+                        section.iconColor === 'blue' ? 'text-blue-600' :
+                        section.iconColor === 'green' ? 'text-green-600' :
+                        section.iconColor === 'orange' ? 'text-orange-600' :
+                        section.iconColor === 'purple' ? 'text-purple-600' : 'text-primary'
+                      }`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-semibold text-slate-800">{section.label}</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">{section.label}</h2>
                         {section.adminOnly && (
                           <Badge variant="destructive" className="text-xs">
                             Admin Only
                           </Badge>
                         )}
                       </div>
-                      <p className="text-slate-600 mt-1">{section.description}</p>
+                      <p className="text-sm text-gray-600 mt-1">{section.description}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Sub-navegação */}
+              {/* Sub-navegação com estilo padronizado */}
               <Tabs defaultValue={section.items[0]?.id} className="space-y-4">
-                <div className="bg-white rounded-lg border shadow-sm">
-                  <TabsList className="grid w-full h-12 bg-transparent" style={{ gridTemplateColumns: `repeat(${section.items.length}, 1fr)` }}>
+                <Card className="shadow-md border-0 bg-white">
+                  <CardContent className="p-3">
+                    <TabsList className="grid w-full h-10 bg-transparent" style={{ gridTemplateColumns: `repeat(${section.items.length}, 1fr)` }}>
                     {section.items.map(item => (
                       <TabsTrigger 
                         key={item.id} 
                         value={item.id} 
-                        className="flex items-center gap-2 h-10 px-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700"
+                          className="flex items-center gap-1.5 h-8 px-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-600 data-[state=active]:to-slate-700 data-[state=active]:text-white rounded-lg transition-all duration-200 text-xs font-medium"
                       >
-                        {item.icon && <item.icon className="h-4 w-4" />}
-                        <span className="font-medium text-sm">{item.label}</span>
+                          {item.icon && <item.icon className="h-3.5 w-3.5" />}
+                          <span>{item.label}</span>
                       </TabsTrigger>
                     ))}
                   </TabsList>
-                </div>
+                  </CardContent>
+                </Card>
 
                 {section.items.map(item => (
                   <TabsContent key={item.id} value={item.id}>

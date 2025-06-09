@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover"
 import { useClientesRealista } from "@/hooks/modulos/clientes/use-clientes-realista"
 import { useClienteSelecionadoRealista } from "@/hooks/globais/use-cliente-selecionado-realista"
-import { useSessaoIntegradaSingleton } from "@/hooks/modulos/orcamento/use-sessao-integrada-singleton"
+import { useSessao } from "@/store/sessao-store"
 
 interface ClienteSelectorUniversalProps {
   targetRoute: string; // Rota de destino (ex: '/painel/ambientes', '/painel/contratos')
@@ -38,7 +38,7 @@ export function ClienteSelectorUniversal({
   const router = useRouter()
   const { clientes, isLoading: clientesLoading } = useClientesRealista()
   const { clienteSelecionado, isLoading: clienteLoading } = useClienteSelecionadoRealista()
-  const { cliente: clienteSessao, definirCliente } = useSessaoIntegradaSingleton()
+  const { cliente: clienteSessao, definirCliente } = useSessao()
 
   const handleSelectCliente = (clienteId: string, clienteNome: string) => {
     setOpen(false)

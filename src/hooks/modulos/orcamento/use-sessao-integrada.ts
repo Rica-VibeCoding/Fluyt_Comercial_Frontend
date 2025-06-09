@@ -147,7 +147,7 @@ export function useSessaoIntegrada() {
       temCliente: !!sessao.cliente,
       quantidadeAmbientes: sessao.ambientes.length,
       valorTotal: sessao.valorTotalAmbientes,
-      podeAvancar: podeGerarOrcamento()
+      podeAvancar: podeGerarOrcamento
     };
   };
 

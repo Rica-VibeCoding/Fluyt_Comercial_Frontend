@@ -94,7 +94,7 @@ export function GestaoComissoes() {
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleNewRegra} className="gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleNewRegra} className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
               <Plus className="h-4 w-4" />
               Nova Regra
             </Button>
@@ -118,7 +118,7 @@ export function GestaoComissoes() {
       </div>
 
       {/* Filtros e Busca */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -130,7 +130,7 @@ export function GestaoComissoes() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold">
               <Filter className="h-4 w-4" />
               Filtros
             </Button>

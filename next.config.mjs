@@ -1,46 +1,47 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Configuração para desenvolvimento
   reactStrictMode: true,
   
-  // Ignorar pasta de migração no build
-  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
-  
-  // Configuração de paths (equivalente ao alias "@" do Vite)
-  webpack: (config, { dev }) => {
+  // Configuração de paths (alias "@" para src)
+  webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': new URL('./src', import.meta.url).pathname,
+      '@': path.resolve(__dirname, './src'),
     };
     
-    // Ignorar pasta de migração
+    // Ignorar completamente a pasta de migração
     config.module.rules.push({
       test: /\.(ts|tsx|js|jsx)$/,
-      exclude: /src\/migracao/,
+      exclude: [
+        /node_modules/,
+        /src\/migracao/,
+        /\.next/
+      ],
     });
     
-    // Otimizações para desenvolvimento
-    if (dev) {
-      config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
-        ignored: [
-          '**/node_modules',
-          '**/src/migracao/**',
-          '**/.git/**',
-          '**/.next/**'
-        ]
-      };
-    }
+    // Adicionar uma regra específica para ignorar arquivos de migração
+    config.module.rules.unshift({
+      test: /src\/migracao/,
+      loader: 'ignore-loader'
+    });
     
     return config;
   },
   
-  // Configurações experimentais
+  // Configurações experimentais otimizadas
   experimental: {
-    typedRoutes: false,
     optimizePackageImports: ['@/components/ui', 'lucide-react'],
-  }
+  },
+  
+  // Melhor tratamento de arquivos
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 }
 
 export default nextConfig; 

@@ -115,7 +115,7 @@ export function GestaoMontadores() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -134,12 +134,12 @@ export function GestaoMontadores() {
                 variant="outline"
                 size="sm"
                 onClick={resetarDados}
-                className="gap-2"
+                className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold"
               >
                 <RefreshCw className="h-4 w-4" />
                 Reset
               </Button>
-              <Button onClick={handleCreate} className="gap-2">
+              <Button onClick={handleCreate} className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
                 <Plus className="h-4 w-4" />
                 Novo Montador
               </Button>
@@ -150,7 +150,7 @@ export function GestaoMontadores() {
 
 
       {/* Filtros */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Busca */}
@@ -198,7 +198,7 @@ export function GestaoMontadores() {
                 <Button
                   variant="outline"
                   onClick={clearFilters}
-                  className="gap-2"
+                  className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold"
                 >
                   <Filter className="h-4 w-4" />
                   Limpar
@@ -231,7 +231,7 @@ export function GestaoMontadores() {
       </Card>
 
       {/* Tabela */}
-      <Card>
+      <Card className="shadow-md border-0 bg-white">
         <CardContent className="p-0">
           <MontadorTable
             montadores={montadoresFiltered}

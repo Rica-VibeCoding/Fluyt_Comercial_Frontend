@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
@@ -8,12 +8,39 @@ import { Badge } from "../../ui/badge";
 import { Separator } from "../../ui/separator";
 import { EditableField } from "./editable-field";
 import { contratoMock, ContratoData } from "../../../types/contrato";
-import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText, ArrowLeft } from "lucide-react";
+import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText, ArrowLeft, AlertCircle } from "lucide-react";
 import { ClienteSelectorUniversal } from "../../shared/cliente-selector-universal";
+import { useSessao } from "../../../store/sessao-store";
+import { Alert, AlertDescription } from "../../ui/alert";
 
 const ContractSummary = () => {
   const router = useRouter();
+  const { cliente, ambientes, valorTotalAmbientes, podeGerarOrcamento, podeGerarContrato } = useSessao();
   const [contratoData, setContratoData] = useState<ContratoData>(contratoMock);
+
+  // Sincronizar dados da sessão com o contrato
+  useEffect(() => {
+    if (cliente && ambientes.length > 0) {
+      setContratoData(prev => ({
+        ...prev,
+        cliente: {
+          nome: cliente.nome,
+          cpf: cliente.cpf_cnpj || '',
+          endereco: `${cliente.logradouro}, ${cliente.numero} - ${cliente.bairro}, ${cliente.cidade}/${cliente.uf}`,
+          telefone: cliente.telefone,
+          email: cliente.email
+        },
+        valor_total: valorTotalAmbientes,
+        valor_final: valorTotalAmbientes * (1 - prev.desconto),
+        ambientes: ambientes.map(ambiente => ({
+          nome: ambiente.nome,
+          categoria: 'Ambiente',
+          descricao: `Ambiente com ${ambiente.acabamentos.length} acabamentos`,
+          valor: ambiente.valorTotal
+        }))
+      }));
+    }
+  }, [cliente, ambientes, valorTotalAmbientes]);
 
   const updateField = (path: string, value: string | number) => {
     setContratoData(prev => {
@@ -90,6 +117,7 @@ const ContractSummary = () => {
                 <ClienteSelectorUniversal 
                   targetRoute="/painel/contratos"
                   placeholder="Selecionar cliente..."
+                  integraSessao={true}
                 />
               </div>
             </div>
@@ -102,7 +130,13 @@ const ContractSummary = () => {
               <Button 
                 size="lg" 
                 onClick={() => router.push('/painel/contratos/visualizar')} 
-                className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
+                disabled={!podeGerarContrato()}
+                className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title={
+                  !podeGerarContrato() 
+                    ? "Complete o orçamento com formas de pagamento para finalizar" 
+                    : "Finalizar contrato"
+                }
               >
                 Finalizar
                 <ArrowRight className="h-5 w-5" />
@@ -110,6 +144,48 @@ const ContractSummary = () => {
             </div>
           </div>
         </div>
+
+        {/* Alertas de Validação */}
+        {!cliente && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Nenhum cliente selecionado. Selecione um cliente para continuar.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {cliente && ambientes.length === 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Cliente {cliente.nome} selecionado, mas nenhum ambiente foi adicionado. 
+              <Button 
+                variant="link" 
+                className="p-0 h-auto ml-1 underline"
+                onClick={() => router.push('/painel/ambientes')}
+              >
+                Clique aqui para adicionar ambientes.
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {cliente && ambientes.length > 0 && !podeGerarContrato && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Cliente e ambientes configurados, mas é necessário finalizar o orçamento com formas de pagamento.
+              <Button 
+                variant="link" 
+                className="p-0 h-auto ml-1 underline"
+                onClick={() => router.push('/painel/orcamento/simulador')}
+              >
+                Clique aqui para finalizar o orçamento.
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
@@ -399,7 +475,13 @@ const ContractSummary = () => {
             <Button 
               size="lg" 
               onClick={() => router.push('/painel/contratos/visualizar')} 
-              className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
+              disabled={!podeGerarContrato()}
+              className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              title={
+                !podeGerarContrato() 
+                  ? "Complete o orçamento com formas de pagamento para finalizar" 
+                  : "Avançar para contrato final"
+              }
             >
               Avançar para Contrato
               <ArrowRight className="h-5 w-5" />

@@ -173,7 +173,7 @@ export function useConfigLoja() {
     const mes = (new Date().getMonth() + 1).toString().padStart(2, '0');
     const numero = initialNumber.toString().padStart(6, '0');
 
-    let exemplo = format
+    const exemplo = format
       .replace('YYYY', ano)
       .replace('MM', mes)
       .replace(/N+/g, numero);
