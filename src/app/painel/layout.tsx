@@ -21,15 +21,25 @@ export default function PainelLayout({
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
 
   return (
-    <div className="min-h-screen bg-gray-50 layout-container">
+    <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
       <Sidebar />
-      <div className="md:ml-64">
-        {shouldShowProgressStepper && (
-          <div className="sticky top-0 z-20">
-            <ProgressStepper />
-          </div>
-        )}
-        <main className="bg-gray-50">
+      
+      {/* ProgressStepper fixo e completamente fora do scroll */}
+      {shouldShowProgressStepper && (
+        <div className="fixed top-0 left-0 right-0 z-50 md:left-64 bg-white border-b shadow-sm">
+          <ProgressStepper />
+        </div>
+      )}
+      
+      <div className="md:ml-64 h-screen flex flex-col">
+        {/* Container de conteúdo com scroll próprio que começa abaixo do card */}
+        <main 
+          className="flex-1 bg-gray-50 transition-all duration-300 overflow-y-auto"
+          style={{ 
+            marginTop: shouldShowProgressStepper ? '120px' : '0',
+            height: shouldShowProgressStepper ? 'calc(100vh - 120px)' : '100vh'
+          }}
+        >
           {children}
         </main>
       </div>
