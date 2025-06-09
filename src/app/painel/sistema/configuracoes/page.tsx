@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, DollarSign, Settings as SettingsIcon, FileText, Building2, Store, UserCog, Layers } from 'lucide-react';
 import Link from 'next/link';
-import { GestaoEmpresas, GestaoLojas, GestaoEquipe, GestaoSetores, GestaoComissoes, ConfigLoja } from '@/components/modulos/sistema';
+import { GestaoEmpresas, GestaoLojas, GestaoEquipe, GestaoSetores, GestaoComissoes, ConfigLoja, GestaoMontadores, GestaoTransportadoras } from '@/components/modulos/sistema';
 import { ResetDados } from '@/components/modulos/sistema/configuracoes/reset-dados';
 import { TesteConectividade } from '@/components/modulos/sistema/configuracoes/teste-conectividade';
 
@@ -109,27 +109,9 @@ export default function ConfiguracoesPage() {
           </Card>
         );
       case 'operacional-montadores':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Gestão de Montadores</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoMontadores />;
       case 'operacional-transportadoras':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Gestão de Transportadoras</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoTransportadoras />;
       case 'sistema-auditoria':
         return (
           <Card>

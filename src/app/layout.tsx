@@ -12,18 +12,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Criar QueryClient usando useState para evitar problemas de hidratação
-  const [queryClient] = useState(() => new QueryClient());
+  // Criar QueryClient com configurações otimizadas
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutos
+        gcTime: 10 * 60 * 1000, // 10 minutos
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }));
 
   return (
     <html lang="pt-BR">
       <head>
         <title>🧮 Simulador Financeiro de Proposta - Fluyt</title>
         <meta name="description" content="Sistema de Validação - Fluyt" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body>
+      <body className="antialiased">
         <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
+          <TooltipProvider delayDuration={500}>
             {children}
             <Toaster />
             <Sonner />

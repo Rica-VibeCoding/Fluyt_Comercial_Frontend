@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSimulador } from '../../../../hooks/modulos/orcamento/use-simulador';
 import { InputSection } from '../../../../components/modulos/orcamento/input-section';
 import { Dashboard } from '../../../../components/modulos/orcamento/dashboard-orcamento';
@@ -76,6 +77,7 @@ function useCurrencyInput(initialValue: number, onChange: (value: number) => voi
 }
 
 export default function SimuladorPage() {
+  const router = useRouter();
   const { 
     simulacao, 
     recalcularSimulacao, 
@@ -229,27 +231,14 @@ export default function SimuladorPage() {
               />
             </div>
 
-            {/* Resumo e ações - DIREITA */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="text-right bg-green-50 rounded-lg px-3 py-2 border border-green-200 h-12 flex flex-col justify-center">
-                <p className="text-xs font-medium text-muted-foreground leading-none">Valor Negociado</p>
-                <p className="text-sm font-bold text-green-600 leading-none">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(simulacao.valorNegociado)}
-                </p>
-              </div>
-              <div className="text-right bg-blue-50 rounded-lg px-3 py-2 border border-blue-200 h-12 flex flex-col justify-center">
-                <p className="text-xs font-medium text-muted-foreground leading-none">Valor Recebido</p>
-                <p className="text-sm font-bold text-blue-600 leading-none">
-                  {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }).format(simulacao.valorRecebidoTotal)}
-                </p>
-              </div>
-            </div>
+            {/* Botão Avançar para Contratos - DIREITA */}
+            <Button 
+              onClick={() => router.push('/painel/contratos')} 
+              size="sm" 
+              className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+            >
+              Avançar para Contratos
+            </Button>
           </div>
         </div>
 

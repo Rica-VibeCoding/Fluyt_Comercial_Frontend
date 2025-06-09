@@ -90,7 +90,7 @@ const ContractSummary = () => {
                 onClick={() => router.push('/painel/contratos/visualizar')} 
                 className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
               >
-                Avançar para Contrato
+                Finalizar
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </div>

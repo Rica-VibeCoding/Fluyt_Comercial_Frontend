@@ -7,7 +7,7 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   
   // Configuração de paths (equivalente ao alias "@" do Vite)
-  webpack: (config) => {
+  webpack: (config, { dev }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': new URL('./src', import.meta.url).pathname,
@@ -19,13 +19,28 @@ const nextConfig = {
       exclude: /src\/migracao/,
     });
     
+    // Otimizações para desenvolvimento
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+        ignored: [
+          '**/node_modules',
+          '**/src/migracao/**',
+          '**/.git/**',
+          '**/.next/**'
+        ]
+      };
+    }
+    
     return config;
   },
   
   // Configurações experimentais
   experimental: {
-    typedRoutes: false, // Removido para evitar conflitos
-  },
+    typedRoutes: false,
+    optimizePackageImports: ['@/components/ui', 'lucide-react'],
+  }
 }
 
 export default nextConfig; 

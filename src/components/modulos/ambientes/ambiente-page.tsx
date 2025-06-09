@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useClienteSelecionado } from '../../../hooks/globais/use-cliente-selecionado';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
@@ -12,6 +13,7 @@ import { AmbienteCard } from './ambiente-card';
 import { ClienteSelectorUniversal } from '../../shared/cliente-selector-universal';
 
 export function AmbientePage() {
+  const router = useRouter();
   const { clienteId } = useClienteSelecionado();
   const {
     ambientes,
@@ -52,12 +54,20 @@ export function AmbientePage() {
               
               <Button 
                 onClick={() => setModalAberto(true)} 
-                size="lg" 
+                size="sm" 
                 disabled={!clienteId}
-                className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white"
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4" />
                 Novo Ambiente
+              </Button>
+
+              <Button 
+                onClick={() => router.push('/painel/orcamento/simulador')} 
+                size="sm" 
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+              >
+                Avançar para Orçamento
               </Button>
             </div>
           </div>
