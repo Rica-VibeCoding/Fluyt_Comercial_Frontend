@@ -41,9 +41,13 @@ const ContractViewer = () => {
         <div className="max-w-5xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => router.push('/painel/contratos')} className="flex items-center gap-2">
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => router.push('/painel/contratos')}
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+              >
                 <ArrowLeft className="h-4 w-4" />
-                Voltar ao Resumo
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">

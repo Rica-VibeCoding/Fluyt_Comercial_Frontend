@@ -1,21 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSimulador } from '../../../../hooks/modulos/orcamento/use-simulador';
+import { useSessaoIntegrada } from '../../../../hooks/modulos/orcamento/use-sessao-integrada';
 import { InputSection } from '../../../../components/modulos/orcamento/input-section';
 import { Dashboard } from '../../../../components/modulos/orcamento/dashboard-orcamento';
 import { FormaPagamentoCard } from '../../../../components/modulos/orcamento/forma-pagamento-card';
 import { CronogramaRecebimento } from '../../../../components/modulos/orcamento/cronograma-recebimento';
+import { AmbienteSection } from '../../../../components/modulos/orcamento/ambiente-section';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/dialog';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { FormaPagamento } from '../../../../types/simulador';
 import { ClienteSelectorUniversal } from '../../../../components/shared/cliente-selector-universal';
+import { Alert, AlertDescription } from '../../../../components/ui/alert';
 
 
 type TipoFormaPagamento = 'ENTRADA' | 'FINANCEIRA' | 'CARTAO' | 'BOLETO';
@@ -90,6 +93,13 @@ export default function SimuladorPage() {
     editarValorBruto,
     editarDescontoReal
   } = useSimulador();
+  
+  const {
+    cliente,
+    ambientes,
+    valorTotalAmbientes,
+    podeGerarOrcamento
+  } = useSessaoIntegrada();
   const [modalOpen, setModalOpen] = useState(false);
   const [editandoForma, setEditandoForma] = useState<FormaPagamento | null>(null);
   const [novaForma, setNovaForma] = useState<NovaFormaState>({
@@ -217,30 +227,88 @@ export default function SimuladorPage() {
 
   const valorFormaInput = useCurrencyInput(novaForma.valor, (valor) => setNovaForma(prev => ({ ...prev, valor })));
 
+  // Sincronizar valor bruto com total dos ambientes quando há dados da sessão
+  useEffect(() => {
+    if (valorTotalAmbientes > 0 && simulacao.valorBruto !== valorTotalAmbientes) {
+      console.log('Sincronizando valor bruto dos ambientes:', valorTotalAmbientes);
+      recalcularSimulacao({ valorBruto: valorTotalAmbientes });
+    }
+  }, [valorTotalAmbientes, recalcularSimulacao, simulacao.valorBruto]);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-md border-0 p-4">
-          <div className="flex items-center justify-between">
-            {/* Cliente selecionado ou seletor - ESQUERDA */}
-            <div className="w-80">
-              <ClienteSelectorUniversal 
-                targetRoute="/painel/orcamento/simulador"
-                placeholder="Selecionar cliente..."
-              />
-            </div>
+        <Card>
+          <CardContent className="p-4 min-h-[80px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              {/* Navegação e Cliente - ESQUERDA */}
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => router.push('/painel/ambientes')}
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="h-6 w-px bg-gray-300" />
+                
+                <div className="w-80">
+                  <ClienteSelectorUniversal 
+                    targetRoute="/painel/orcamento/simulador"
+                    placeholder="Selecionar cliente..."
+                    integraSessao={true}
+                  />
+                </div>
+              </div>
 
-            {/* Botão Avançar para Contratos - DIREITA */}
-            <Button 
-              onClick={() => router.push('/painel/contratos')} 
-              size="sm" 
-              className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
-            >
-              Avançar para Contratos
-            </Button>
-          </div>
-        </div>
+              {/* Botão Avançar para Contratos - DIREITA */}
+              <Button 
+                onClick={() => router.push('/painel/contratos')} 
+                size="sm" 
+                disabled={!podeGerarOrcamento || simulacao.formasPagamento.length === 0}
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white disabled:opacity-50"
+              >
+                Avançar para Contratos
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alertas de Estado da Sessão */}
+        {!cliente && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Nenhum cliente selecionado. Selecione um cliente para continuar.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {cliente && ambientes.length === 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Cliente {cliente.nome} selecionado, mas nenhum ambiente foi adicionado. 
+              <Button 
+                variant="link" 
+                className="p-0 h-auto ml-1 underline"
+                onClick={() => router.push('/painel/ambientes')}
+              >
+                Clique aqui para adicionar ambientes.
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Seção de Ambientes */}
+        <AmbienteSection 
+          ambientes={ambientes}
+          valorTotal={valorTotalAmbientes}
+          clienteNome={cliente?.nome}
+        />
 
         {/* Input Section */}
         <InputSection
@@ -250,6 +318,8 @@ export default function SimuladorPage() {
           onValorBrutoChange={(valor) => recalcularSimulacao({ valorBruto: valor })}
           onDescontoChange={(desconto) => recalcularSimulacao({ desconto })}
           onAtualizarSimulacao={() => editarValorNegociado(simulacao.valorNegociado)}
+          valorVemDosAmbientes={valorTotalAmbientes > 0}
+          valorTotalAmbientes={valorTotalAmbientes}
         />
 
         {/* Dashboard com capacidade de edição */}

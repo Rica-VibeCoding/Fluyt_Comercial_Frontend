@@ -1,20 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { useClienteSelecionado } from '../../../hooks/globais/use-cliente-selecionado';
+import { useClienteSelecionadoRealista } from '../../../hooks/globais/use-cliente-selecionado-realista';
+import { useSessao } from '../../../store/sessao-store';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Download, Plus, Upload, User, Home } from 'lucide-react';
+import { Download, Plus, Upload, User, Home, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAmbientes } from '../../../hooks/modulos/ambientes/use-ambientes';
+import { useClientesRealista } from '../../../hooks/modulos/clientes/use-clientes-realista';
 import { AmbienteModal } from './ambiente-modal';
 import { AmbienteCard } from './ambiente-card';
 import { ClienteSelectorUniversal } from '../../shared/cliente-selector-universal';
 
 export function AmbientePage() {
   const router = useRouter();
-  const { clienteId } = useClienteSelecionado();
+  const { clienteId, cliente: clienteCarregado, isLoading: clienteLoading } = useClienteSelecionadoRealista();
+  
+  // Debug: monitorar mudanças de clienteId
+  useEffect(() => {
+    console.log('🔍 AmbientePage: clienteId mudou para:', clienteId);
+  }, [clienteId]);
+  const { clientes } = useClientesRealista();
+  const {
+    cliente,
+    ambientes: ambientesSessao,
+    definirCliente,
+    definirAmbientes,
+    adicionarAmbiente: adicionarAmbienteSessao,
+    removerAmbiente: removerAmbienteSessao,
+    podeGerarOrcamento,
+    limparSessaoCompleta
+  } = useSessao();
+  
   const {
     ambientes,
     adicionarAmbiente,
@@ -25,53 +44,125 @@ export function AmbientePage() {
   } = useAmbientes(clienteId || undefined);
   const [modalAberto, setModalAberto] = useState(false);
 
+  // Sincronizar ambientes locais com a sessão
+  useEffect(() => {
+    if (clienteId && ambientes.length > 0) {
+      definirAmbientes(ambientes);
+    }
+  }, [ambientes, clienteId, definirAmbientes]);
+
+  // Sincronizar cliente carregado com a sessão
+  useEffect(() => {
+    // NOVA LÓGICA: Só sincronizar se a sessão estiver VAZIA
+    // Se já há um cliente na sessão, NÃO sobrescrever
+    // Isso mantém a continuidade da sessão entre navegações
+    if (clienteCarregado && !clienteLoading && !cliente) {
+      console.log('🔄 AmbientePage: Inicializando sessão vazia com cliente da URL:', {
+        clienteCarregado: clienteCarregado.nome,
+        clienteCarregadoId: clienteCarregado.id,
+        acao: 'INICIALIZANDO_SESSAO'
+      });
+      definirCliente(clienteCarregado);
+    } else if (clienteCarregado && cliente && cliente.id !== clienteCarregado.id) {
+      console.log('🛡️ AmbientePage: Cliente diferente na URL, mas mantendo sessão atual:', {
+        clienteURL: clienteCarregado.nome,
+        clienteSessao: cliente.nome,
+        acao: 'MANTENDO_SESSAO'
+      });
+      // NÃO fazer nada - manter o cliente da sessão
+    }
+    
+    // PROTEÇÃO: Se temos cliente na sessão mas não temos na URL, NÃO limpar
+    // Isso preserva a sessão mesmo se a URL perder o parâmetro
+    if (!clienteCarregado && !clienteLoading && cliente && !clienteId) {
+      console.log('🛡️ Protegendo cliente da sessão (sem clienteId na URL):', cliente.nome);
+      // NÃO fazer nada - manter o cliente na sessão
+    }
+  }, [clienteCarregado, clienteLoading, cliente, clienteId, definirCliente]);
+
+  const handleAdicionarAmbiente = (data: any) => {
+    adicionarAmbiente(data);
+    setModalAberto(false);
+  };
+
+  const handleRemoverAmbiente = (id: string) => {
+    removerAmbiente(id);
+    removerAmbienteSessao(id);
+  };
+
+  const handleAvancarParaOrcamento = () => {
+    if (podeGerarOrcamento) {
+      router.push('/painel/orcamento/simulador');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-md border-0 p-4">
-          <div className="flex items-center justify-between">
-            {/* Cliente selecionado ou seletor - ESQUERDA */}
-            <div className="w-80">
-              <ClienteSelectorUniversal 
-                targetRoute="/painel/ambientes"
-                placeholder="Selecionar cliente..."
-              />
-            </div>
+        <Card>
+          <CardContent className="p-4 min-h-[80px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              {/* Navegação e Cliente - ESQUERDA */}
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => router.push('/painel/clientes')}
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="h-6 w-px bg-gray-300" />
+                
+                <div className="w-80">
+                  <ClienteSelectorUniversal 
+                    targetRoute="/painel/ambientes"
+                    placeholder="Selecionar cliente..."
+                    integraSessao={true}
+                  />
+                </div>
+              </div>
 
-            {/* Botões - DIREITA */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Button 
-                onClick={importarXML} 
-                disabled={isLoading || !clienteId} 
-                variant="outline" 
-                size="lg"
-                className="gap-2 h-12 px-4"
-              >
-                <Upload className="h-4 w-4" />
-                {isLoading ? 'Importando...' : 'Importar XML'}
-              </Button>
-              
-              <Button 
-                onClick={() => setModalAberto(true)} 
-                size="sm" 
-                disabled={!clienteId}
-                className="gap-2 h-12 px-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
-              >
-                <Plus className="h-4 w-4" />
-                Novo Ambiente
-              </Button>
+              {/* Botões - DIREITA */}
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={importarXML} 
+                  disabled={isLoading || !clienteId} 
+                  variant="default" 
+                  size="sm"
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                >
+                  <Upload className="h-4 w-4" />
+                  {isLoading ? 'Importando...' : 'Importar XML'}
+                </Button>
+                
+                <Button 
+                  onClick={() => setModalAberto(true)} 
+                  size="sm" 
+                  disabled={!clienteId}
+                  variant="default"
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                >
+                  <Plus className="h-4 w-4" />
+                  Novo Ambiente
+                </Button>
 
-              <Button 
-                onClick={() => router.push('/painel/orcamento/simulador')} 
-                size="sm" 
-                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
-              >
-                Avançar para Orçamento
-              </Button>
+                <Button 
+                  onClick={handleAvancarParaOrcamento}
+                  size="sm" 
+                  disabled={!podeGerarOrcamento}
+                  variant="default"
+                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+                >
+                  Orçamento
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Resumo compacto */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,7 +235,7 @@ export function AmbientePage() {
                   <AmbienteCard 
                     key={ambiente.id} 
                     ambiente={ambiente} 
-                    onRemover={removerAmbiente} 
+                    onRemover={handleRemoverAmbiente} 
                   />
                 ))}
               </div>
@@ -156,7 +247,7 @@ export function AmbientePage() {
         <AmbienteModal 
           open={modalAberto} 
           onOpenChange={setModalAberto} 
-          onSubmit={adicionarAmbiente} 
+          onSubmit={handleAdicionarAmbiente} 
         />
       </div>
     </div>

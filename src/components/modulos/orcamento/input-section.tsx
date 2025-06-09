@@ -13,6 +13,8 @@ interface InputSectionProps {
   onValorBrutoChange: (valor: number) => void;
   onDescontoChange: (desconto: number) => void;
   onAtualizarSimulacao: () => void;
+  valorVemDosAmbientes?: boolean;
+  valorTotalAmbientes?: number;
 }
 
 function useCurrencyInput(initialValue: number, onChange: (value: number) => void) {
@@ -66,14 +68,34 @@ export const InputSection: React.FC<InputSectionProps> = ({
   valorNegociado,
   onValorBrutoChange,
   onDescontoChange,
-  onAtualizarSimulacao
+  onAtualizarSimulacao,
+  valorVemDosAmbientes = false,
+  valorTotalAmbientes = 0
 }) => {
   const valorBrutoInput = useCurrencyInput(valorBruto, onValorBrutoChange);
   return <section className="bg-white p-6 rounded-lg shadow-sm border mb-6">
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="valorBruto">Valor dos Ambientes (R$)</Label>
-          <Input id="valorBruto" type="text" {...valorBrutoInput} />
+          <Label htmlFor="valorBruto">
+            Valor dos Ambientes (R$)
+            {valorVemDosAmbientes && (
+              <span className="text-sm text-green-600 font-normal ml-2">
+                • Calculado automaticamente
+              </span>
+            )}
+          </Label>
+          <Input 
+            id="valorBruto" 
+            type="text" 
+            {...valorBrutoInput}
+            disabled={valorVemDosAmbientes}
+            className={valorVemDosAmbientes ? 'bg-green-50 border-green-200' : ''}
+          />
+          {valorVemDosAmbientes && (
+            <p className="text-xs text-green-600">
+              Valor sincronizado com os ambientes selecionados
+            </p>
+          )}
         </div>
         
         <div className="space-y-2">

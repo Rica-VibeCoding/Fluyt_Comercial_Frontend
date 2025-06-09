@@ -14,8 +14,8 @@ export function ClienteHeader({
   const novosClientes = Math.floor(totalClientes * 0.12);
 
   return (
-    <div className="bg-white rounded-lg shadow-md border-0 p-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-white rounded-lg shadow-md border-0 p-4 min-h-[80px] flex items-center">
+      <div className="flex items-center justify-between w-full">
         {/* Área esquerda - Stats compactas */}
         <div className="flex items-center gap-6 bg-slate-50 rounded-lg px-4 py-2 border border-slate-200 w-80 h-16">
           {/* Total de Clientes */}

@@ -19,31 +19,81 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useClientes } from "@/hooks/modulos/clientes/use-clientes"
-import { useClienteSelecionado } from "@/hooks/globais/use-cliente-selecionado"
+import { useClientesRealista } from "@/hooks/modulos/clientes/use-clientes-realista"
+import { useClienteSelecionadoRealista } from "@/hooks/globais/use-cliente-selecionado-realista"
+import { useSessaoIntegradaSingleton } from "@/hooks/modulos/orcamento/use-sessao-integrada-singleton"
 
 interface ClienteSelectorUniversalProps {
   targetRoute: string; // Rota de destino (ex: '/painel/ambientes', '/painel/contratos')
   placeholder?: string;
+  integraSessao?: boolean; // Se deve integrar com a sessão unificada
 }
 
 export function ClienteSelectorUniversal({ 
   targetRoute, 
-  placeholder = "Selecionar cliente..." 
+  placeholder = "Selecionar cliente...",
+  integraSessao = false
 }: ClienteSelectorUniversalProps) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
-  const { clientes } = useClientes()
-  const { clienteSelecionado } = useClienteSelecionado()
+  const { clientes, isLoading: clientesLoading } = useClientesRealista()
+  const { clienteSelecionado, isLoading: clienteLoading } = useClienteSelecionadoRealista()
+  const { cliente: clienteSessao, definirCliente } = useSessaoIntegradaSingleton()
 
   const handleSelectCliente = (clienteId: string, clienteNome: string) => {
     setOpen(false)
+    
+    // Se deve integrar com a sessão, salvar o cliente na sessão
+    if (integraSessao) {
+      const clienteCompleto = clientes.find(c => c.id === clienteId)
+      if (clienteCompleto) {
+        definirCliente(clienteCompleto)
+      }
+    }
+    
     // Navega para a rota de destino com o cliente selecionado
     router.push(`${targetRoute}?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`)
   }
 
+  // Decidir qual cliente mostrar: 
+  // Se integra sessão: priorizar sessão, fallback para selecionado
+  // Senão: usar selecionado tradicionalmente
+  const clienteExibir = integraSessao 
+    ? (clienteSessao || clienteSelecionado) 
+    : clienteSelecionado
+  const isCarregando = clienteLoading || clientesLoading
+
+  // Debug: qual cliente está sendo exibido
+  console.log('👁️ ClienteSelectorUniversal renderizando:', {
+    integraSessao,
+    clienteSessao: clienteSessao?.nome || 'null',
+    clienteSelecionado: clienteSelecionado?.nome || 'null',
+    clienteExibir: clienteExibir?.nome || 'null',
+    isCarregando,
+    clienteExibirId: clienteExibir?.id || 'null'
+  });
+
+  // Mostrar loading se ainda carregando ou não hidratou
+  if (isCarregando) {
+    return (
+      <div className="bg-muted/50 border border-border rounded-lg p-3 w-full h-16 flex items-center">
+        <div className="flex items-center gap-3 w-full">
+          <div className="p-1.5 bg-muted rounded-lg">
+            <User className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-medium text-muted-foreground">
+              Carregando cliente...
+            </p>
+            <div className="w-32 h-4 bg-muted rounded mt-1"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Se já tem cliente selecionado, mostra ele
-  if (clienteSelecionado) {
+  if (clienteExibir) {
     return (
       <div className="bg-muted/50 border border-border rounded-lg p-3 w-full h-16 flex items-center">
         <div className="flex items-center gap-3 w-full">
@@ -55,9 +105,22 @@ export function ClienteSelectorUniversal({
               Cliente Selecionado
             </p>
             <p className="text-lg font-bold text-foreground">
-              {clienteSelecionado.nome}
+              {clienteExibir.nome}
             </p>
           </div>
+          {integraSessao && (
+            <button
+              onClick={() => {
+                // Limpar cliente da sessão
+                definirCliente(null);
+                // Navegar para a página sem parâmetros de cliente
+                router.push(targetRoute);
+              }}
+              className="text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Trocar
+            </button>
+          )}
         </div>
       </div>
     )

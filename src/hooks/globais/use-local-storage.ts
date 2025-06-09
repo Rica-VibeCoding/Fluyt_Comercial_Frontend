@@ -22,18 +22,25 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   // Função para salvar no localStorage
   const setValue = useCallback((value: T | ((val: T) => T)) => {
     try {
-      // Permitir que value seja uma função para atualização funcional
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      
-      setStoredValue(valueToStore);
-      
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-      }
+      setStoredValue(currentValue => {
+        // Permitir que value seja uma função para atualização funcional
+        const valueToStore = value instanceof Function ? value(currentValue) : value;
+        
+        console.log(`💾 localStorage.setValue "${key}":`, {
+          previous: currentValue,
+          new: valueToStore
+        });
+        
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        }
+        
+        return valueToStore;
+      });
     } catch (error) {
       console.warn(`Erro ao salvar no localStorage key "${key}":`, error);
     }
-  }, [key, storedValue]);
+  }, [key]);
 
   // Função para limpar dados
   const clearValue = useCallback(() => {
@@ -47,12 +54,18 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   }, [key, initialValue]);
 
-  // Sincronizar com mudanças em outras abas
+  // Sincronizar com mudanças em outras abas (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key && e.newValue !== null) {
         try {
-          setStoredValue(JSON.parse(e.newValue));
+          const newValue = JSON.parse(e.newValue);
+          console.warn(`🚨 localStorage sync IGNORADO "${key}":`, {
+            oldValue: storedValue,
+            newValue: newValue,
+            motivo: 'sync_desabilitado_para_debug'
+          });
+          // TEMPORARIAMENTE DESABILITADO: setStoredValue(newValue);
         } catch (error) {
           console.warn(`Erro ao sincronizar localStorage key "${key}":`, error);
         }
@@ -63,7 +76,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       window.addEventListener('storage', handleStorageChange);
       return () => window.removeEventListener('storage', handleStorageChange);
     }
-  }, [key]);
+  }, [key, storedValue]);
 
   return [storedValue, setValue, clearValue] as const;
 }

@@ -8,7 +8,7 @@ import { Badge } from "../../ui/badge";
 import { Separator } from "../../ui/separator";
 import { EditableField } from "./editable-field";
 import { contratoMock, ContratoData } from "../../../types/contrato";
-import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText } from "lucide-react";
+import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText, ArrowLeft } from "lucide-react";
 import { ClienteSelectorUniversal } from "../../shared/cliente-selector-universal";
 
 const ContractSummary = () => {
@@ -70,18 +70,32 @@ const ContractSummary = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-md border-0 p-4">
-          <div className="flex items-center justify-between">
-            {/* Cliente selecionado ou seletor - ESQUERDA */}
-            <div className="w-80">
-              <ClienteSelectorUniversal 
-                targetRoute="/painel/contratos"
-                placeholder="Selecionar cliente..."
-              />
+        <div className="bg-white rounded-lg shadow-md border-0 p-4 min-h-[80px] flex items-center">
+          <div className="flex items-center justify-between w-full">
+            {/* Navegação e Cliente - ESQUERDA */}
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => router.push('/painel/orcamento/simulador')}
+                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              
+              <div className="h-6 w-px bg-gray-300" />
+              
+              {/* Cliente selecionado ou seletor */}
+              <div className="w-80">
+                <ClienteSelectorUniversal 
+                  targetRoute="/painel/contratos"
+                  placeholder="Selecionar cliente..."
+                />
+              </div>
             </div>
 
             {/* Status e botões - DIREITA */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-3">
               <Badge className={`${getStatusColor(contratoData.status)} px-3 py-2 text-sm font-medium border h-12 flex items-center`}>
                 {getStatusText(contratoData.status)}
               </Badge>
