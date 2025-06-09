@@ -3,6 +3,7 @@ import { devtools } from 'zustand/middleware';
 import { Cliente } from '@/types/cliente';
 import { Ambiente } from '@/types/ambiente';
 import { persistenciaInteligente, SessaoCliente } from '../lib/persistencia-inteligente';
+import { sessionLogger } from '../lib/logger';
 
 interface SessaoState {
   // Estado da sessão
@@ -15,6 +16,7 @@ interface SessaoState {
   orcamentoConfigurado: boolean;
   valorNegociado: number;
   formasPagamento: number; // Quantidade de formas de pagamento
+  descontoReal: number; // Desconto real calculado pelo simulador (%)
   
   // Ações para gerenciar cliente
   definirCliente: (cliente: Cliente | null) => void;
@@ -26,7 +28,7 @@ interface SessaoState {
   removerAmbiente: (ambienteId: string) => void;
   
   // Ações para gerenciar orçamento
-  definirOrcamento: (valorNegociado: number, formasPagamento: number) => void;
+  definirOrcamento: (valorNegociado: number, formasPagamento: number, descontoReal?: number) => void;
   limparOrcamento: () => void;
   
   // Ações para gerenciar sessão
@@ -61,10 +63,11 @@ export const useSessaoStore = create<SessaoState>()(
       orcamentoConfigurado: false,
       valorNegociado: 0,
       formasPagamento: 0,
+      descontoReal: 0,
 
       // === AÇÕES PARA CLIENTE ===
       definirCliente: (cliente) => {
-        console.log('🔄 SessaoStore.definirCliente:', {
+        sessionLogger.debug('SessaoStore.definirCliente', {
           anterior: get().cliente?.nome || 'null',
           novo: cliente?.nome || 'null'
         });
@@ -79,7 +82,7 @@ export const useSessaoStore = create<SessaoState>()(
             : null;
           
           if (sessaoExistente) {
-            console.log('🔄 Carregando sessão existente do cliente:', cliente.nome);
+            sessionLogger.info('Carregando sessão existente do cliente', { clienteNome: cliente.nome });
             set({
               cliente: sessaoExistente.cliente,
               ambientes: sessaoExistente.ambientes,
@@ -87,6 +90,7 @@ export const useSessaoStore = create<SessaoState>()(
               orcamentoConfigurado: sessaoExistente.orcamento.configurado,
               valorNegociado: sessaoExistente.orcamento.valorNegociado,
               formasPagamento: sessaoExistente.orcamento.formasPagamento,
+              descontoReal: sessaoExistente.orcamento.descontoReal || 0,
               ultimaAtualizacao: new Date().toISOString()
             }, false, 'definirCliente');
             return;
@@ -102,6 +106,7 @@ export const useSessaoStore = create<SessaoState>()(
             orcamentoConfigurado: clienteMudou ? false : state.orcamentoConfigurado,
             valorNegociado: clienteMudou ? 0 : state.valorNegociado,
             formasPagamento: clienteMudou ? 0 : state.formasPagamento,
+            descontoReal: clienteMudou ? 0 : state.descontoReal,
             ultimaAtualizacao: new Date().toISOString()
           };
         }, false, 'definirCliente');
@@ -121,6 +126,7 @@ export const useSessaoStore = create<SessaoState>()(
           orcamentoConfigurado: false,
           valorNegociado: 0,
           formasPagamento: 0,
+          descontoReal: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'limparCliente');
       },
@@ -187,13 +193,14 @@ export const useSessaoStore = create<SessaoState>()(
       },
 
       // === AÇÕES PARA ORÇAMENTO ===
-      definirOrcamento: (valorNegociado, formasPagamento) => {
-        console.log('💰 SessaoStore.definirOrcamento:', { valorNegociado, formasPagamento });
+      definirOrcamento: (valorNegociado, formasPagamento, descontoReal = 0) => {
+        console.log('💰 SessaoStore.definirOrcamento:', { valorNegociado, formasPagamento, descontoReal });
         
         set({
           orcamentoConfigurado: formasPagamento > 0,
           valorNegociado,
           formasPagamento,
+          descontoReal,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'definirOrcamento');
 
@@ -209,6 +216,7 @@ export const useSessaoStore = create<SessaoState>()(
           orcamentoConfigurado: false,
           valorNegociado: 0,
           formasPagamento: 0,
+          descontoReal: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'limparOrcamento');
       },
@@ -230,6 +238,7 @@ export const useSessaoStore = create<SessaoState>()(
           orcamentoConfigurado: false,
           valorNegociado: 0,
           formasPagamento: 0,
+          descontoReal: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'limparSessaoCompleta');
       },
@@ -255,6 +264,7 @@ export const useSessaoStore = create<SessaoState>()(
             orcamentoConfigurado: sessaoSalva.orcamento.configurado,
             valorNegociado: sessaoSalva.orcamento.valorNegociado,
             formasPagamento: sessaoSalva.orcamento.formasPagamento,
+            descontoReal: sessaoSalva.orcamento.descontoReal || 0,
             ultimaAtualizacao: new Date().toISOString()
           }, false, 'carregarSessaoCliente');
         } else {
@@ -276,7 +286,8 @@ export const useSessaoStore = create<SessaoState>()(
           orcamento: {
             valorNegociado: state.valorNegociado,
             formasPagamento: state.formasPagamento,
-            configurado: state.orcamentoConfigurado
+            configurado: state.orcamentoConfigurado,
+            descontoReal: state.descontoReal
           },
           metadata: {
             iniciadoEm: Date.now(),
@@ -305,6 +316,7 @@ export const useSessaoStore = create<SessaoState>()(
           orcamentoConfigurado: false,
           valorNegociado: 0,
           formasPagamento: 0,
+          descontoReal: 0,
           ultimaAtualizacao: new Date().toISOString()
         }, false, 'iniciarNovoFluxoCliente');
 
@@ -347,6 +359,23 @@ export const useSessaoStore = create<SessaoState>()(
 // Hook personalizado para facilitar o uso
 export const useSessao = () => {
   const store = useSessaoStore();
+  
+  // Proteger contra erros de hidratação
+  if (typeof window === 'undefined') {
+    // Durante SSR, retornar estado padrão baseado na store
+    return {
+      ...store,
+      cliente: null,
+      ambientes: [],
+      valorTotalAmbientes: 0,
+      orcamentoConfigurado: false,
+      valorNegociado: 0,
+      formasPagamento: 0,
+      descontoReal: 0,
+      podeGerarOrcamento: () => false,
+      podeGerarContrato: () => false,
+    };
+  }
   
   // Debug opcional: monitorar estado (pode ser removido em produção)
   // console.log('🔄 useSessao estado:', {

@@ -1,86 +1,32 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSimulador } from '../../../../hooks/modulos/orcamento/use-simulador';
-import { useSessao } from '../../../../store/sessao-store';
-import { InputSection } from '../../../../components/modulos/orcamento/input-section';
-import { Dashboard } from '../../../../components/modulos/orcamento/dashboard-orcamento';
-import { FormaPagamentoCard } from '../../../../components/modulos/orcamento/forma-pagamento-card';
-import { CronogramaRecebimento } from '../../../../components/modulos/orcamento/cronograma-recebimento';
-import { AmbienteSection } from '../../../../components/modulos/orcamento/ambiente-section';
-import { Button } from '../../../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components/ui/dialog';
-import { Plus, Trash2, AlertCircle, ArrowLeft } from 'lucide-react';
-import { FormaPagamento } from '../../../../types/simulador';
-import { ClienteSelectorUniversal } from '../../../../components/shared/cliente-selector-universal';
-import { Alert, AlertDescription } from '../../../../components/ui/alert';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSimulador } from '@/hooks/modulos/orcamento/use-simulador';
+import { useSessao } from '@/store/sessao-store';
+import { 
+  InputSection, 
+  Dashboard, 
+  SimuladorHeader, 
+  FormaPagamentoModal, 
+  FormasPagamentoSection, 
+  CronogramaRecebimento, 
+  AmbienteSection,
+  type NovaFormaState,
+  type TipoFormaPagamento
+} from '@/components/modulos/orcamento';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { AlertCircle } from 'lucide-react';
+import { FormaPagamento } from '@/types/simulador';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 
-type TipoFormaPagamento = 'ENTRADA' | 'FINANCEIRA' | 'CARTAO' | 'BOLETO';
-
-interface NovaFormaState {
-  tipo: TipoFormaPagamento;
-  valor: number;
-  parcelas: number;
-  taxaJuros: number;
-  deflacao: number;
-  jurosAntecipacao: number;
-  custoCapital: number;
-  dataVencimento: string;
-}
-
-function useCurrencyInput(initialValue: number, onChange: (value: number) => void) {
-  const [display, setDisplay] = useState(
-    initialValue > 0
-      ? initialValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : ''
-  );
-  const [raw, setRaw] = useState(
-    initialValue > 0 ? String(Math.round(initialValue * 100)) : ''
-  );
-
-  React.useEffect(() => {
-    if (initialValue > 0) {
-      const centavos = Math.round(initialValue * 100);
-      setRaw(String(centavos));
-      setDisplay((centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-    } else {
-      setRaw('');
-      setDisplay('');
-    }
-  }, [initialValue]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const onlyNums = e.target.value.replace(/\D/g, '');
-    setRaw(onlyNums);
-    const valor = onlyNums ? parseInt(onlyNums, 10) : 0;
-    const valorFloat = valor / 100;
-    setDisplay(
-      valorFloat.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    );
-    onChange(valorFloat);
-  };
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (!raw) setDisplay('');
-  };
-
-  return {
-    value: display,
-    onChange: handleChange,
-    onFocus: handleFocus,
-    inputMode: 'numeric' as const,
-    maxLength: 17,
-  };
-}
 
 export default function SimuladorPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { 
     simulacao, 
     recalcularSimulacao, 
@@ -190,43 +136,10 @@ export default function SimuladorPage() {
     setModalOpen(true);
   };
 
-  const renderParcelasInput = () => {
-    if (novaForma.tipo === 'ENTRADA') return null;
-
-    const getMinMax = () => {
-      switch (novaForma.tipo) {
-        case 'FINANCEIRA':
-          return { min: 1, max: 24 };
-        case 'BOLETO':
-          return { min: 1, max: 24 };
-        case 'CARTAO':
-          return { min: 1, max: 24 };
-        default:
-          return { min: 1, max: 24 };
-      }
-    };
-
-    const { min, max } = getMinMax();
-
-    return (
-      <div className="space-y-2">
-        <Label>Parcelas</Label>
-        <Input
-          type="number"
-          min={min}
-          max={max}
-          value={novaForma.parcelas || ''}
-          onChange={(e) => setNovaForma(prev => ({ 
-            ...prev, 
-            parcelas: Math.min(max, Math.max(min, Number(e.target.value) || 1))
-          }))}
-          placeholder={`De ${min} a ${max}`}
-        />
-      </div>
-    );
+  const handleCancelModal = () => {
+    setModalOpen(false);
+    resetForm();
   };
-
-  const valorFormaInput = useCurrencyInput(novaForma.valor, (valor) => setNovaForma(prev => ({ ...prev, valor })));
 
   // Sincronizar valor bruto com total dos ambientes quando há dados da sessão
   useEffect(() => {
@@ -238,57 +151,48 @@ export default function SimuladorPage() {
 
   // Sincronizar estado do orçamento com a store
   useEffect(() => {
-    definirOrcamento(simulacao.valorNegociado, simulacao.formasPagamento.length);
-  }, [simulacao.valorNegociado, simulacao.formasPagamento.length, definirOrcamento]);
+    definirOrcamento(simulacao.valorNegociado, simulacao.formasPagamento.length, simulacao.descontoReal);
+  }, [simulacao.valorNegociado, simulacao.formasPagamento.length, simulacao.descontoReal, definirOrcamento]);
+
+  // Função para navegar preservando parâmetros do cliente
+  const navegarParaContratos = () => {
+    const clienteId = searchParams.get('clienteId');
+    const clienteNome = searchParams.get('clienteNome');
+    
+    let url = '/painel/contratos';
+    const params = new URLSearchParams();
+    
+    if (clienteId) {
+      params.set('clienteId', clienteId);
+    }
+    if (clienteNome) {
+      params.set('clienteNome', clienteNome);
+    }
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    console.log('🚀 Navegando para contratos com parâmetros:', url);
+    router.push(url);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
-        <Card>
-          <CardContent className="p-4 min-h-[80px] flex items-center">
-            <div className="flex items-center justify-between w-full">
-              {/* Navegação e Cliente - ESQUERDA */}
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="default" 
-                  size="sm"
-                  onClick={() => router.push('/painel/ambientes')}
-                  className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                
-                <div className="h-6 w-px bg-gray-300" />
-                
-                <div className="w-80">
-                  <ClienteSelectorUniversal 
-                    targetRoute="/painel/orcamento/simulador"
-                    placeholder="Selecionar cliente..."
-                    integraSessao={true}
-                  />
-                </div>
-              </div>
-
-              {/* Botão Avançar para Contratos - DIREITA */}
-              <Button 
-                onClick={() => router.push('/painel/contratos')} 
-                size="sm" 
-                disabled={!podeGerarOrcamento || simulacao.formasPagamento.length === 0}
-                className="gap-2 h-12 px-4 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                title={
-                  !podeGerarOrcamento 
-                    ? "Adicione ambientes para continuar" 
-                    : simulacao.formasPagamento.length === 0 
-                      ? "Adicione pelo menos uma forma de pagamento" 
-                      : "Avançar para contratos"
-                }
-              >
-                Avançar para Contratos
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <SimuladorHeader
+          onAvancarParaContratos={navegarParaContratos}
+          podeAvancar={podeGerarOrcamento()}
+          formasPagamento={simulacao.formasPagamento.length}
+          motivoDesabilitado={
+            !podeGerarOrcamento() 
+              ? "Adicione ambientes para continuar" 
+              : simulacao.formasPagamento.length === 0 
+                ? "Adicione pelo menos uma forma de pagamento" 
+                : undefined
+          }
+        />
 
         {/* Alertas de Estado da Sessão */}
         {!cliente && (
@@ -357,173 +261,26 @@ export default function SimuladorPage() {
         />
 
         {/* Formas de Pagamento */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-xl">💳 Formas de Pagamento</CardTitle>
-              <div className="flex gap-2">
-                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={handleOpenModal} className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Adicionar Forma
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>
-                        {editandoForma ? 'Editar' : 'Adicionar'} Forma de Pagamento
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label>Tipo</Label>
-                        <Select 
-                          value={novaForma.tipo} 
-                          onValueChange={(value: TipoFormaPagamento) => 
-                            setNovaForma(prev => ({ ...prev, tipo: value }))
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ENTRADA">Entrada (À vista)</SelectItem>
-                            <SelectItem value="FINANCEIRA">Financeira</SelectItem>
-                            <SelectItem value="CARTAO">Cartão</SelectItem>
-                            <SelectItem value="BOLETO">Boleto Loja</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Valor (R$)</Label>
-                        <Input
-                          type="text"
-                          {...valorFormaInput}
-                        />
-                      </div>
-
-                      {renderParcelasInput()}
-
-                      {novaForma.tipo === 'FINANCEIRA' && (
-                        <>
-                          <div className="space-y-2">
-                            <Label>Taxa de Juros (% a.m.)</Label>
-                            <Input
-                              type="number"
-                              step="0.1"
-                              value={novaForma.taxaJuros || ''}
-                              onChange={(e) => setNovaForma(prev => ({ 
-                                ...prev, 
-                                taxaJuros: Number(e.target.value) || 0
-                              }))}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Data de Vencimento</Label>
-                            <Input
-                              type="date"
-                              value={novaForma.dataVencimento}
-                              onChange={(e) => setNovaForma(prev => ({ 
-                                ...prev, 
-                                dataVencimento: e.target.value
-                              }))}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {novaForma.tipo === 'CARTAO' && (
-                        <>
-                          <div className="space-y-2">
-                            <Label>Deflação (%)</Label>
-                            <Input
-                              type="number"
-                              step="0.1"
-                              value={novaForma.deflacao || ''}
-                              onChange={(e) => setNovaForma(prev => ({ 
-                                ...prev, 
-                                deflacao: Number(e.target.value) || 0
-                              }))}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Juros de Antecipação (% por parcela)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={novaForma.jurosAntecipacao || ''}
-                              onChange={(e) => setNovaForma(prev => ({ 
-                                ...prev, 
-                                jurosAntecipacao: Number(e.target.value) || 0
-                              }))}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {novaForma.tipo === 'BOLETO' && (
-                        <div className="space-y-2">
-                          <Label>Custo de Capital (% a.m.)</Label>
-                          <Input
-                            type="number"
-                            step="0.1"
-                            value={novaForma.custoCapital || ''}
-                            onChange={(e) => setNovaForma(prev => ({ 
-                              ...prev, 
-                              custoCapital: Number(e.target.value) || 0
-                            }))}
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setModalOpen(false)}>
-                          Cancelar
-                        </Button>
-                        <Button onClick={handleSubmitForma}>
-                          {editandoForma ? 'Salvar' : 'Adicionar'}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                
-                {simulacao.formasPagamento.length > 0 && (
-                  <Button 
-                    variant="outline" 
-                    onClick={limparFormas}
-                    className="flex items-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Limpar Tudo
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {simulacao.formasPagamento.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>Nenhuma forma de pagamento adicionada</p>
-                <p className="text-sm">Clique em "Adicionar Forma" para começar</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {simulacao.formasPagamento.map((forma) => (
-                  <FormaPagamentoCard
-                    key={forma.id}
-                    forma={forma}
-                    onRemover={removerForma}
-                    onEditar={handleEditarForma}
-                    onAlternarTravamento={alternarTravamentoForma}
-                  />
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <FormasPagamentoSection
+            formasPagamento={simulacao.formasPagamento}
+            onEditarForma={handleEditarForma}
+            onRemoverForma={removerForma}
+            onLimparFormas={limparFormas}
+            onAlternarTravamento={alternarTravamentoForma}
+            onOpenModal={handleOpenModal}
+          />
+          
+          <FormaPagamentoModal
+            open={modalOpen}
+            onOpenChange={setModalOpen}
+            editandoForma={editandoForma}
+            novaForma={novaForma}
+            setNovaForma={setNovaForma}
+            onSubmit={handleSubmitForma}
+            onCancel={handleCancelModal}
+          />
+        </Dialog>
 
         {/* Cronograma de Recebimento */}
         <CronogramaRecebimento formasPagamento={simulacao.formasPagamento} />

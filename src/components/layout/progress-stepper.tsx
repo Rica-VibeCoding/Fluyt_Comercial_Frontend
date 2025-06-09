@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Check } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useStepper } from '@/hooks/globais/use-stepper';
+
+// Importar ícone dinamicamente para evitar problemas de SSR
+const Check = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Check })), { ssr: false });
 
 export function ProgressStepper() {
   const { 

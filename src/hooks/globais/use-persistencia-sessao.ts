@@ -47,6 +47,7 @@ export function usePersistenciaSessao(options: UsePersistenciaSessaoOptions = {}
 
   // Auto-save periódico
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Proteção SSR
     if (!autoSave || !cliente?.id) return;
 
     if (timerPersistencia.current) {
@@ -74,6 +75,7 @@ export function usePersistenciaSessao(options: UsePersistenciaSessaoOptions = {}
 
   // Salvar imediatamente em mudanças críticas
   useEffect(() => {
+    if (typeof window === 'undefined') return; // Proteção SSR
     if (!autoSave || !cliente?.id) return;
 
     const agora = Date.now();

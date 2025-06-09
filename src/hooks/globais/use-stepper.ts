@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Users, Building2, Calculator, FileText } from 'lucide-react';
 
 // Definindo os tipos para melhor tipagem
@@ -15,6 +15,7 @@ interface StepConfig {
 export const useStepper = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Configuração das etapas centralizada e independente
   const steps: StepConfig[] = [
@@ -69,12 +70,31 @@ export const useStepper = () => {
     return 1;
   };
 
-  // Função de navegação robusta e independente
+  // Função de navegação robusta e independente que preserva parâmetros
   const navigateToStep = (stepId: number) => {
     try {
       const step = steps.find(s => s.id === stepId);
       if (step) {
-        router.push(step.path);
+        // Preservar parâmetros de cliente na navegação
+        const clienteId = searchParams.get('clienteId');
+        const clienteNome = searchParams.get('clienteNome');
+        
+        let url = step.path;
+        const params = new URLSearchParams();
+        
+        if (clienteId) {
+          params.set('clienteId', clienteId);
+        }
+        if (clienteNome) {
+          params.set('clienteNome', clienteNome);
+        }
+        
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
+        
+        console.log(`🧭 Navegando para step ${stepId} com parâmetros:`, url);
+        router.push(url);
       } else {
         console.warn(`Step com ID ${stepId} não encontrado`);
       }

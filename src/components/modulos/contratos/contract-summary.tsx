@@ -12,15 +12,50 @@ import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, Map
 import { ClienteSelectorUniversal } from "../../shared/cliente-selector-universal";
 import { useSessao } from "../../../store/sessao-store";
 import { Alert, AlertDescription } from "../../ui/alert";
+import { useSearchParams } from "next/navigation";
 
 const ContractSummary = () => {
   const router = useRouter();
-  const { cliente, ambientes, valorTotalAmbientes, podeGerarOrcamento, podeGerarContrato } = useSessao();
+  const searchParams = useSearchParams();
+  const { cliente, ambientes, valorTotalAmbientes, podeGerarOrcamento, podeGerarContrato, descontoReal, carregarSessaoCliente } = useSessao();
   const [contratoData, setContratoData] = useState<ContratoData>(contratoMock);
+  const [tentouRecuperar, setTentouRecuperar] = useState(false);
+
+  // Tentar recuperar sessão automaticamente se cliente foi perdido
+  useEffect(() => {
+    const clienteId = searchParams.get('clienteId');
+    
+    if (!cliente && clienteId && !tentouRecuperar) {
+      console.log('🔄 ContractSummary - Tentando recuperar sessão perdida para cliente:', clienteId);
+      setTentouRecuperar(true);
+      carregarSessaoCliente(clienteId);
+    }
+  }, [cliente, searchParams, carregarSessaoCliente, tentouRecuperar]);
 
   // Sincronizar dados da sessão com o contrato
   useEffect(() => {
+    console.log('🔍 ContractSummary - Sincronizando dados da sessão:', {
+      temCliente: !!cliente,
+      clienteNome: cliente?.nome || 'null',
+      quantidadeAmbientes: ambientes.length,
+      valorTotalAmbientes,
+      descontoReal,
+      podeGerarContrato
+    });
+
     if (cliente && ambientes.length > 0) {
+      // Usar desconto real da sessão ou valor padrão do mock
+      const descontoParaUsar = descontoReal > 0 ? descontoReal / 100 : contratoMock.desconto;
+      
+      console.log('💰 ContractSummary - Calculando desconto:', {
+        descontoRealSessao: descontoReal,
+        condicao: 'descontoReal > 0',
+        resultado: descontoReal > 0,
+        descontoUsado: descontoParaUsar,
+        origem: descontoReal > 0 ? 'SESSÃO' : 'MOCK (10%)',
+        percentualFinal: (descontoParaUsar * 100).toFixed(1) + '%'
+      });
+      
       setContratoData(prev => ({
         ...prev,
         cliente: {
@@ -31,7 +66,8 @@ const ContractSummary = () => {
           email: cliente.email
         },
         valor_total: valorTotalAmbientes,
-        valor_final: valorTotalAmbientes * (1 - prev.desconto),
+        desconto: descontoParaUsar,
+        valor_final: valorTotalAmbientes * (1 - descontoParaUsar),
         ambientes: ambientes.map(ambiente => ({
           nome: ambiente.nome,
           categoria: 'Ambiente',
@@ -39,8 +75,17 @@ const ContractSummary = () => {
           valor: ambiente.valorTotal
         }))
       }));
+    } else {
+      // Log quando não há dados suficientes
+      console.log('⚠️ ContractSummary - Dados insuficientes para gerar contrato:', {
+        temCliente: !!cliente,
+        quantidadeAmbientes: ambientes.length,
+        valorTotal: valorTotalAmbientes,
+        clienteIdURL: searchParams.get('clienteId'),
+        tentouRecuperar
+      });
     }
-  }, [cliente, ambientes, valorTotalAmbientes]);
+  }, [cliente, ambientes, valorTotalAmbientes, descontoReal, searchParams, tentouRecuperar]);
 
   const updateField = (path: string, value: string | number) => {
     setContratoData(prev => {

@@ -1,11 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { Sidebar } from '../../components/layout/sidebar';
+import dynamic from 'next/dynamic';
+
+// Importar Sidebar dinamicamente sem SSR para evitar erros de hidratação
+const Sidebar = dynamic(() => import('../../components/layout/sidebar').then(mod => ({ default: mod.Sidebar })), { 
+  ssr: false,
+  loading: () => (
+    <div className="hidden border-r bg-gray-50/40 md:block fixed left-0 top-0 h-screen w-64 overflow-y-auto overflow-x-hidden z-30">
+      <div className="space-y-4 py-4">
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-blue-600">
+            🏢 Sistema Fluyt
+          </h2>
+          <p className="px-4 text-sm text-muted-foreground">
+            Carregando...
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+});
 import { ProgressStepper } from '../../components/layout/progress-stepper';
 import { DebugPersistenciaCompacto } from '../../components/shared/debug-persistencia';
-import { usePersistenciaBasica } from '../../hooks/globais/use-persistencia-sessao';
+
+// Componente para carregar hooks apenas no cliente
+function ClientOnlyPersistence() {
+  useEffect(() => {
+    // Simples verificação de que estamos no cliente
+    console.log('🔧 Persistência ativada no cliente');
+  }, []);
+  
+  return null;
+}
 
 export default function PainelLayout({
   children,
@@ -13,9 +41,6 @@ export default function PainelLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  
-  // Ativar persistência automática em todo o painel
-  usePersistenciaBasica();
   
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
@@ -26,6 +51,7 @@ export default function PainelLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
+      <ClientOnlyPersistence />
       <Sidebar />
       
       {/* ProgressStepper fixo e completamente fora do scroll */}

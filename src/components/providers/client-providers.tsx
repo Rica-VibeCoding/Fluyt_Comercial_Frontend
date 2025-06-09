@@ -20,6 +20,7 @@ import { Toaster } from '../ui/toaster';
 import { Toaster as SonnerToaster } from '../ui/sonner';
 import { DebugPersistenciaCompacto } from '../shared/debug-persistencia';
 import { usePersistenciaBasica } from '../../hooks/globais/use-persistencia-sessao';
+import { ErrorBoundary } from '../error-boundary';
 
 // Criar QueryClient uma única vez para evitar recriação em re-renders
 const queryClient = new QueryClient({
@@ -53,21 +54,23 @@ function PersistenceManager({ children }: { children: React.ReactNode }) {
  */
 export function ClientProviders({ children }: ClientProvidersProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <PersistenceManager>
-          {children}
-          
-          {/* Sistema de notificações */}
-          <Toaster />
-          <SonnerToaster />
-          
-          {/* Debug de persistência - REATIVADO com correções de loop */}
-          {process.env.NODE_ENV === 'development' && (
-            <DebugPersistenciaCompacto />
-          )}
-        </PersistenceManager>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <PersistenceManager>
+            {children}
+            
+            {/* Sistema de notificações */}
+            <Toaster />
+            <SonnerToaster />
+            
+            {/* Debug de persistência - REATIVADO com correções de loop */}
+            {process.env.NODE_ENV === 'development' && (
+              <DebugPersistenciaCompacto />
+            )}
+          </PersistenceManager>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

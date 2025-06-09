@@ -10,7 +10,7 @@ const nextConfig = {
   reactStrictMode: true,
   
   // Configuração de paths (alias "@" para src)
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, './src'),
@@ -25,12 +25,55 @@ const nextConfig = {
         /\.next/
       ],
     });
-    
-    // Adicionar uma regra específica para ignorar arquivos de migração
-    config.module.rules.unshift({
-      test: /src\/migracao/,
-      loader: 'ignore-loader'
-    });
+
+    // Otimizações para chunks estáveis
+    if (dev) {
+      // Configuração de chunks mais estável para desenvolvimento
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000,
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Chunk específico para React
+            react: {
+              name: 'react',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              priority: 20,
+              enforce: true,
+            },
+            // Chunk para UI components
+            ui: {
+              name: 'ui',
+              chunks: 'all',
+              test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
+              priority: 15,
+              enforce: true,
+            },
+            // Chunk para vendor libs
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/](?!react|react-dom)/,
+              priority: 10,
+            },
+          },
+        },
+      };
+      
+      // Cache mais robusto
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+        version: '1.0.0',
+      };
+    }
     
     return config;
   },

@@ -24,6 +24,7 @@ export interface SessaoCliente {
     valorNegociado: number;
     formasPagamento: number;
     configurado: boolean;
+    descontoReal?: number;
   };
   metadata: {
     iniciadoEm: number;
