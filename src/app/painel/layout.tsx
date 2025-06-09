@@ -21,10 +21,14 @@ export default function PainelLayout({
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 layout-container">
       <Sidebar />
       <div className="md:ml-64">
-        {shouldShowProgressStepper && <ProgressStepper />}
+        {shouldShowProgressStepper && (
+          <div className="sticky top-0 z-20">
+            <ProgressStepper />
+          </div>
+        )}
         <main className="bg-gray-50">
           {children}
         </main>

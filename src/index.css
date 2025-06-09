@@ -91,11 +91,52 @@
 }
 
 @layer base {
+  /* Configuração global para evitar scroll desnecessário e saltos de layout */
+  html {
+    /* Reserva espaço para scrollbar, evitando saltos de layout */
+    scrollbar-gutter: stable;
+    /* Suporte para navegadores mais antigos */
+    overflow-y: scroll;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-gray-50 text-foreground;
+    /* Previne overflow horizontal desnecessário */
+    overflow-x: hidden;
+  }
+
+  /* Estilização moderna de scrollbars para navegadores WebKit */
+  html::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* Para navegadores modernos - Firefox, Chrome moderno */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+
+  /* Previne scroll horizontal em elementos de layout */
+  .layout-container {
+    overflow-x: hidden;
   }
 }

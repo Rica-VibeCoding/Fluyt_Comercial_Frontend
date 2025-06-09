@@ -152,8 +152,8 @@ export function Sidebar() {
   return (
     <>
       {/* Sidebar Desktop */}
-      <div className="hidden border-r bg-gray-50/40 md:block fixed left-0 top-0 h-screen overflow-y-auto z-30">
-        <SidebarContent className="w-64" />
+      <div className="hidden border-r bg-gray-50/40 md:block fixed left-0 top-0 h-screen w-64 overflow-y-auto overflow-x-hidden z-30">
+        <SidebarContent className="w-full" />
       </div>
 
       {/* Sidebar Mobile */}
@@ -168,7 +168,7 @@ export function Sidebar() {
             <span className="sr-only">Abrir menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-64 p-0 overflow-x-hidden">
           <SidebarContent onItemClick={() => {}} />
         </SheetContent>
       </Sheet>
