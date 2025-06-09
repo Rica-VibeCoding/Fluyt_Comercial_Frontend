@@ -5,7 +5,13 @@ import { Check } from 'lucide-react';
 import { useStepper } from '@/hooks/globais/use-stepper';
 
 export function ProgressStepper() {
-  const { currentStep, steps, navigateToStep } = useStepper();
+  const { 
+    steps, 
+    navigateToStep, 
+    isStepClickable, 
+    isStepCompleted, 
+    isStepCurrent 
+  } = useStepper();
 
   return (
     <div className="bg-white border-b border-gray-200">
@@ -13,18 +19,30 @@ export function ProgressStepper() {
         <div className="flex items-center justify-between">
           {steps.map((step, index) => {
             const Icon = step.icon;
-            const isCompleted = currentStep > step.id;
-            const isCurrent = currentStep === step.id;
-            const isClickable = step.id <= currentStep || isCompleted;
+            const isCompleted = isStepCompleted(step.id);
+            const isCurrent = isStepCurrent(step.id);
+            const isClickable = isStepClickable(step.id);
             
             return (
               <div key={step.id} className="flex items-center flex-1">
                 <div 
                   className={`
-                    flex items-center cursor-pointer transition-all duration-200
-                    ${isClickable ? 'hover:scale-105' : 'cursor-not-allowed'}
+                    flex items-center transition-all duration-200
+                    ${isClickable 
+                      ? 'cursor-pointer hover:scale-105' 
+                      : 'cursor-not-allowed opacity-75'
+                    }
                   `}
                   onClick={() => isClickable && navigateToStep(step.id)}
+                  role="button"
+                  tabIndex={isClickable ? 0 : -1}
+                  aria-label={`Navegar para ${step.label}`}
+                  onKeyDown={(e) => {
+                    if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      navigateToStep(step.id);
+                    }
+                  }}
                 >
                   {/* Circle with icon */}
                   <div

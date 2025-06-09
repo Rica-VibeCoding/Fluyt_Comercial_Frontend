@@ -9,6 +9,7 @@ import { Separator } from "../../ui/separator";
 import { EditableField } from "./editable-field";
 import { contratoMock, ContratoData } from "../../../types/contrato";
 import { User, Building, Calculator, ArrowRight, Clock, CreditCard, Package, MapPin, Phone, Mail, FileText } from "lucide-react";
+import { ClienteSelectorUniversal } from "../../shared/cliente-selector-universal";
 
 const ContractSummary = () => {
   const router = useRouter();
@@ -70,9 +71,18 @@ const ContractSummary = () => {
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header Section */}
         <div className="bg-white rounded-lg shadow-md border-0 p-4">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            {/* Cliente selecionado ou seletor - ESQUERDA */}
+            <div className="w-80">
+              <ClienteSelectorUniversal 
+                targetRoute="/painel/contratos"
+                placeholder="Selecionar cliente..."
+              />
+            </div>
+
+            {/* Status e botões - DIREITA */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <Badge className={`${getStatusColor(contratoData.status)} px-3 py-1 text-sm font-medium border`}>
+              <Badge className={`${getStatusColor(contratoData.status)} px-3 py-2 text-sm font-medium border h-12 flex items-center`}>
                 {getStatusText(contratoData.status)}
               </Badge>
               <Button 

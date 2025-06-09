@@ -2,18 +2,17 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useClienteSelecionado } from '../../../hooks/globais/use-cliente-selecionado';
 import { Button } from '../../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Download, Plus, Upload, User, Home } from 'lucide-react';
 import { useAmbientes } from '../../../hooks/modulos/ambientes/use-ambientes';
 import { AmbienteModal } from './ambiente-modal';
 import { AmbienteCard } from './ambiente-card';
-import { ClienteSelector } from './cliente-selector';
+import { ClienteSelectorUniversal } from '../../shared/cliente-selector-universal';
 
 export function AmbientePage() {
-  const searchParams = useSearchParams();
-  const clienteId = searchParams.get('clienteId');
-  const clienteNome = searchParams.get('clienteNome');
+  const { clienteId } = useClienteSelecionado();
   const {
     ambientes,
     adicionarAmbiente,
@@ -32,25 +31,10 @@ export function AmbientePage() {
           <div className="flex items-center justify-between">
             {/* Cliente selecionado ou seletor - ESQUERDA */}
             <div className="w-80">
-              {clienteNome ? (
-                <div className="bg-muted/50 border border-border rounded-lg p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-1.5 bg-primary rounded-lg">
-                      <User className="h-4 w-4 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Cliente Selecionado
-                      </p>
-                      <p className="text-lg font-bold text-foreground">
-                        {decodeURIComponent(clienteNome)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <ClienteSelector />
-              )}
+              <ClienteSelectorUniversal 
+                targetRoute="/painel/ambientes"
+                placeholder="Selecionar cliente..."
+              />
             </div>
 
             {/* Botões - DIREITA */}
@@ -59,7 +43,8 @@ export function AmbientePage() {
                 onClick={importarXML} 
                 disabled={isLoading || !clienteId} 
                 variant="outline" 
-                className="gap-2"
+                size="lg"
+                className="gap-2 h-12 px-4"
               >
                 <Upload className="h-4 w-4" />
                 {isLoading ? 'Importando...' : 'Importar XML'}
