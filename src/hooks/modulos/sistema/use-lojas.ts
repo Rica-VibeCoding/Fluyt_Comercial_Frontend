@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Loja, LojaFormData } from '@/types/sistema';
+import { useEmpresas } from './use-empresas';
+import { useLocalStorage } from '@/hooks/globais/use-local-storage';
 
 // Mock data para desenvolvimento
 const mockLojas: Loja[] = [
@@ -10,6 +12,7 @@ const mockLojas: Loja[] = [
     codigo: 'SP001',
     endereco: 'Av. Paulista, 1000 - Centro, São Paulo/SP',
     telefone: '(11) 98765-4321',
+    email: 'centro@fluyt.com.br',
     gerente: 'Maria Silva',
     funcionarios: 15,
     vendasMes: 245000,
@@ -26,6 +29,7 @@ const mockLojas: Loja[] = [
     codigo: 'ST001',
     endereco: 'Rua do Comércio, 500 - Centro, Santos/SP',
     telefone: '(13) 3456-7890',
+    email: 'santos@fluyt.com.br',
     gerente: 'João Santos',
     funcionarios: 8,
     vendasMes: 128000,
@@ -42,6 +46,7 @@ const mockLojas: Loja[] = [
     codigo: 'ABC001',
     endereco: 'Shopping ABC - Santo André/SP',
     telefone: '(11) 2345-6789',
+    email: 'abc@fluyt.com.br',
     gerente: 'Ana Costa',
     funcionarios: 12,
     vendasMes: 189000,
@@ -58,6 +63,7 @@ const mockLojas: Loja[] = [
     codigo: 'NR001',
     endereco: 'Av. Marginal, 2000 - Guarulhos/SP',
     telefone: '(11) 97777-8888',
+    email: 'norte@fluyt.com.br',
     gerente: 'Carlos Oliveira',
     funcionarios: 0,
     vendasMes: 0,
@@ -71,13 +77,20 @@ const mockLojas: Loja[] = [
 ];
 
 export function useLojas() {
-  const [lojas, setLojas] = useState<Loja[]>(mockLojas);
+  const { obterEmpresaPorId } = useEmpresas();
+  const [lojas, setLojas, clearLojas] = useLocalStorage<Loja[]>('fluyt_lojas', mockLojas);
   const [loading, setLoading] = useState(false);
 
   // Validar código da loja
   const validarCodigo = useCallback((codigo: string): boolean => {
     const codigoLimpo = codigo.trim().toUpperCase();
     return codigoLimpo.length >= 3 && /^[A-Z0-9]+$/.test(codigoLimpo);
+  }, []);
+
+  // Validar email
+  const validarEmail = useCallback((email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
   }, []);
 
   // Validar telefone
@@ -106,6 +119,10 @@ export function useLojas() {
       erros.push('Telefone inválido');
     }
 
+    if (!validarEmail(dados.email)) {
+      erros.push('Email inválido');
+    }
+
     if (!dados.gerente || dados.gerente.trim().length < 3) {
       erros.push('Nome do gerente deve ter pelo menos 3 caracteres');
     }
@@ -119,7 +136,7 @@ export function useLojas() {
     }
 
     return erros;
-  }, [validarCodigo, validarTelefone]);
+  }, [validarCodigo, validarTelefone, validarEmail]);
 
   // Verificar duplicidade de código
   const verificarCodigoDuplicado = useCallback((codigo: string, lojaId?: string): boolean => {
@@ -163,6 +180,13 @@ export function useLojas() {
         return false;
       }
 
+      // Buscar nome da empresa
+      const empresa = obterEmpresaPorId(dados.empresaId);
+      if (!empresa) {
+        toast.error('Empresa não encontrada');
+        return false;
+      }
+
       // Simular API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -170,6 +194,7 @@ export function useLojas() {
         id: Date.now().toString(),
         ...dados,
         codigo: dados.codigo.toUpperCase(),
+        empresa: empresa.nome,
         funcionarios: 0,
         vendasMes: 0,
         ativa: true,
@@ -187,7 +212,7 @@ export function useLojas() {
     } finally {
       setLoading(false);
     }
-  }, [validarLoja, verificarCodigoDuplicado]);
+  }, [validarLoja, verificarCodigoDuplicado, obterEmpresaPorId]);
 
   // Atualizar loja
   const atualizarLoja = useCallback(async (id: string, dados: LojaFormData): Promise<boolean> => {
@@ -206,12 +231,25 @@ export function useLojas() {
         return false;
       }
 
+      // Buscar nome da empresa
+      const empresa = obterEmpresaPorId(dados.empresaId);
+      if (!empresa) {
+        toast.error('Empresa não encontrada');
+        return false;
+      }
+
       // Simular API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       setLojas(prev => prev.map(loja => 
         loja.id === id 
-          ? { ...loja, ...dados, codigo: dados.codigo.toUpperCase(), updatedAt: new Date().toISOString() }
+          ? { 
+              ...loja, 
+              ...dados, 
+              codigo: dados.codigo.toUpperCase(),
+              empresa: empresa.nome,
+              updatedAt: new Date().toISOString() 
+            }
           : loja
       ));
 
@@ -224,7 +262,7 @@ export function useLojas() {
     } finally {
       setLoading(false);
     }
-  }, [validarLoja, verificarCodigoDuplicado]);
+  }, [validarLoja, verificarCodigoDuplicado, obterEmpresaPorId]);
 
   // Alternar status da loja
   const alternarStatusLoja = useCallback(async (id: string): Promise<void> => {
@@ -387,6 +425,12 @@ export function useLojas() {
       : 0
   };
 
+  // Resetar dados para mock inicial
+  const resetarDados = useCallback(() => {
+    clearLojas();
+    toast.success('Dados de lojas resetados para configuração inicial!');
+  }, [clearLojas]);
+
   return {
     lojas,
     loading,
@@ -404,6 +448,7 @@ export function useLojas() {
     calcularPerformance,
     obterPerformanceLoja,
     gerarProximoCodigo,
+    resetarDados,
     validarCodigo,
     validarTelefone
   };

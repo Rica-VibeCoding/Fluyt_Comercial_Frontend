@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Empresa, EmpresaFormData } from '@/types/sistema';
+import { useLocalStorage } from '@/hooks/globais/use-local-storage';
 
 // Mock data para desenvolvimento
 const mockEmpresas: Empresa[] = [
@@ -43,7 +44,7 @@ const mockEmpresas: Empresa[] = [
 ];
 
 export function useEmpresas() {
-  const [empresas, setEmpresas] = useState<Empresa[]>(mockEmpresas);
+  const [empresas, setEmpresas, clearEmpresas] = useLocalStorage<Empresa[]>('fluyt_empresas', mockEmpresas);
   const [loading, setLoading] = useState(false);
 
   // Validar CNPJ (implementação simplificada)
@@ -281,6 +282,12 @@ export function useEmpresas() {
     totalFuncionarios: empresas.reduce((total, empresa) => total + (empresa.funcionarios || 0), 0)
   };
 
+  // Resetar dados para mock inicial
+  const resetarDados = useCallback(() => {
+    clearEmpresas();
+    toast.success('Dados resetados para configuração inicial!');
+  }, [clearEmpresas]);
+
   return {
     empresas,
     loading,
@@ -292,6 +299,7 @@ export function useEmpresas() {
     obterEmpresasAtivas,
     obterEmpresaPorId,
     buscarEmpresas,
+    resetarDados,
     validarCNPJ,
     validarEmail,
     validarTelefone

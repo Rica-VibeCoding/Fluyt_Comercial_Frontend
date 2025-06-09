@@ -5,8 +5,8 @@ import Link from "next/link";
 
 export default function SistemaPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -19,58 +19,64 @@ export default function SistemaPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <Card className="shadow-md border-0 bg-white hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-green-600" />
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <div className="w-5 h-5 bg-green-50 rounded flex items-center justify-center">
+                  <DollarSign className="h-3 w-3 text-green-600" />
+                </div>
                 Simulador Financeiro
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-gray-600 mb-4">
                 Simule propostas e calcule valores com desconto e comissões
               </p>
               <Link href="/painel/orcamento/simulador">
-                <Button className="w-full">
+                <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
                   Acessar Simulador
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="shadow-md border-0 bg-white hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <div className="w-5 h-5 bg-blue-50 rounded flex items-center justify-center">
+                  <Users className="h-3 w-3 text-blue-600" />
+                </div>
                 Gestão de Clientes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-gray-600 mb-4">
                 Centralize e gerencie todos os seus clientes de forma eficiente
               </p>
               <Link href="/painel/clientes">
-                <Button className="w-full">
+                <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
                   Acessar Clientes
                 </Button>
               </Link>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="shadow-md border-0 bg-white hover:shadow-lg transition-shadow">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-orange-600" />
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <div className="w-5 h-5 bg-orange-50 rounded flex items-center justify-center">
+                  <Settings className="h-3 w-3 text-orange-600" />
+                </div>
                 Configurações
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-gray-600 mb-4">
                 Gerencie empresas, lojas, equipe e configurações do sistema
               </p>
               <Link href="/painel/sistema/configuracoes">
-                <Button className="w-full">
+                <Button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
                   Acessar Configurações
                 </Button>
               </Link>
@@ -78,10 +84,10 @@ export default function SistemaPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="shadow-md border-0 bg-white">
             <CardHeader>
-              <CardTitle>Sistema de Configurações</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900">Sistema de Configurações</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -109,9 +115,9 @@ export default function SistemaPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-md border-0 bg-white">
             <CardHeader>
-              <CardTitle>Funcionalidades Implementadas</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900">Funcionalidades Implementadas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

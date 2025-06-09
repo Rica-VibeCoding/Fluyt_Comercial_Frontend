@@ -15,7 +15,10 @@
       "Bash(npm install:*)",
       "Bash(sed:*)",
       "Bash(grep:*)",
-      "Bash(timeout 30s npm run dev)"
+      "Bash(timeout 30s npm run dev)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__execute_sql"
     ],
     "deny": []
   }

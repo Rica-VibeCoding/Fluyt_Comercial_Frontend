@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, DollarSign, Settings as SettingsIcon, FileText, Building2, Store, UserCog, Layers } from 'lucide-react';
 import Link from 'next/link';
-import { GestaoEmpresas } from '@/components/modulos/sistema/empresas/gestao-empresas';
+import { GestaoEmpresas, GestaoLojas, GestaoEquipe, GestaoSetores, GestaoComissoes, ConfigLoja } from '@/components/modulos/sistema';
+import { ResetDados } from '@/components/modulos/sistema/configuracoes/reset-dados';
+import { TesteConectividade } from '@/components/modulos/sistema/configuracoes/teste-conectividade';
 
 export default function ConfiguracoesPage() {
   const [activeSection, setActiveSection] = useState('pessoas');
@@ -71,6 +73,12 @@ export default function ConfiguracoesPage() {
     items: [{
       id: 'auditoria',
       label: 'Auditoria'
+    }, {
+      id: 'dados',
+      label: 'Gerenciar Dados'
+    }, {
+      id: 'conectividade',
+      label: 'Teste Supabase'
     }]
   }];
 
@@ -80,60 +88,15 @@ export default function ConfiguracoesPage() {
       case 'pessoas-empresas':
         return <GestaoEmpresas />;
       case 'pessoas-lojas':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Gestão de Lojas</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoLojas />;
       case 'pessoas-equipe':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Gestão de Equipe</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoEquipe />;
       case 'pessoas-setores':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Gestão de Setores</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoSetores />;
       case 'financeiro-comissoes':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Regras de Comissão</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <GestaoComissoes />;
       case 'financeiro-config-loja':
-        return (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                <div className="text-lg font-medium mb-2">Configurações da Loja</div>
-                <p>Funcionalidade em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        );
+        return <ConfigLoja />;
       case 'financeiro-status':
         return (
           <Card>
@@ -178,6 +141,10 @@ export default function ConfiguracoesPage() {
             </CardContent>
           </Card>
         );
+      case 'sistema-dados':
+        return <ResetDados />;
+      case 'sistema-conectividade':
+        return <TesteConectividade />;
       default:
         return (
           <Card>
@@ -195,17 +162,17 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header moderno inspirado no original */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center gap-4">
-            <Link href="/painel/sistema">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </Link>
+              <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+        <div className="flex items-center gap-4">
+          <Link href="/painel/sistema">
+            <Button variant="ghost" size="sm" className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+          </Link>
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
               <SettingsIcon className="h-6 w-6 text-white" />
             </div>
@@ -217,7 +184,7 @@ export default function ConfiguracoesPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-4">
         <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-6">
           {/* Navegação principal com estilo modernizado */}
           <div className="bg-white rounded-lg border shadow-sm">

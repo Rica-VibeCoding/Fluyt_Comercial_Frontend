@@ -39,6 +39,7 @@ export interface Loja extends BaseEntity {
   codigo: string;
   endereco: string;
   telefone: string;
+  email: string;
   gerente: string;
   funcionarios: number;
   vendasMes: number;
@@ -54,6 +55,7 @@ export interface LojaFormData {
   codigo: string;
   endereco: string;
   telefone: string;
+  email: string;
   gerente: string;
   empresaId: string;
   metaMes: number;
@@ -69,7 +71,6 @@ export interface Funcionario extends BaseEntity {
   nome: string;
   email: string;
   telefone: string;
-  cargo: string;
   setor: string;
   lojaId: string;
   loja?: string;
@@ -95,7 +96,6 @@ export interface FuncionarioFormData {
   nome: string;
   email: string;
   telefone: string;
-  cargo: string;
   setor: string;
   lojaId: string;
   salario: number;
@@ -145,24 +145,34 @@ export interface RegraComissaoFormData {
 }
 
 // ========================================
-// CONFIGURAÇÕES DA LOJA
+// CONFIGURAÇÕES DA LOJA (Conforme template original)
 // ========================================
-export interface ConfiguracaoLoja extends BaseEntity {
-  chave: string;
-  valor: string;
-  tipo: 'TEXT' | 'NUMBER' | 'BOOLEAN' | 'JSON';
-  categoria: 'GERAL' | 'VENDAS' | 'FINANCEIRO' | 'SISTEMA';
-  descricao: string;
-  publico: boolean;
+export interface ConfiguracaoLoja {
+  storeId: string;
+  storeName: string;
+  deflatorCost: number;                 // Deflator Custo Fábrica (%)
+  discountLimitVendor: number;          // Limite Vendedor (%)
+  discountLimitManager: number;         // Limite Gerente (%)
+  discountLimitAdminMaster: number;     // Limite Admin Master (%)
+  defaultMeasurementValue: number;      // Valor Padrão Medição (R$)
+  freightPercentage: number;            // Percentual de Frete (%)
+  initialNumber: number;                // Número Inicial
+  numberFormat: string;                 // Formato (YYYY-NNNNNN, etc.)
+  numberPrefix: string;                 // Prefixo (ORC, etc.)
+  updatedAt: string;
 }
 
 export interface ConfiguracaoLojaFormData {
-  chave: string;
-  valor: string;
-  tipo: ConfiguracaoLoja['tipo'];
-  categoria: ConfiguracaoLoja['categoria'];
-  descricao: string;
-  publico: boolean;
+  storeId: string;
+  deflatorCost: number;
+  discountLimitVendor: number;
+  discountLimitManager: number;
+  discountLimitAdminMaster: number;
+  defaultMeasurementValue: number;
+  freightPercentage: number;
+  initialNumber: number;
+  numberFormat: string;
+  numberPrefix: string;
 }
 
 // ========================================
@@ -186,39 +196,41 @@ export interface StatusOrcamentoFormData {
 }
 
 // ========================================
-// PRESTADORES (MONTADORES/TRANSPORTADORAS)
+// MONTADORES (Conforme template original)
 // ========================================
-export type TipoPrestador = 'MONTADOR' | 'TRANSPORTADORA';
+export type CategoriaMontador = 'MARCENEIRO' | 'ELETRICISTA' | 'ENCANADOR' | 'GESSEIRO' | 'PINTOR' | 'OUTRO';
 
-export interface Prestador extends BaseEntity {
+export interface Montador extends BaseEntity {
   nome: string;
-  tipo: TipoPrestador;
-  cnpj?: string;
-  cpf?: string;
+  categoria: CategoriaMontador;
+  valorFixo: number;
   telefone: string;
-  email: string;
-  endereco: string;
   ativo: boolean;
-  
-  // Dados específicos
-  dadosEspecificos?: {
-    valorHora?: number;         // Para montadores
-    especialidades?: string[];  // Para montadores
-    regiaoAtendimento?: string; // Para transportadoras
-    valorKm?: number;          // Para transportadoras
-    pesoMaximo?: number;       // Para transportadoras
-  };
 }
 
-export interface PrestadorFormData {
+export interface MontadorFormData {
   nome: string;
-  tipo: TipoPrestador;
-  cnpj?: string;
-  cpf?: string;
+  categoria: CategoriaMontador;
+  valorFixo: number;
+  telefone: string;
+}
+
+// ========================================
+// TRANSPORTADORAS (Conforme template original)
+// ========================================
+export interface Transportadora extends BaseEntity {
+  nomeEmpresa: string;
+  valorFixo: number;
   telefone: string;
   email: string;
-  endereco: string;
-  dadosEspecificos?: Prestador['dadosEspecificos'];
+  ativo: boolean;
+}
+
+export interface TransportadoraFormData {
+  nomeEmpresa: string;
+  valorFixo: number;
+  telefone: string;
+  email: string;
 }
 
 // ========================================
