@@ -109,30 +109,42 @@
     overflow-x: hidden;
   }
 
-  /* Estilização moderna de scrollbars para navegadores WebKit */
-  html::-webkit-scrollbar {
-    width: 12px;
+  /* Estilização moderna e fina de scrollbars - boas práticas 2024 */
+  ::-webkit-scrollbar {
+    width: 6px; /* Muito fino e moderno */
+    height: 6px;
   }
 
-  html::-webkit-scrollbar-track {
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.6); /* Cinza neutro e suave */
+    border-radius: 8px; /* Bem arredondado como macOS */
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: all 0.2s ease; /* Transições suaves */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.8); /* Mais escuro no hover */
+    transform: scaleY(1.05); /* Leve crescimento no hover */
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: rgba(75, 85, 99, 0.9); /* Ainda mais escuro ao clicar */
+  }
+
+  ::-webkit-scrollbar-corner {
     background: transparent;
   }
 
-  html::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-
-  html::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-
-  /* Para navegadores modernos - Firefox, Chrome moderno */
-  html {
+  /* Para navegadores modernos com propriedades padrão */
+  * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+    scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
   }
 
   /* Previne scroll horizontal em elementos de layout */

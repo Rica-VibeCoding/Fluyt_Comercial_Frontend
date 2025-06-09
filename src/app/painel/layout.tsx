@@ -20,6 +20,10 @@ export default function PainelLayout({
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
 
+  // Altura real calculada do ProgressStepper:
+  // py-6 (48px) + w-12 h-12 icons (48px) + text height (~20px) + border = ~100px
+  const progressStepperHeight = 100;
+
   return (
     <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
       <Sidebar />
@@ -32,12 +36,12 @@ export default function PainelLayout({
       )}
       
       <div className="md:ml-64 h-screen flex flex-col">
-        {/* Container de conteúdo com scroll próprio que começa abaixo do card */}
+        {/* Container de conteúdo com altura calculada corretamente */}
         <main 
           className="flex-1 bg-gray-50 transition-all duration-300 overflow-y-auto"
           style={{ 
-            marginTop: shouldShowProgressStepper ? '120px' : '0',
-            height: shouldShowProgressStepper ? 'calc(100vh - 120px)' : '100vh'
+            marginTop: shouldShowProgressStepper ? `${progressStepperHeight}px` : '0',
+            height: shouldShowProgressStepper ? `calc(100vh - ${progressStepperHeight}px)` : '100vh'
           }}
         >
           {children}
