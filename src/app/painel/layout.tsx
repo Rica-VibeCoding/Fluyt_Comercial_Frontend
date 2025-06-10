@@ -1,11 +1,17 @@
+/**
+ * Layout do painel REFATORADO
+ * Usa app-sidebar.tsx com contexto mantido para compatibilidade
+ */
+
 'use client';
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { loadSavedTheme, applyTheme } from '../../components/layout/sidebar-themes';
 
-// Context para gerenciar estado do collapse da sidebar
+// Context mantido para compatibilidade
 const SidebarContext = createContext<{
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
@@ -20,24 +26,9 @@ const SidebarContext = createContext<{
 
 export const useSidebarContext = () => useContext(SidebarContext);
 
-// Importar Sidebar dinamicamente sem SSR para evitar erros de hidratação
-const Sidebar = dynamic(() => import('../../components/layout/sidebar').then(mod => ({ default: mod.Sidebar })), { 
-  ssr: false,
-  loading: () => (
-    <div className="hidden border-r bg-gray-50/40 md:block fixed left-0 top-0 h-screen w-64 overflow-y-auto overflow-x-hidden z-30">
-      <div className="space-y-4 py-4">
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-blue-600">
-            🏢 Sistema Fluyt
-          </h2>
-          <p className="px-4 text-sm text-muted-foreground">
-            Carregando...
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-});
+// Usar nossa nova AppSidebar ao invés da antiga
+import { AppSidebar } from '../../components/layout/app-sidebar';
+
 // Importar ProgressStepper dinamicamente sem SSR
 const ProgressStepper = dynamic(() => import('../../components/layout/progress-stepper').then(mod => ({ default: mod.ProgressStepper })), { 
   ssr: false,
@@ -51,12 +42,12 @@ const ProgressStepper = dynamic(() => import('../../components/layout/progress-s
     </div>
   )
 });
+
 import { DebugPersistenciaCompacto } from '../../components/shared/debug-persistencia';
 
 // Componente para carregar hooks apenas no cliente
 function ClientOnlyPersistence() {
   useEffect(() => {
-    // Simples verificação de que estamos no cliente
     console.log('🔧 Persistência ativada no cliente');
   }, []);
   
@@ -82,20 +73,52 @@ export default function PainelLayout({
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
 
-  // Altura real calculada do ProgressStepper:
-  // py-6 (48px) + w-12 h-12 icons (48px) + text height (~20px) + border = ~100px
+  // Altura real calculada do ProgressStepper
   const progressStepperHeight = 100;
 
   // Calcular largura da sidebar baseado no estado de collapse
-  const sidebarWidth = isCollapsed ? '4rem' : '16rem'; // w-16 = 4rem, w-64 = 16rem
+  const sidebarWidth = isCollapsed ? '4rem' : '16rem';
 
   return (
     <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, currentTheme, setCurrentTheme }}>
       <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
         <ClientOnlyPersistence />
-        <Sidebar />
         
-        {/* ProgressStepper fixo e completamente fora do scroll */}
+        {/* Wrapper para AppSidebar com contexto personalizado */}
+        <div 
+          className={`
+            hidden md:block fixed left-0 top-0 h-screen overflow-y-auto overflow-x-hidden z-30 border-r
+            transition-all duration-300 ease-in-out
+            ${isCollapsed ? 'w-16' : 'w-64'}
+          `}
+          style={{
+            backgroundColor: 'hsl(var(--sidebar-background, 0 0% 98%))',
+            borderColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))',
+            color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%))'
+          }}
+        >
+          {/* Toggle Button Moderno */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="absolute -right-3 top-6 group bg-white border border-gray-200 rounded-full p-1.5 shadow-sm hover:shadow-md transition-all duration-200 z-50 text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+            aria-label={isCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+            style={{
+              backgroundColor: 'hsl(var(--sidebar-background, 255 255 255))',
+              borderColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))',
+            }}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:scale-110" />
+            ) : (
+              <ChevronLeft className="w-4 h-4 transition-transform group-hover:scale-110" />
+            )}
+          </button>
+
+          {/* Conteúdo da sidebar simplificado */}
+          <AppSidebar />
+        </div>
+        
+        {/* ProgressStepper fixo */}
         {shouldShowProgressStepper && (
           <div 
             className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm transition-all duration-300 md:left-64"
@@ -113,7 +136,7 @@ export default function PainelLayout({
             marginLeft: sidebarWidth
           }}
         >
-          {/* Container de conteúdo com altura calculada corretamente */}
+          {/* Container de conteúdo */}
           <main 
             className="flex-1 bg-gray-50 transition-all duration-300 overflow-y-auto"
             style={{ 
@@ -125,7 +148,7 @@ export default function PainelLayout({
           </main>
         </div>
         
-        {/* Debug de persistência - só aparece em desenvolvimento */}
+        {/* Debug de persistência */}
         {process.env.NODE_ENV === 'development' && <DebugPersistenciaCompacto />}
       </div>
     </SidebarContext.Provider>

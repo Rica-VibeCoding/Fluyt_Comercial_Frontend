@@ -23,7 +23,8 @@ export const menuItems: MenuItem[] = [
     titulo: 'Dashboard', 
     icone: Home, 
     href: '/painel',
-    descricao: 'Visão geral do sistema'
+    descricao: 'Visão geral do sistema',
+    ativo: true
   },
   { 
     titulo: 'Clientes', 
