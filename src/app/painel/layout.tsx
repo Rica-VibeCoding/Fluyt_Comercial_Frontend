@@ -1,8 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+
+// Context para gerenciar estado do collapse da sidebar
+const SidebarContext = createContext<{
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}>({
+  isCollapsed: false,
+  setIsCollapsed: () => {},
+});
+
+export const useSidebarContext = () => useContext(SidebarContext);
 
 // Importar Sidebar dinamicamente sem SSR para evitar erros de hidratação
 const Sidebar = dynamic(() => import('../../components/layout/sidebar').then(mod => ({ default: mod.Sidebar })), { 
@@ -53,6 +64,7 @@ export default function PainelLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
@@ -61,33 +73,48 @@ export default function PainelLayout({
   // py-6 (48px) + w-12 h-12 icons (48px) + text height (~20px) + border = ~100px
   const progressStepperHeight = 100;
 
+  // Calcular largura da sidebar baseado no estado de collapse
+  const sidebarWidth = isCollapsed ? '4rem' : '16rem'; // w-16 = 4rem, w-64 = 16rem
+
   return (
-    <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
-      <ClientOnlyPersistence />
-      <Sidebar />
-      
-      {/* ProgressStepper fixo e completamente fora do scroll */}
-      {shouldShowProgressStepper && (
-        <div className="fixed top-0 left-0 right-0 z-50 md:left-64 bg-white border-b shadow-sm">
-          <ProgressStepper />
-        </div>
-      )}
-      
-      <div className="md:ml-64 h-screen flex flex-col">
-        {/* Container de conteúdo com altura calculada corretamente */}
-        <main 
-          className="flex-1 bg-gray-50 transition-all duration-300 overflow-y-auto"
-          style={{ 
-            marginTop: shouldShowProgressStepper ? `${progressStepperHeight}px` : '0',
-            height: shouldShowProgressStepper ? `calc(100vh - ${progressStepperHeight}px)` : '100vh'
+    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
+      <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
+        <ClientOnlyPersistence />
+        <Sidebar />
+        
+        {/* ProgressStepper fixo e completamente fora do scroll */}
+        {shouldShowProgressStepper && (
+          <div 
+            className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm transition-all duration-300 md:left-64"
+            style={{ 
+              left: `${sidebarWidth}` 
+            }}
+          >
+            <ProgressStepper />
+          </div>
+        )}
+        
+        <div 
+          className="h-screen flex flex-col transition-all duration-300"
+          style={{
+            marginLeft: sidebarWidth
           }}
         >
-          {children}
-        </main>
+          {/* Container de conteúdo com altura calculada corretamente */}
+          <main 
+            className="flex-1 bg-gray-50 transition-all duration-300 overflow-y-auto"
+            style={{ 
+              marginTop: shouldShowProgressStepper ? `${progressStepperHeight}px` : '0',
+              height: shouldShowProgressStepper ? `calc(100vh - ${progressStepperHeight}px)` : '100vh'
+            }}
+          >
+            {children}
+          </main>
+        </div>
+        
+        {/* Debug de persistência - só aparece em desenvolvimento */}
+        {process.env.NODE_ENV === 'development' && <DebugPersistenciaCompacto />}
       </div>
-      
-      {/* Debug de persistência - só aparece em desenvolvimento */}
-      {process.env.NODE_ENV === 'development' && <DebugPersistenciaCompacto />}
-    </div>
+    </SidebarContext.Provider>
   );
 }

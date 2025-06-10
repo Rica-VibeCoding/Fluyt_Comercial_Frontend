@@ -13,9 +13,10 @@ import { menuItems, sidebarConfig } from './sidebar-config';
 interface SidebarContentProps {
   className?: string;
   onItemClick?: () => void;
+  isCollapsed?: boolean;
 }
 
-export function SidebarContent({ className, onItemClick }: SidebarContentProps) {
+export function SidebarContent({ className, onItemClick, isCollapsed = false }: SidebarContentProps) {
   const pathname = usePathname();
 
   return (
@@ -24,11 +25,16 @@ export function SidebarContent({ className, onItemClick }: SidebarContentProps) 
         {/* Logo/Header */}
         <div className="px-3 py-2">
           <Link href={sidebarConfig.logo.href}>
-            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-blue-600">
-              {sidebarConfig.logo.text}
+            <h2 className={`mb-2 px-4 text-lg font-semibold tracking-tight text-blue-600 transition-all duration-300 ${
+              isCollapsed ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+            }`}>
+              {!isCollapsed && sidebarConfig.logo.text}
+              {isCollapsed && '🏢'}
             </h2>
           </Link>
-          <p className="px-4 text-sm text-muted-foreground">
+          <p className={`px-4 text-sm text-muted-foreground transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
+          }`}>
             {sidebarConfig.logo.subtitle}
           </p>
         </div>
@@ -47,7 +53,7 @@ export function SidebarContent({ className, onItemClick }: SidebarContentProps) 
                   href={isDisabled ? '#' : item.href}
                   onClick={onItemClick}
                   className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors",
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors relative group",
                     isActive 
                       ? "bg-accent text-accent-foreground" 
                       : "transparent",
@@ -55,9 +61,14 @@ export function SidebarContent({ className, onItemClick }: SidebarContentProps) 
                       ? "opacity-50 cursor-not-allowed hover:bg-transparent" 
                       : "cursor-pointer"
                   )}
+                  title={isCollapsed ? item.titulo : undefined}
                 >
-                  <Icon className="mr-2 h-4 w-4" />
-                  <div className="flex-1">
+                  <Icon className={`h-4 w-4 flex-shrink-0 ${isCollapsed ? 'mx-auto' : 'mr-2'}`} />
+                  
+                  {/* Conteúdo do menu - oculto quando colapsado */}
+                  <div className={`flex-1 transition-all duration-300 ${
+                    isCollapsed ? 'opacity-0 w-0 overflow-hidden ml-0' : 'opacity-100 ml-0'
+                  }`}>
                     <div className="flex items-center gap-2">
                       {item.titulo}
                       {item.ativo && (
@@ -75,6 +86,15 @@ export function SidebarContent({ className, onItemClick }: SidebarContentProps) 
                       {item.descricao}
                     </p>
                   </div>
+
+                  {/* Tooltip para modo colapsado */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap pointer-events-none">
+                      {item.titulo}
+                      {item.ativo && <span className="block text-green-400">Ativo</span>}
+                      {isDisabled && <span className="block text-gray-400">Em breve</span>}
+                    </div>
+                  )}
                 </Link>
               );
             })}
@@ -82,7 +102,9 @@ export function SidebarContent({ className, onItemClick }: SidebarContentProps) 
         </div>
 
         {/* Informações do Sistema */}
-        <div className="px-3 pt-4 border-t">
+        <div className={`px-3 pt-4 border-t transition-all duration-300 ${
+          isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
+        }`}>
           <div className="px-4 py-2">
             <p className="text-xs text-muted-foreground">
               Módulo Orçamentos ativo
