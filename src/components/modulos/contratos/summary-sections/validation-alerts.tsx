@@ -1,39 +1,58 @@
 import { Alert, AlertDescription } from "../../../ui/alert";
-import { AlertCircle, User, Building, Calculator } from "lucide-react";
-import { useContractValidation } from "../shared/contract-validations";
+import { Button } from "../../../ui/button";
+import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSessao } from "../../../../store/sessao-store";
 
 export function ValidationAlerts() {
-  const { erros, temErros } = useContractValidation();
-
-  if (!temErros) return null;
-
-  const getIcon = (tipo: string) => {
-    switch (tipo) {
-      case 'cliente':
-        return <User className="h-4 w-4" />;
-      case 'ambiente':
-        return <Building className="h-4 w-4" />;
-      case 'orcamento':
-        return <Calculator className="h-4 w-4" />;
-      default:
-        return <AlertCircle className="h-4 w-4" />;
-    }
-  };
-
-  const getVariant = (tipo: string) => {
-    return tipo === 'cliente' ? 'destructive' : 'default';
-  };
+  const router = useRouter();
+  const { cliente, ambientes, podeGerarContrato } = useSessao();
 
   return (
-    <div className="space-y-4 mb-6">
-      {erros.map((erro, index) => (
-        <Alert key={index} variant={getVariant(erro.tipo)}>
-          {getIcon(erro.tipo)}
+    <div className="space-y-4 mb-4">
+      {/* Alerta: Nenhum cliente selecionado */}
+      {!cliente && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {erro.mensagem}
+            Nenhum cliente selecionado. Selecione um cliente para continuar.
           </AlertDescription>
         </Alert>
-      ))}
+      )}
+      
+      {/* Alerta: Cliente selecionado mas sem ambientes */}
+      {cliente && ambientes.length === 0 && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Cliente {cliente.nome} selecionado, mas nenhum ambiente foi adicionado. 
+            <Button 
+              variant="link" 
+              className="p-0 h-auto ml-1 underline"
+              onClick={() => router.push('/painel/ambientes')}
+            >
+              Clique aqui para adicionar ambientes.
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Alerta: Cliente e ambientes configurados mas orçamento incompleto */}
+      {cliente && ambientes.length > 0 && !podeGerarContrato && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Cliente e ambientes configurados, mas é necessário finalizar o orçamento com formas de pagamento.
+            <Button 
+              variant="link" 
+              className="p-0 h-auto ml-1 underline"
+              onClick={() => router.push('/painel/orcamento/simulador')}
+            >
+              Clique aqui para finalizar o orçamento.
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

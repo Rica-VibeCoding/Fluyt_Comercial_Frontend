@@ -27,43 +27,46 @@ const ContractSummary = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         {/* Header com navegação e ações principais */}
         <HeaderSection onFinalizarContrato={handleFinalizarContrato} />
 
         {/* Alertas de validação */}
         <ValidationAlerts />
 
-        {/* Conteúdo principal em grade responsiva */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+          
           {/* Dados do Cliente */}
-          <ClientDataCard 
-            contratoData={contratoData} 
-            updateField={updateField} 
-          />
+          <div className="xl:col-span-1">
+            <ClientDataCard 
+              contratoData={contratoData} 
+              updateField={updateField} 
+            />
+          </div>
 
           {/* Dados da Loja */}
-          <StoreDataCard 
-            contratoData={contratoData} 
-            updateField={updateField} 
-          />
+          <div className="xl:col-span-1">
+            <StoreDataCard 
+              contratoData={contratoData} 
+              updateField={updateField} 
+            />
+          </div>
+
+          {/* Resumo Financeiro */}
+          <div className="xl:col-span-2">
+            <FinancialSummary 
+              contratoData={contratoData} 
+              updateField={updateField} 
+            />
+          </div>
         </div>
 
-        {/* Resumo Financeiro */}
-        <div className="mb-6">
-          <FinancialSummary 
-            contratoData={contratoData} 
-            updateField={updateField} 
-          />
-        </div>
+        {/* Ambientes Section */}
+        <EnvironmentsList contratoData={contratoData} />
 
-        {/* Lista de Ambientes */}
-        <div className="mb-6">
-          <EnvironmentsList contratoData={contratoData} />
-        </div>
-
-        {/* Barra de ação sticky */}
+        {/* Action Bar */}
         <ActionBar 
           contratoData={contratoData} 
           onAvancar={handleAvancar} 
