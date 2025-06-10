@@ -21,7 +21,8 @@
       "mcp__supabase__execute_sql",
       "WebFetch(domain:github.com)",
       "Bash(node:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(/home/ricar/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/x64-linux/rg \"EditableField.*label\" src/components/modulos/contratos/contract-summary-backup.tsx -n)"
     ],
     "deny": []
   }

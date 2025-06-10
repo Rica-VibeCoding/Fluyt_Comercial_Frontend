@@ -5,9 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users, DollarSign, Settings as SettingsIcon, FileText, Building2, Store, UserCog, Layers } from 'lucide-react';
+import { ArrowLeft, Users, DollarSign, Settings, FileText, Building2, Store, UserCog, Layers } from 'lucide-react';
 import Link from 'next/link';
-import { GestaoEmpresas, GestaoLojas, GestaoEquipe, GestaoSetores, GestaoComissoes, ConfigLoja, GestaoMontadores, GestaoTransportadoras } from '@/components/modulos/sistema';
+import { GestaoEmpresas, GestaoLojas, GestaoEquipe, GestaoSetores, GestaoComissoes, ConfigLoja, GestaoConfigLoja, GestaoMontadores, GestaoTransportadoras } from '@/components/modulos/sistema';
 import { ResetDados } from '@/components/modulos/sistema/configuracoes/reset-dados';
 import { TesteConectividade } from '@/components/modulos/sistema/configuracoes/teste-conectividade';
 
@@ -58,7 +58,7 @@ export default function ConfiguracoesPage() {
   }, {
     id: 'operacional',
     label: 'Operacional',
-    icon: SettingsIcon,
+    icon: Settings,
     iconColor: 'orange',
     description: 'Prestadores de serviços',
     items: [{
@@ -100,7 +100,7 @@ export default function ConfiguracoesPage() {
       case 'financeiro-comissoes':
         return <GestaoComissoes />;
       case 'financeiro-config-loja':
-        return <ConfigLoja />;
+        return <GestaoConfigLoja />;
       case 'financeiro-status':
         return (
           <Card className="shadow-md border-0 bg-white">
@@ -152,24 +152,19 @@ export default function ConfiguracoesPage() {
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header padronizado seguindo padrão da página sistema */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-          <Link href="/painel/sistema">
-            <Button variant="ghost" size="sm" className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Button>
-          </Link>
-          </div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <SettingsIcon className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Configurações do Sistema</h1>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <Link href="/painel/sistema">
+              <Button variant="ghost" size="sm" className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
+            </Link>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-gray-900">Configurações do Sistema</h1>
               <p className="text-base text-muted-foreground">Gerencie todos os aspectos da sua aplicação</p>
+            </div>
           </div>
         </div>
-      </div>
 
         <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-4">
           {/* Navegação principal com estilo padronizado */}

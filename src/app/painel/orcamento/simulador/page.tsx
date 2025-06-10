@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSimulador } from '@/hooks';
 import { useSessaoStore } from '@/store';
@@ -24,7 +24,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 
 
-export default function SimuladorPage() {
+function SimuladorPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { 
@@ -286,5 +286,13 @@ export default function SimuladorPage() {
         <CronogramaRecebimento formasPagamento={simulacao.formasPagamento} />
       </div>
     </div>
+  );
+}
+
+export default function SimuladorPage() {
+  return (
+    <Suspense fallback={<div>Carregando simulador...</div>}>
+      <SimuladorPageContent />
+    </Suspense>
   );
 }

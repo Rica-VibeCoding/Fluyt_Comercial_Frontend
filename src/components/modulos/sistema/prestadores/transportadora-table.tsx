@@ -46,7 +46,7 @@ export function TransportadoraTable({
 
   if (transportadoras.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
         <Truck className="h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma transportadora cadastrada</h3>
         <p className="text-gray-500 text-center max-w-sm">
@@ -57,59 +57,55 @@ export function TransportadoraTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Empresa</TableHead>
-            <TableHead>Valor Fixo</TableHead>
-            <TableHead>Contato</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10">Transportadora</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Valor Fixo</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {transportadorasOrdenadas.map((transportadora) => (
-            <TableRow key={transportadora.id}>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-blue-600" />
-                  <div className="font-medium text-sm">{transportadora.nomeEmpresa}</div>
+            <TableRow key={transportadora.id} className="h-12 bg-white hover:bg-blue-50/50">
+              <TableCell className="py-2">
+                <div>
+                  <div className="font-medium">{transportadora.nomeEmpresa}</div>
+                  <div className="text-sm text-muted-foreground">Transportadora</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="font-medium">{formatCurrency(transportadora.valorFixo)}</div>
-                <div className="text-xs text-gray-500">por entrega</div>
+                <div className="text-sm text-muted-foreground">por entrega</div>
               </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    <Phone className="h-3 w-3 text-gray-400" />
-                    <span className="text-sm">{transportadora.telefone}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Mail className="h-3 w-3 text-gray-400" />
-                    <span className="text-sm">{transportadora.email}</span>
-                  </div>
+              <TableCell className="py-2">
+                <div className="text-sm">
+                  <div>{transportadora.email}</div>
+                  <div className="text-muted-foreground">{transportadora.telefone}</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={transportadora.ativo}
                     onCheckedChange={() => onToggleStatus(transportadora.id)}
+                    className="data-[state=checked]:bg-slate-600"
                   />
-                  <Badge variant={transportadora.ativo ? "default" : "secondary"}>
+                  <Badge variant={transportadora.ativo ? "default" : "secondary"} className={transportadora.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
                     {transportadora.ativo ? 'Ativa' : 'Inativa'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-2">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(transportadora)}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -118,6 +114,7 @@ export function TransportadoraTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

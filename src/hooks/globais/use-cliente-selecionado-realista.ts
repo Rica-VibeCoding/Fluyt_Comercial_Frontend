@@ -9,8 +9,18 @@ export const useClienteSelecionadoRealista = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   
-  const clienteId = searchParams.get('clienteId');
-  const clienteNome = searchParams.get('clienteNome'); // Para fallback
+  // Obter parâmetros de forma segura
+  let clienteId = null;
+  let clienteNome = null;
+  
+  try {
+    if (isHydrated) {
+      clienteId = searchParams.get('clienteId');
+      clienteNome = searchParams.get('clienteNome');
+    }
+  } catch (error) {
+    console.warn('⚠️ SearchParams não disponível durante SSR');
+  }
 
   // Garantir hidratação no cliente
   useEffect(() => {
@@ -23,7 +33,19 @@ export const useClienteSelecionadoRealista = () => {
         return; // Não fazer nada se não hidratou ainda
       }
       
-      if (!clienteId) {
+      // Proteger contra SSR - só processar se searchParams estiver disponível
+      let clienteIdAtual = null;
+      let clienteNomeAtual = null;
+      
+      try {
+        clienteIdAtual = searchParams.get('clienteId');
+        clienteNomeAtual = searchParams.get('clienteNome');
+      } catch (error) {
+        console.warn('⚠️ SearchParams não disponível durante SSR');
+        return;
+      }
+      
+      if (!clienteIdAtual) {
         // MUDANÇA: Só limpar se não temos ID E não temos cliente atual
         // Isso preserva o cliente quando a URL perde os parâmetros
         if (cliente) {
@@ -37,10 +59,10 @@ export const useClienteSelecionadoRealista = () => {
       }
 
       setIsLoading(true);
-      console.log('🔍 useClienteSelecionadoRealista carregando ID:', clienteId);
+      console.log('🔍 useClienteSelecionadoRealista carregando ID:', clienteIdAtual);
       
       try {
-        const clienteCarregado = await ClienteStore.buscarPorId(clienteId);
+        const clienteCarregado = await ClienteStore.buscarPorId(clienteIdAtual);
         
         if (clienteCarregado) {
           console.log('✅ useClienteSelecionadoRealista definindo cliente:', {
@@ -49,13 +71,13 @@ export const useClienteSelecionadoRealista = () => {
           });
           setCliente(clienteCarregado);
         } else {
-          console.warn('⚠️ Cliente não encontrado no store, ID:', clienteId);
+          console.warn('⚠️ Cliente não encontrado no store, ID:', clienteIdAtual);
           
           // Fallback: criar objeto mínimo se temos o nome na URL
-          if (clienteNome) {
+          if (clienteNomeAtual) {
             const clienteFallback: Cliente = {
-              id: clienteId,
-              nome: decodeURIComponent(clienteNome),
+              id: clienteIdAtual,
+              nome: decodeURIComponent(clienteNomeAtual),
               cpf_cnpj: '',
               rg_ie: '',
               email: '',
@@ -89,7 +111,7 @@ export const useClienteSelecionadoRealista = () => {
     };
 
     carregarCliente();
-  }, [clienteId, clienteNome, isHydrated]);
+  }, [isHydrated]); // Remover dependências de searchParams para evitar SSR issues
 
   return {
     clienteId,

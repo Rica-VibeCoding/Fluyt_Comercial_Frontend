@@ -1,5 +1,22 @@
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+
+function PainelDashboardContent() {
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.replace('/painel/orcamento/simulador');
+  }, [router]);
+
+  return <div>Redirecionando...</div>;
+}
 
 export default function PainelDashboard() {
-  redirect('/painel/orcamento/simulador');
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <PainelDashboardContent />
+    </Suspense>
+  );
 }

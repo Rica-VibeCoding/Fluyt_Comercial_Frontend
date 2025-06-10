@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useStepper } from '@/hooks/globais/use-stepper';
 
@@ -8,6 +8,13 @@ import { useStepper } from '@/hooks/globais/use-stepper';
 const Check = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Check })), { ssr: false });
 
 export function ProgressStepper() {
+  const [isClient, setIsClient] = useState(false);
+  
+  // Garantir que só renderizamos no cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { 
     steps, 
     navigateToStep, 
@@ -15,6 +22,19 @@ export function ProgressStepper() {
     isStepCompleted, 
     isStepCurrent 
   } = useStepper();
+
+  // Durante SSR ou antes da hidratação, mostrar fallback
+  if (!isClient) {
+    return (
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">Carregando navegação...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border-b border-gray-200">

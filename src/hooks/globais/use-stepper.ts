@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Users, Building2, Calculator, FileText } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 // Definindo os tipos para melhor tipagem
 interface StepConfig {
@@ -16,6 +17,12 @@ export const useStepper = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isClient, setIsClient] = useState(false);
+
+  // Garantir que só executamos no cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Configuração das etapas centralizada e independente
   const steps: StepConfig[] = [
@@ -72,6 +79,8 @@ export const useStepper = () => {
 
   // Função de navegação robusta e independente que preserva parâmetros
   const navigateToStep = (stepId: number) => {
+    if (!isClient) return; // Não navegar durante SSR
+    
     try {
       const step = steps.find(s => s.id === stepId);
       if (step) {
@@ -106,7 +115,7 @@ export const useStepper = () => {
   // Função para verificar se um step é clicável
   const isStepClickable = (stepId: number): boolean => {
     // Permite navegar para qualquer etapa, não apenas as já visitadas
-    return true;
+    return isClient; // Só permitir clicks no cliente
   };
 
   // Função para verificar se um step foi completado

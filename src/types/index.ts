@@ -14,8 +14,7 @@ export type { Cliente, ClienteFormData } from './cliente';
 export type { 
   FormaPagamento, 
   Simulacao, 
-  TravamentoConfig, 
-  TipoFormaPagamento 
+  TravamentoConfig
 } from './simulador';
 
 // Tipos do sistema
@@ -34,6 +33,5 @@ export type {
   MontadorFormData,
   Transportadora, 
   TransportadoraFormData,
-  BaseEntity,
-  StatusEntity
+  BaseEntity
 } from './sistema';

@@ -65,7 +65,7 @@ export function ComissaoTable({
 
   if (regras.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
         <DollarSign className="h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma regra de comissão cadastrada</h3>
         <p className="text-gray-500 text-center max-w-sm">
@@ -76,86 +76,59 @@ export function ComissaoTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Tipo/Ordem</TableHead>
-            <TableHead>Faixa de Valores</TableHead>
-            <TableHead>Comissão</TableHead>
-            <TableHead>Descrição</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10">Regra</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Faixa de Valores</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Comissão</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {regrasOrdenadas.map((regra) => (
-            <TableRow key={regra.id}>
-              <TableCell>
-                <div className="space-y-1">
-                  <Badge variant={getTipoBadge(regra.tipo)} className="text-xs">
-                    {regra.tipo}
-                  </Badge>
-                  <div className="text-sm text-muted-foreground">
-                    Ordem: {regra.ordem}
-                  </div>
+            <TableRow key={regra.id} className="h-12 bg-white hover:bg-blue-50/50">
+              <TableCell className="py-2">
+                <div>
+                  <div className="font-medium">{regra.tipo}</div>
+                  <div className="text-sm text-muted-foreground">Ordem: {regra.ordem}</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="text-sm">
-                  <div className="font-medium">
-                    {formatCurrency(regra.valorMinimo)}
-                  </div>
+                  <div>{formatCurrency(regra.valorMinimo)}</div>
                   <div className="text-muted-foreground">
-                    {regra.valorMaximo ? (
-                      `até ${formatCurrency(regra.valorMaximo)}`
-                    ) : (
-                      'ou mais'
-                    )}
+                    {regra.valorMaximo ? `até ${formatCurrency(regra.valorMaximo)}` : 'ou mais'}
                   </div>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className={`h-4 w-4 ${getPercentualColor(regra.percentual)}`} />
-                  <span className={`font-medium ${getPercentualColor(regra.percentual)}`}>
-                    {regra.percentual}%
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Ex: {formatCurrency((regra.valorMinimo * regra.percentual) / 100)}
+              <TableCell className="py-2">
+                <div className="text-sm">
+                  <div>{regra.percentual}%</div>
+                  <div className="text-muted-foreground">de comissão</div>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="max-w-md">
-                  {regra.descricao ? (
-                    <p className="text-sm text-gray-700 line-clamp-2">
-                      {regra.descricao}
-                    </p>
-                  ) : (
-                    <span className="text-sm text-gray-400 italic">
-                      Sem descrição
-                    </span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={regra.ativo}
                     onCheckedChange={() => onToggleStatus(regra.id)}
+                    className="data-[state=checked]:bg-slate-600"
                   />
-                  <Badge variant={regra.ativo ? "default" : "secondary"}>
+                  <Badge variant={regra.ativo ? "default" : "secondary"} className={regra.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
                     {regra.ativo ? 'Ativa' : 'Inativa'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-2">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(regra)}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -164,6 +137,7 @@ export function ComissaoTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

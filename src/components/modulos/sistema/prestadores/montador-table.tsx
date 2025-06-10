@@ -75,7 +75,7 @@ export function MontadorTable({
 
   if (montadores.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 border border-gray-200 rounded-lg bg-gray-50">
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
         <Wrench className="h-12 w-12 text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum montador cadastrado</h3>
         <p className="text-gray-500 text-center max-w-sm">
@@ -86,57 +86,55 @@ export function MontadorTable({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Nome/Empresa</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead>Valor Fixo</TableHead>
-            <TableHead>Contato</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10">Montador</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Valor Fixo</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {montadoresOrdenados.map((montador) => (
-            <TableRow key={montador.id}>
-              <TableCell>
-                <div className="font-medium text-sm">{montador.nome}</div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={getCategoriaBadge(montador.categoria)} className="text-xs">
-                  <Wrench className={`h-3 w-3 mr-1 ${getCategoriaColor(montador.categoria)}`} />
-                  {montador.categoria}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="font-medium">{formatCurrency(montador.valorFixo)}</div>
-                <div className="text-xs text-gray-500">por serviço</div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3 text-gray-400" />
-                  <span className="text-sm">{montador.telefone}</span>
+            <TableRow key={montador.id} className="h-12 bg-white hover:bg-blue-50/50">
+              <TableCell className="py-2">
+                <div>
+                  <div className="font-medium">{montador.nome}</div>
+                  <div className="text-sm text-muted-foreground">{montador.categoria}</div>
                 </div>
               </TableCell>
-              <TableCell>
+              <TableCell className="py-2">
+                <div className="font-medium">{formatCurrency(montador.valorFixo)}</div>
+                <div className="text-sm text-muted-foreground">por serviço</div>
+              </TableCell>
+              <TableCell className="py-2">
+                <div className="text-sm">
+                  <div>{montador.telefone}</div>
+                  <div className="text-muted-foreground">Montador</div>
+                </div>
+              </TableCell>
+              <TableCell className="py-2">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={montador.ativo}
                     onCheckedChange={() => onToggleStatus(montador.id)}
+                    className="data-[state=checked]:bg-slate-600"
                   />
-                  <Badge variant={montador.ativo ? "default" : "secondary"}>
+                  <Badge variant={montador.ativo ? "default" : "secondary"} className={montador.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
                     {montador.ativo ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </div>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right py-2">
                 <div className="flex justify-end gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onEdit(montador)}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -145,6 +143,7 @@ export function MontadorTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

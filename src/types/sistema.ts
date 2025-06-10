@@ -3,7 +3,7 @@
 // ========================================
 
 // Base comum para entidades
-interface BaseEntity {
+export interface BaseEntity {
   id: string;
   createdAt: string;
   updatedAt?: string;

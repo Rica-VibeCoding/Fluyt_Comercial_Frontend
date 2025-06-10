@@ -84,18 +84,28 @@ export function GestaoComissoes() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header com Ações */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Regras de Comissão</h2>
-          <p className="text-gray-600">Configure faixas de comissão por tipo e valor de vendas</p>
+    <div className="space-y-3">
+      {/* Header de Ações - Buscador + Nova Regra na mesma linha */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+        {/* Buscador */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar regras por tipo, percentual ou descrição..."
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+            className="pl-10 h-10 border-gray-200 focus:border-slate-400 focus:ring-slate-400 bg-white shadow-sm"
+          />
         </div>
-        
+
+        {/* Botão Nova Regra */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleNewRegra} className="gap-2 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white">
-              <Plus className="h-4 w-4" />
+            <Button 
+              onClick={handleNewRegra} 
+              className="gap-1.5 h-8 px-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-medium text-white text-xs"
+            >
+              <DollarSign className="h-3.5 w-3.5" />
               Nova Regra
             </Button>
           </DialogTrigger>
@@ -116,27 +126,6 @@ export function GestaoComissoes() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* Filtros e Busca */}
-      <Card className="shadow-md border-0 bg-white">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar por tipo, percentual ou descrição..."
-                value={termoBusca}
-                onChange={(e) => setTermoBusca(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline" className="gap-2 bg-white hover:bg-gray-50 border-slate-300 text-slate-700 hover:text-slate-800 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl font-semibold">
-              <Filter className="h-4 w-4" />
-              Filtros
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Tabela de Regras */}
       <ComissaoTable

@@ -22,7 +22,19 @@ const Sidebar = dynamic(() => import('../../components/layout/sidebar').then(mod
     </div>
   )
 });
-import { ProgressStepper } from '../../components/layout/progress-stepper';
+// Importar ProgressStepper dinamicamente sem SSR
+const ProgressStepper = dynamic(() => import('../../components/layout/progress-stepper').then(mod => ({ default: mod.ProgressStepper })), { 
+  ssr: false,
+  loading: () => (
+    <div className="bg-white border-b border-gray-200">
+      <div className="max-w-6xl mx-auto px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-500">Carregando navegação...</div>
+        </div>
+      </div>
+    </div>
+  )
+});
 import { DebugPersistenciaCompacto } from '../../components/shared/debug-persistencia';
 
 // Componente para carregar hooks apenas no cliente

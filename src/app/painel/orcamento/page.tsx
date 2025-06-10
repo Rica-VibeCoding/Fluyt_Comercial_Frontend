@@ -1,5 +1,14 @@
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function OrcamentoPage() {
-  redirect('/painel/orcamento/simulador');
+  const router = useRouter();
+  
+  useEffect(() => {
+    router.replace('/painel/orcamento/simulador');
+  }, [router]);
+
+  return <div>Redirecionando...</div>;
 }
