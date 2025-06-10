@@ -27,6 +27,17 @@ export const sidebarThemes: SidebarTheme[] = [
     }
   },
   { 
+    name: "Azul Clarinho", 
+    id: "blue-light",
+    colors: {
+      primary: "210 100% 56%",
+      sidebar: "210 40% 98%",
+      sidebarForeground: "210 15% 20%",
+      sidebarAccent: "210 60% 92%",
+      sidebarAccentForeground: "210 25% 15%"
+    }
+  },
+  { 
     name: "Cinza Profissional", 
     id: "gray-professional",
     colors: {
