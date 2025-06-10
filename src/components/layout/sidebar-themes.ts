@@ -31,10 +31,10 @@ export const sidebarThemes: SidebarTheme[] = [
     id: "blue-light",
     colors: {
       primary: "210 100% 56%",
-      sidebar: "210 40% 98%",
-      sidebarForeground: "210 15% 20%",
-      sidebarAccent: "210 60% 92%",
-      sidebarAccentForeground: "210 25% 15%"
+      sidebar: "210 84% 67%",
+      sidebarForeground: "210 100% 98%",
+      sidebarAccent: "210 75% 55%",
+      sidebarAccentForeground: "210 100% 98%"
     }
   },
   { 
