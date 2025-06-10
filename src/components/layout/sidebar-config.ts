@@ -5,8 +5,6 @@
 import { 
   Home, 
   Users, 
-  Building2, 
-  Calculator, 
   FileText, 
   Settings
 } from 'lucide-react';
@@ -36,14 +34,14 @@ export const menuItems: MenuItem[] = [
   },
   { 
     titulo: 'Ambientes', 
-    icone: Building2, 
+    icone: Home, 
     href: '/painel/ambientes',
     descricao: 'Projetos e ambientes',
     ativo: true // Módulo migrado
   },
   { 
     titulo: 'Orçamentos', 
-    icone: Calculator, 
+    icone: FileText, 
     href: '/painel/orcamento',
     descricao: 'Simulador de propostas',
     ativo: true // Módulo atual

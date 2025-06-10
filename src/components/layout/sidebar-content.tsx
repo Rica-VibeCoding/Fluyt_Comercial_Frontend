@@ -32,7 +32,9 @@ export function SidebarContent({
     <div className={cn("h-full flex flex-col", className)}>
       <div className="flex-1 space-y-4 py-4">
         {/* Logo/Header */}
-        <div className="px-3 py-2">
+        <div 
+          className="px-3 py-2 border-b border-white/20"
+        >
           <Link href={sidebarConfig.logo.href}>
             <h2 
               className={`mb-2 px-4 text-lg font-bold tracking-tight transition-all duration-300 ${
@@ -111,8 +113,7 @@ export function SidebarContent({
 
       {/* Footer com Avatar de Usuário */}
       <div 
-        className="p-3 space-y-3 border-t"
-        style={{ borderTopColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))' }}
+        className="p-3 space-y-3 border-t border-white/20"
       >
         {/* Usuário */}
         <div className={`flex items-center transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'px-2'}`}>
@@ -142,24 +143,6 @@ export function SidebarContent({
             onThemeChange={onThemeChange}
             isCollapsed={isCollapsed}
           />
-          
-          {/* Label do seletor quando expandido */}
-          {!isCollapsed && (
-            <div className="flex-1">
-              <p 
-                className="text-xs font-medium"
-                style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%))' }}
-              >
-                Personalizar
-              </p>
-              <p 
-                className="text-xs"
-                style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.6)' }}
-              >
-                Trocar tema da sidebar
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>
