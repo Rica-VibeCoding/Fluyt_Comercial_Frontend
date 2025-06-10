@@ -49,12 +49,14 @@ export const useAmbientesStore = create<AmbientesState>()(
       
       // Ações de dados
       setAmbientes: (ambientes) => {
-        const valorTotal = ambientes.reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+        const valorTotal = ambientes.reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
         const porCliente = ambientes.reduce((acc, ambiente) => {
-          if (!acc[ambiente.cliente_id]) {
-            acc[ambiente.cliente_id] = [];
+          if (ambiente.clienteId && !acc[ambiente.clienteId]) {
+            acc[ambiente.clienteId] = [];
           }
-          acc[ambiente.cliente_id].push(ambiente);
+          if (ambiente.clienteId) {
+            acc[ambiente.clienteId].push(ambiente);
+          }
           return acc;
         }, {} as Record<string, Ambiente[]>);
         
@@ -67,13 +69,15 @@ export const useAmbientesStore = create<AmbientesState>()(
       
       adicionarAmbiente: (ambiente) => set((state) => {
         const novosAmbientes = [...state.ambientes, ambiente];
-        const valorTotal = novosAmbientes.reduce((acc, amb) => acc + amb.valor_total, 0);
+        const valorTotal = novosAmbientes.reduce((acc, amb) => acc + amb.valorTotal, 0);
         const porCliente = { ...state.ambientesPorCliente };
         
-        if (!porCliente[ambiente.cliente_id]) {
-          porCliente[ambiente.cliente_id] = [];
+        if (ambiente.clienteId && !porCliente[ambiente.clienteId]) {
+          porCliente[ambiente.clienteId] = [];
         }
-        porCliente[ambiente.cliente_id].push(ambiente);
+        if (ambiente.clienteId) {
+          porCliente[ambiente.clienteId].push(ambiente);
+        }
         
         return {
           ambientes: novosAmbientes,
@@ -86,14 +90,14 @@ export const useAmbientesStore = create<AmbientesState>()(
         const novosAmbientes = state.ambientes.map(ambiente => 
           ambiente.id === id ? { ...ambiente, ...dadosAtualizados } : ambiente
         );
-        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
         
         // Recalcular ambientes por cliente
         const porCliente = novosAmbientes.reduce((acc, ambiente) => {
-          if (!acc[ambiente.cliente_id]) {
-            acc[ambiente.cliente_id] = [];
+          if (!acc[ambiente.clienteId]) {
+            acc[ambiente.clienteId] = [];
           }
-          acc[ambiente.cliente_id].push(ambiente);
+          acc[ambiente.clienteId].push(ambiente);
           return acc;
         }, {} as Record<string, Ambiente[]>);
         
@@ -110,14 +114,14 @@ export const useAmbientesStore = create<AmbientesState>()(
       removerAmbiente: (id) => set((state) => {
         const ambiente = state.ambientes.find(amb => amb.id === id);
         const novosAmbientes = state.ambientes.filter(ambiente => ambiente.id !== id);
-        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
         
         // Recalcular ambientes por cliente
         const porCliente = novosAmbientes.reduce((acc, ambiente) => {
-          if (!acc[ambiente.cliente_id]) {
-            acc[ambiente.cliente_id] = [];
+          if (!acc[ambiente.clienteId]) {
+            acc[ambiente.clienteId] = [];
           }
-          acc[ambiente.cliente_id].push(ambiente);
+          acc[ambiente.clienteId].push(ambiente);
           return acc;
         }, {} as Record<string, Ambiente[]>);
         
@@ -147,15 +151,15 @@ export const useAmbientesStore = create<AmbientesState>()(
         const { ambientes } = get();
         if (clienteId) {
           return ambientes
-            .filter(ambiente => ambiente.cliente_id === clienteId)
-            .reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+            .filter(ambiente => ambiente.clienteId === clienteId)
+            .reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
         }
-        return ambientes.reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+        return ambientes.reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
       },
       
       limparAmbientesCliente: (clienteId) => set((state) => {
-        const novosAmbientes = state.ambientes.filter(ambiente => ambiente.cliente_id !== clienteId);
-        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valor_total, 0);
+        const novosAmbientes = state.ambientes.filter(ambiente => ambiente.clienteId !== clienteId);
+        const valorTotal = novosAmbientes.reduce((acc, ambiente) => acc + ambiente.valorTotal, 0);
         
         const porCliente = { ...state.ambientesPorCliente };
         delete porCliente[clienteId];

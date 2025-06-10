@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSimulador } from '@/hooks/modulos/orcamento/use-simulador';
-import { useSessao } from '@/store/sessao-store';
+import { useSimulador } from '@/hooks';
+import { useSessaoStore } from '@/store';
 import { 
   InputSection, 
   Dashboard, 
@@ -46,7 +46,7 @@ export default function SimuladorPage() {
     valorTotalAmbientes,
     podeGerarOrcamento,
     definirOrcamento
-  } = useSessao();
+  } = useSessaoStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [editandoForma, setEditandoForma] = useState<FormaPagamento | null>(null);
   const [novaForma, setNovaForma] = useState<NovaFormaState>({
