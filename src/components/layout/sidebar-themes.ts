@@ -30,11 +30,11 @@ export const sidebarThemes: SidebarTheme[] = [
     name: "Azul Clarinho", 
     id: "blue-light",
     colors: {
-      primary: "210 100% 56%",
-      sidebar: "210 84% 67%",
-      sidebarForeground: "210 100% 98%",
-      sidebarAccent: "210 75% 55%",
-      sidebarAccentForeground: "210 100% 98%"
+      primary: "207 44% 49%",
+      sidebar: "207 44% 49%",
+      sidebarForeground: "0 0% 98%",
+      sidebarAccent: "207 54% 39%",
+      sidebarAccentForeground: "0 0% 98%"
     }
   },
   { 
