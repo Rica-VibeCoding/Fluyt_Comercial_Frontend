@@ -3,14 +3,19 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { loadSavedTheme, applyTheme } from '../../components/layout/sidebar-themes';
 
 // Context para gerenciar estado do collapse da sidebar
 const SidebarContext = createContext<{
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  currentTheme: string;
+  setCurrentTheme: (theme: string) => void;
 }>({
   isCollapsed: false,
   setIsCollapsed: () => {},
+  currentTheme: 'light-default',
+  setCurrentTheme: () => {},
 });
 
 export const useSidebarContext = () => useContext(SidebarContext);
@@ -65,6 +70,14 @@ export default function PainelLayout({
 }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('light-default');
+  
+  // Carregar tema salvo e aplicar
+  useEffect(() => {
+    const savedTheme = loadSavedTheme();
+    setCurrentTheme(savedTheme);
+    applyTheme(savedTheme);
+  }, []);
   
   // Não mostrar ProgressStepper nas páginas de sistema
   const shouldShowProgressStepper = !pathname.startsWith('/painel/sistema');
@@ -77,7 +90,7 @@ export default function PainelLayout({
   const sidebarWidth = isCollapsed ? '4rem' : '16rem'; // w-16 = 4rem, w-64 = 16rem
 
   return (
-    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed }}>
+    <SidebarContext.Provider value={{ isCollapsed, setIsCollapsed, currentTheme, setCurrentTheme }}>
       <div className="min-h-screen bg-gray-50 layout-container overflow-hidden">
         <ClientOnlyPersistence />
         <Sidebar />

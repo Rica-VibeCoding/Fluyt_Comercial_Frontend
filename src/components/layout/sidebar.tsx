@@ -13,7 +13,7 @@ import { useSidebarContext } from '../../app/painel/layout';
 
 export function Sidebar() {
   const [isClient, setIsClient] = useState(false);
-  const { isCollapsed, setIsCollapsed } = useSidebarContext();
+  const { isCollapsed, setIsCollapsed, currentTheme, setCurrentTheme } = useSidebarContext();
 
   // Proteger contra SSR
   useEffect(() => {
@@ -44,11 +44,18 @@ export function Sidebar() {
   return (
     <>
       {/* Sidebar Desktop */}
-      <div className={`
-        hidden md:block ${layout.position} overflow-y-auto overflow-x-hidden ${layout.zIndex} ${layout.border} ${layout.background}
-        transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-16' : layout.width}
-      `}>
+      <div 
+        className={`
+          hidden md:block ${layout.position} overflow-y-auto overflow-x-hidden ${layout.zIndex} border-r
+          transition-all duration-300 ease-in-out
+          ${isCollapsed ? 'w-16' : layout.width}
+        `}
+        style={{
+          backgroundColor: 'hsl(var(--sidebar-background, 0 0% 98%))',
+          borderColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))',
+          color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%))'
+        }}
+      >
         {/* Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -62,7 +69,12 @@ export function Sidebar() {
           )}
         </button>
 
-        <SidebarContent className="w-full" isCollapsed={isCollapsed} />
+        <SidebarContent 
+          className="w-full" 
+          isCollapsed={isCollapsed}
+          currentTheme={currentTheme}
+          onThemeChange={setCurrentTheme}
+        />
       </div>
 
       {/* Sidebar Mobile */}

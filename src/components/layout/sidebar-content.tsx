@@ -9,32 +9,47 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { menuItems, sidebarConfig } from './sidebar-config';
+import { SidebarThemeSelector } from './sidebar-theme-selector';
 
 interface SidebarContentProps {
   className?: string;
   onItemClick?: () => void;
   isCollapsed?: boolean;
+  currentTheme?: string;
+  onThemeChange?: (themeId: string) => void;
 }
 
-export function SidebarContent({ className, onItemClick, isCollapsed = false }: SidebarContentProps) {
+export function SidebarContent({ 
+  className, 
+  onItemClick, 
+  isCollapsed = false,
+  currentTheme = 'light-default',
+  onThemeChange = () => {}
+}: SidebarContentProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("h-full", className)}>
-      <div className="space-y-4 py-4">
+    <div className={cn("h-full flex flex-col", className)}>
+      <div className="flex-1 space-y-4 py-4">
         {/* Logo/Header */}
         <div className="px-3 py-2">
           <Link href={sidebarConfig.logo.href}>
-            <h2 className={`mb-2 px-4 text-lg font-semibold tracking-tight text-blue-600 transition-all duration-300 ${
-              isCollapsed ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-            }`}>
+            <h2 
+              className={`mb-2 px-4 text-lg font-semibold tracking-tight transition-all duration-300 ${
+                isCollapsed ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+              }`}
+              style={{ color: 'hsl(var(--sidebar-primary, 210 100% 56%))' }}
+            >
               {!isCollapsed && sidebarConfig.logo.text}
               {isCollapsed && '🏢'}
             </h2>
           </Link>
-          <p className={`px-4 text-sm text-muted-foreground transition-all duration-300 ${
-            isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
-          }`}>
+          <p 
+            className={`px-4 text-sm transition-all duration-300 ${
+              isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
+            }`}
+            style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.7)' }}
+          >
             {sidebarConfig.logo.subtitle}
           </p>
         </div>
@@ -53,14 +68,32 @@ export function SidebarContent({ className, onItemClick, isCollapsed = false }: 
                   href={isDisabled ? '#' : item.href}
                   onClick={onItemClick}
                   className={cn(
-                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors relative group",
+                    "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors relative group",
                     isActive 
-                      ? "bg-accent text-accent-foreground" 
-                      : "transparent",
+                      ? "" // Remover classes padrão para usar CSS custom
+                      : "",
                     isDisabled 
-                      ? "opacity-50 cursor-not-allowed hover:bg-transparent" 
+                      ? "opacity-50 cursor-not-allowed" 
                       : "cursor-pointer"
                   )}
+                  style={{
+                    backgroundColor: isActive 
+                      ? 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))' 
+                      : 'transparent',
+                    color: isActive 
+                      ? 'hsl(var(--sidebar-accent-foreground, 240 5.9% 10%))' 
+                      : 'hsl(var(--sidebar-foreground, 240 10% 3.9%))'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive && !isDisabled) {
+                      e.currentTarget.style.backgroundColor = 'hsl(var(--sidebar-accent, 240 4.8% 95.9%) / 0.5)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
                   title={isCollapsed ? item.titulo : undefined}
                 >
                   <Icon className={`h-4 w-4 flex-shrink-0 ${isCollapsed ? 'mx-auto' : 'mr-2'}`} />
@@ -82,7 +115,10 @@ export function SidebarContent({ className, onItemClick, isCollapsed = false }: 
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p 
+                      className="text-xs mt-1"
+                      style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.6)' }}
+                    >
                       {item.descricao}
                     </p>
                   </div>
@@ -102,18 +138,72 @@ export function SidebarContent({ className, onItemClick, isCollapsed = false }: 
         </div>
 
         {/* Informações do Sistema */}
-        <div className={`px-3 pt-4 border-t transition-all duration-300 ${
+        <div className={`px-3 pt-4 transition-all duration-300 ${
           isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'
-        }`}>
-          <div className="px-4 py-2">
-            <p className="text-xs text-muted-foreground">
+        }`} style={{ borderTopColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))' }}>
+          <div 
+            className="px-4 py-2 border-t"
+            style={{ borderTopColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))' }}
+          >
+            <p 
+              className="text-xs"
+              style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.7)' }}
+            >
               Módulo Orçamentos ativo
             </p>
-            <p className="text-xs text-blue-600 font-medium">
+            <p 
+              className="text-xs font-medium"
+              style={{ color: 'hsl(var(--sidebar-primary, 210 100% 56%))' }}
+            >
               Simulador Financeiro
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Footer com Configurações */}
+      <div 
+        className="p-3 space-y-3 border-t"
+        style={{ borderTopColor: 'hsl(var(--sidebar-accent, 240 4.8% 95.9%))' }}
+      >
+        {/* Seletor de Temas */}
+        <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+          <SidebarThemeSelector 
+            currentTheme={currentTheme}
+            onThemeChange={onThemeChange}
+            isCollapsed={isCollapsed}
+          />
+          
+          {/* Label do seletor quando expandido */}
+          {!isCollapsed && (
+            <div className="flex-1">
+              <p 
+                className="text-xs font-medium"
+                style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%))' }}
+              >
+                Personalizar
+              </p>
+              <p 
+                className="text-xs"
+                style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.6)' }}
+              >
+                Trocar tema da sidebar
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Informações da versão (quando expandido) */}
+        {!isCollapsed && (
+          <div className="px-2 py-1 text-center">
+            <p 
+              className="text-xs"
+              style={{ color: 'hsl(var(--sidebar-foreground, 240 10% 3.9%) / 0.5)' }}
+            >
+              Sistema Fluyt v1.0
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
