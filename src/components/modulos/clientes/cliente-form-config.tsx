@@ -33,7 +33,7 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
               <FormLabel className="text-xs font-medium text-slate-700">Procedência *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-8 text-sm">
+                  <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
                     <SelectValue placeholder="Como conheceu?" />
                   </SelectTrigger>
                 </FormControl>
@@ -58,7 +58,7 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
               <FormLabel className="text-xs font-medium text-slate-700">Vendedor Responsável *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-8 text-sm">
+                  <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
                     <SelectValue placeholder="Selecione o vendedor" />
                   </SelectTrigger>
                 </FormControl>
@@ -84,7 +84,7 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
               <FormControl>
                 <Textarea 
                   placeholder="Observações adicionais sobre o cliente..."
-                  className="min-h-[60px] text-sm"
+                  className="min-h-[60px] text-sm border-slate-300 focus:border-slate-400"
                   {...field} 
                 />
               </FormControl>

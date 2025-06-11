@@ -1,15 +1,18 @@
 /**
  * Modal para adicionar/editar formas de pagamento
+ * Permite configurar diferentes tipos: entrada, financeira, cartão, boleto
+ * Cada tipo tem campos específicos e validações próprias
  */
 
 'use client';
 
 import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CreditCard } from 'lucide-react';
 import { FormaPagamento } from '@/types/simulador';
 import { useCurrencyInput } from '@/hooks/globais/use-currency-input';
 
@@ -69,8 +72,8 @@ export function FormaPagamentoModal({
     const { min, max } = getMinMax();
 
     return (
-      <div className="space-y-2">
-        <Label>Parcelas</Label>
+      <div>
+        <Label className="text-xs font-medium text-slate-700">Parcelas</Label>
         <Input
           type="number"
           min={min}
@@ -81,155 +84,175 @@ export function FormaPagamentoModal({
             parcelas: Math.min(max, Math.max(min, Number(e.target.value) || 1))
           }))}
           placeholder={`De ${min} a ${max}`}
+          className="h-8 text-sm border-slate-300 focus:border-slate-400"
         />
       </div>
     );
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {editandoForma ? 'Editar' : 'Adicionar'} Forma de Pagamento
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Forma de Pagamento</Label>
-            <Select 
-              value={novaForma.tipo} 
-              onValueChange={(value: TipoFormaPagamento) => 
-                setNovaForma(prev => ({ ...prev, tipo: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a forma de pagamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ENTRADA">💰 À Vista / Dinheiro (Entrada)</SelectItem>
-                <SelectItem value="FINANCEIRA">🏦 Financeira / Banco</SelectItem>
-                <SelectItem value="CARTAO">💳 Cartão de Crédito</SelectItem>
-                <SelectItem value="BOLETO">📄 Boleto da Loja</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {novaForma.tipo === 'ENTRADA' && 'Pagamento imediato - menor risco, melhor para o fluxo de caixa'}
-              {novaForma.tipo === 'FINANCEIRA' && 'Financiamento bancário - cliente assume juros externos'}
-              {novaForma.tipo === 'CARTAO' && 'Pagamento com cartão - descontos da operadora aplicados'}
-              {novaForma.tipo === 'BOLETO' && 'Boleto parcelado da loja - maior prazo, custo de capital próprio'}
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Valor (R$)</Label>
-            <Input
-              type="text"
-              {...valorFormaInput}
-            />
-          </div>
-
-          {renderParcelasInput()}
-
-          {novaForma.tipo === 'FINANCEIRA' && (
-            <>
-              <div className="space-y-2">
-                <Label>Taxa de Juros do Banco (% ao mês)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={novaForma.taxaJuros || ''}
-                  onChange={(e) => setNovaForma(prev => ({ 
-                    ...prev, 
-                    taxaJuros: Number(e.target.value) || 0
-                  }))}
-                  placeholder="Ex: 1.5 (1,5% ao mês)"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Taxa cobrada pela instituição financeira (cliente arca com os juros)
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Data do Primeiro Vencimento</Label>
-                <Input
-                  type="date"
-                  value={novaForma.dataVencimento}
-                  onChange={(e) => setNovaForma(prev => ({ 
-                    ...prev, 
-                    dataVencimento: e.target.value
-                  }))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Quando a primeira parcela vence (banco faz o repasse)
-                </p>
-              </div>
-            </>
-          )}
-
-          {novaForma.tipo === 'CARTAO' && (
-            <>
-              <div className="space-y-2">
-                <Label>Taxa da Operadora (%)</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={novaForma.deflacao || ''}
-                  onChange={(e) => setNovaForma(prev => ({ 
-                    ...prev, 
-                    deflacao: Number(e.target.value) || 0
-                  }))}
-                  placeholder="Ex: 3.5 (3,5% por transação)"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Taxa cobrada pela operadora do cartão (Visa, Master, etc)
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label>Taxa de Antecipação (% por parcela)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={novaForma.jurosAntecipacao || ''}
-                  onChange={(e) => setNovaForma(prev => ({ 
-                    ...prev, 
-                    jurosAntecipacao: Number(e.target.value) || 0
-                  }))}
-                  placeholder="Ex: 2.5 (2,5% por parcela antecipada)"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Custo para antecipar as parcelas do cartão (se aplicável)
-                </p>
-              </div>
-            </>
-          )}
-
-          {novaForma.tipo === 'BOLETO' && (
-            <div className="space-y-2">
-              <Label>Custo de Capital (% ao mês)</Label>
-              <Input
-                type="number"
-                step="0.1"
-                value={novaForma.custoCapital || ''}
-                onChange={(e) => setNovaForma(prev => ({ 
-                  ...prev, 
-                  custoCapital: Number(e.target.value) || 0
-                }))}
-                placeholder="Ex: 1.0 (1% ao mês)"
-              />
-              <p className="text-xs text-muted-foreground">
-                Custo mensal do dinheiro da empresa (taxa Selic + spread)
-              </p>
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col bg-white dark:bg-slate-900">
+        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
+          <div className="flex items-center gap-2">
+            <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+              <CreditCard className="h-3 w-3 text-slate-500" />
             </div>
-          )}
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={onCancel}>
-              Cancelar
-            </Button>
-            <Button onClick={onSubmit}>
-              {editandoForma ? 'Salvar' : 'Adicionar'}
-            </Button>
+            <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              {editandoForma ? 'Editar' : 'Adicionar'} Forma de Pagamento
+            </DialogTitle>
           </div>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-hidden">
+          <form onSubmit={handleSubmit} className="h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto p-2">
+              <div className="space-y-1">
+                <div>
+                  <Label className="text-xs font-medium text-slate-700">Forma de Pagamento *</Label>
+                  <Select 
+                    value={novaForma.tipo} 
+                    onValueChange={(value: TipoFormaPagamento) => 
+                      setNovaForma(prev => ({ ...prev, tipo: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
+                      <SelectValue placeholder="Selecione a forma de pagamento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ENTRADA">À Vista / Dinheiro (Entrada)</SelectItem>
+                      <SelectItem value="FINANCEIRA">Financeira / Banco</SelectItem>
+                      <SelectItem value="CARTAO">Cartão de Crédito</SelectItem>
+                      <SelectItem value="BOLETO">Boleto da Loja</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                  <div>
+                    <Label className="text-xs font-medium text-slate-700">Valor (R$) *</Label>
+                    <Input
+                      type="text"
+                      className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      {...valorFormaInput}
+                    />
+                  </div>
+
+                  {renderParcelasInput()}
+                </div>
+
+                {novaForma.tipo === 'FINANCEIRA' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700">Taxa de Juros do Banco (% ao mês)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={novaForma.taxaJuros || ''}
+                        onChange={(e) => setNovaForma(prev => ({ 
+                          ...prev, 
+                          taxaJuros: Number(e.target.value) || 0
+                        }))}
+                        placeholder="Ex: 1.5"
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700">Data do Primeiro Vencimento</Label>
+                      <Input
+                        type="date"
+                        value={novaForma.dataVencimento}
+                        onChange={(e) => setNovaForma(prev => ({ 
+                          ...prev, 
+                          dataVencimento: e.target.value
+                        }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+
+                    </div>
+                  </div>
+                )}
+
+                {novaForma.tipo === 'CARTAO' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700">Taxa da Operadora (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={novaForma.deflacao || ''}
+                        onChange={(e) => setNovaForma(prev => ({ 
+                          ...prev, 
+                          deflacao: Number(e.target.value) || 0
+                        }))}
+                        placeholder="Ex: 3.5"
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-slate-700">Taxa de Antecipação (% por parcela)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={novaForma.jurosAntecipacao || ''}
+                        onChange={(e) => setNovaForma(prev => ({ 
+                          ...prev, 
+                          jurosAntecipacao: Number(e.target.value) || 0
+                        }))}
+                        placeholder="Ex: 2.5"
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+
+                    </div>
+                  </div>
+                )}
+
+                {novaForma.tipo === 'BOLETO' && (
+                  <div>
+                    <Label className="text-xs font-medium text-slate-700">Custo de Capital (% ao mês)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={novaForma.custoCapital || ''}
+                      onChange={(e) => setNovaForma(prev => ({ 
+                        ...prev, 
+                        custoCapital: Number(e.target.value) || 0
+                      }))}
+                      placeholder="Ex: 1.0"
+                      className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                    />
+
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
+              <div className="flex justify-end items-center gap-1">
+                <button 
+                  type="button" 
+                  onClick={onCancel}
+                  className="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors"
+                >
+                  {editandoForma ? 'Salvar' : 'Adicionar'}
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>

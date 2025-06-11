@@ -122,7 +122,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <CardTitle className="text-sm font-medium">Desconto Real</CardTitle>
               {onEditDescontoReal && <Button variant="ghost" size="sm" onClick={() => {
                 const valorSeguro = isNaN(descontoReal) ? 0 : descontoReal;
-                openEditModal('Desconto Real', valorSeguro, onEditDescontoReal, true, true, isDescontoRealLocked);
+                openEditModal('Desconto Real', valorSeguro, (novoValor, shouldLock) => {
+                  onEditDescontoReal(novoValor, shouldLock);
+                }, true, true, isDescontoRealLocked);
               }} className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Edit className="h-3 w-3" />
                 </Button>}

@@ -46,27 +46,24 @@ export function ClienteModal({
   const tabs = [{
     id: 'essencial',
     label: 'Informações Essenciais',
-    icon: User,
-    description: 'Dados básicos do cliente'
+    icon: User
   }, {
     id: 'endereco',
     label: 'Endereço',
-    icon: MapPin,
-    description: 'Localização e contato'
+    icon: MapPin
   }, {
     id: 'config',
     label: 'Configurações',
-    icon: Settings,
-    description: 'Vendedor e tipo de venda'
+    icon: Settings
   }];
 
   return (
     <Dialog open={aberto} onOpenChange={onFechar}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col bg-white dark:bg-slate-900">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2">
+      <DialogContent className="max-w-2xl h-[70vh] flex flex-col bg-white dark:bg-slate-900">
+        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
           <div className="flex items-center gap-2">
             <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-              <User className="h-4 w-4 text-slate-500" />
+              <User className="h-3 w-3 text-slate-500" />
             </div>
             <div className="flex-1">
               <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -81,7 +78,7 @@ export function ClienteModal({
             <form onSubmit={form.handleSubmit(onSubmit)} className="h-full flex flex-col">
               <div className="px-2 py-1 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                 <Tabs value={abaAtiva} onValueChange={handleTabChange}>
-                  <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <TabsList className="grid w-full grid-cols-3 h-auto p-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                     {tabs.map(tab => {
                       const Icon = tab.icon;
                       const isCompleted = abasPreenchidas >= tabs.findIndex(t => t.id === tab.id) + 1;
@@ -89,16 +86,11 @@ export function ClienteModal({
                         <TabsTrigger 
                           key={tab.id} 
                           value={tab.id} 
-                          className="flex flex-col gap-1 h-12 px-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-slate-300 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100"
+                          className="flex items-center justify-center gap-1 h-8 px-2 data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-slate-300 dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-slate-100"
                         >
-                          <div className="flex items-center gap-1">
-                            <Icon className="h-3 w-3" />
-                            {isCompleted && <CheckCircle className="h-3 w-3 text-green-600" />}
-                          </div>
-                          <div className="text-center">
-                            <div className="font-medium text-xs">{tab.label}</div>
-                            <div className="text-xs text-slate-500">{tab.description}</div>
-                          </div>
+                          <Icon className="h-3 w-3" />
+                          <span className="font-medium text-xs">{tab.label}</span>
+                          {isCompleted && <CheckCircle className="h-2 w-2 text-green-600" />}
                         </TabsTrigger>
                       );
                     })}
@@ -128,7 +120,7 @@ export function ClienteModal({
                 </Tabs>
               </div>
 
-              <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2">
+              <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
                 <div className="flex justify-end items-center gap-1">
                   <button 
                     type="button" 

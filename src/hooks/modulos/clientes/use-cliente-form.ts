@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useEffect, useMemo } from 'react';
-import { Cliente, Vendedor, PROCEDENCIAS, ESTADOS_BRASIL } from '../../../types/cliente';
+import { Cliente, Vendedor, PROCEDENCIAS_PADRAO, ESTADOS_BRASIL } from '../../../types/cliente';
 
 const clienteSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),

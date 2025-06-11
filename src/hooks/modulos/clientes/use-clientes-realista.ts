@@ -4,10 +4,10 @@ import { ClienteStore } from '@/lib/store/cliente-store';
 import { useToast } from '@/hooks/globais/use-toast';
 
 const exemploVendedores: Vendedor[] = [
-  { id: 'v1', nome: 'Ana Costa' },
-  { id: 'v2', nome: 'Carlos Mendes' },
-  { id: 'v3', nome: 'Pedro Santos' },
-  { id: 'v4', nome: 'Marina Silva' }
+  { id: 'v1', nome: 'Ana Costa', perfil: 'VENDEDOR' },
+  { id: 'v2', nome: 'Carlos Mendes', perfil: 'VENDEDOR' },
+  { id: 'v3', nome: 'Pedro Santos', perfil: 'GERENTE' },
+  { id: 'v4', nome: 'Marina Silva', perfil: 'VENDEDOR' }
 ];
 
 export function useClientesRealista() {
@@ -32,12 +32,12 @@ export function useClientesRealista() {
     try {
       let clientesCarregados: Cliente[];
       
-      if (Object.keys(filtros).length > 0 && (filtros.busca || filtros.tipo_venda || filtros.procedencia || filtros.vendedor_id)) {
+      if (Object.keys(filtros).length > 0 && (filtros.busca || filtros.tipo_venda || filtros.procedencia_id || filtros.vendedor_id)) {
         // Buscar com filtros
         clientesCarregados = await ClienteStore.buscarComFiltros({
           busca: filtros.busca,
           tipo_venda: filtros.tipo_venda,
-          procedencia: filtros.procedencia,
+          procedencia_id: filtros.procedencia_id,
           vendedor_id: filtros.vendedor_id
         });
       } else {

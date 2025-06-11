@@ -53,7 +53,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
             <FormItem className="md:col-span-2">
               <FormLabel className="text-xs font-medium text-slate-700">Nome Completo *</FormLabel>
               <FormControl>
-                <Input placeholder="Digite o nome completo" className="h-8 text-sm" {...field} />
+                <Input placeholder="Digite o nome completo" className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -69,7 +69,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
               <FormControl>
                 <Input 
                   placeholder="000.000.000-00"
-                  className="h-8 text-sm"
+                  className="h-8 text-sm border-slate-300 focus:border-slate-400"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarCPFCNPJ(e.target.value);
@@ -89,7 +89,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
             <FormItem>
               <FormLabel className="text-xs font-medium text-slate-700">RG/IE *</FormLabel>
               <FormControl>
-                <Input placeholder="12.345.678-9" className="h-8 text-sm" {...field} />
+                <Input placeholder="12.345.678-9" className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -106,7 +106,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
                 <Input 
                   type="email" 
                   placeholder="exemplo@email.com" 
-                  className="h-8 text-sm"
+                  className="h-8 text-sm border-slate-300 focus:border-slate-400"
                   {...field} 
                 />
               </FormControl>
@@ -124,7 +124,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
               <FormControl>
                 <Input 
                   placeholder="(11) 99999-9999"
-                  className="h-8 text-sm"
+                  className="h-8 text-sm border-slate-300 focus:border-slate-400"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarTelefone(e.target.value);
@@ -145,7 +145,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
               <FormLabel className="text-xs font-medium text-slate-700">Tipo de Venda *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-8 text-sm">
+                  <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
                     <SelectValue placeholder="Selecione o tipo de venda" />
                   </SelectTrigger>
                 </FormControl>

@@ -83,7 +83,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
               <FormControl>
                 <Input 
                   placeholder="00000-000"
-                  className="h-8 text-sm"
+                  className="h-8 text-sm border-slate-300 focus:border-slate-400"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarCEP(e.target.value);
@@ -112,7 +112,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
             <FormItem>
               <FormLabel className="text-xs font-medium text-slate-700">Número</FormLabel>
               <FormControl>
-                <Input placeholder="123" className="h-8 text-sm" {...field} />
+                <Input placeholder="123" className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,7 +126,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
             <FormItem className="md:col-span-2">
               <FormLabel className="text-xs font-medium text-slate-700">Logradouro *</FormLabel>
               <FormControl>
-                <Input placeholder="Rua, Avenida, etc." className="h-8 text-sm" {...field} />
+                <Input placeholder="Rua, Avenida, etc." className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -140,7 +140,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
             <FormItem className="md:col-span-2">
               <FormLabel className="text-xs font-medium text-slate-700">Complemento</FormLabel>
               <FormControl>
-                <Input placeholder="Apto, Bloco, Sala, etc." className="h-8 text-sm" {...field} />
+                <Input placeholder="Apto, Bloco, Sala, etc." className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,7 +154,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
             <FormItem>
               <FormLabel className="text-xs font-medium text-slate-700">Bairro *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome do bairro" className="h-8 text-sm" {...field} />
+                <Input placeholder="Nome do bairro" className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -168,7 +168,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
             <FormItem>
               <FormLabel className="text-xs font-medium text-slate-700">Cidade *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome da cidade" className="h-8 text-sm" {...field} />
+                <Input placeholder="Nome da cidade" className="h-8 text-sm border-slate-300 focus:border-slate-400" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -183,7 +183,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
               <FormLabel className="text-xs font-medium text-slate-700">Estado (UF) *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger className="h-8 text-sm">
+                  <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
                     <SelectValue placeholder="Selecione o estado" />
                   </SelectTrigger>
                 </FormControl>

@@ -169,107 +169,145 @@ export default function GestaoLojas() {
 
       {/* Dialog de formulário */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingLoja ? 'Editar Loja' : 'Nova Loja'}</DialogTitle>
+        <DialogContent className="max-w-2xl h-[70vh] flex flex-col bg-white dark:bg-slate-900">
+          <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
+            <div className="flex items-center gap-2">
+              <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                <Store className="h-3 w-3 text-slate-500" />
+              </div>
+              <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                {editingLoja ? 'Editar Loja' : 'Nova Loja'}
+              </DialogTitle>
+            </div>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="empresaId">Empresa *</Label>
-                <Select value={formData.empresaId} onValueChange={handleEmpresaChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {empresasAtivas.map((empresa) => (
-                      <SelectItem key={empresa.id} value={empresa.id}>
-                        {empresa.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+          <div className="flex-1 overflow-hidden">
+            <form onSubmit={handleSubmit} className="h-full flex flex-col">
+              <div className="flex-1 overflow-y-auto p-2">
+                <div className="space-y-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <div>
+                      <Label htmlFor="empresaId" className="text-xs font-medium text-slate-700">Empresa *</Label>
+                      <Select value={formData.empresaId} onValueChange={handleEmpresaChange}>
+                        <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
+                          <SelectValue placeholder="Selecione a empresa" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {empresasAtivas.map((empresa) => (
+                            <SelectItem key={empresa.id} value={empresa.id}>
+                              {empresa.nome}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="codigo" className="text-xs font-medium text-slate-700">Código</Label>
+                      <Input
+                        id="codigo"
+                        value={formData.codigo}
+                        readOnly
+                        className="h-8 text-sm bg-slate-50 border-slate-300"
+                        placeholder="Será gerado automaticamente"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="nome" className="text-xs font-medium text-slate-700">Nome da Loja *</Label>
+                      <Input
+                        id="nome"
+                        value={formData.nome}
+                        onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                        required
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label htmlFor="endereco" className="text-xs font-medium text-slate-700">Endereço *</Label>
+                      <Input
+                        id="endereco"
+                        value={formData.endereco}
+                        onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="telefone" className="text-xs font-medium text-slate-700">Telefone</Label>
+                      <Input
+                        id="telefone"
+                        value={formData.telefone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email" className="text-xs font-medium text-slate-700">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="gerente" className="text-xs font-medium text-slate-700">Gerente</Label>
+                      <Input
+                        id="gerente"
+                        value={formData.gerente}
+                        onChange={(e) => setFormData(prev => ({ ...prev, gerente: e.target.value }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="metaMes" className="text-xs font-medium text-slate-700">Meta Mensal (R$)</Label>
+                      <Input
+                        id="metaMes"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.metaMes}
+                        onChange={(e) => setFormData(prev => ({ ...prev, metaMes: Number(e.target.value) }))}
+                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="codigo">Código</Label>
-                <Input
-                  id="codigo"
-                  value={formData.codigo}
-                  readOnly
-                  className="bg-gray-50"
-                  placeholder="Será gerado automaticamente"
-                />
+              <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
+                <div className="flex justify-end items-center gap-1">
+                  <button 
+                    type="button" 
+                    onClick={handleCloseDialog}
+                    className="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    disabled={loading}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Salvando...
+                      </div>
+                    ) : editingLoja ? 'Atualizar Loja' : 'Salvar Loja'}
+                  </button>
+                </div>
               </div>
-
-              <div className="col-span-2">
-                <Label htmlFor="nome">Nome da Loja *</Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="col-span-2">
-                <Label htmlFor="endereco">Endereço *</Label>
-                <Input
-                  id="endereco"
-                  value={formData.endereco}
-                  onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="telefone">Telefone</Label>
-                <Input
-                  id="telefone"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="gerente">Gerente</Label>
-                <Input
-                  id="gerente"
-                  value={formData.gerente}
-                  onChange={(e) => setFormData(prev => ({ ...prev, gerente: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="metaMes">Meta Mensal</Label>
-                <Input
-                  id="metaMes"
-                  type="number"
-                  value={formData.metaMes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, metaMes: Number(e.target.value) }))}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : editingLoja ? 'Atualizar' : 'Salvar'}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

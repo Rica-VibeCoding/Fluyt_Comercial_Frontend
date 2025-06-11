@@ -3,11 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { Plus, DollarSign, Search, Filter } from 'lucide-react';
 import { useComissoes } from '@/hooks/modulos/sistema/use-comissoes';
-import { ComissaoForm } from './comissao-form';
 import { ComissaoTable } from './comissao-table';
 import type { RegraComissaoFormData } from '@/types/sistema';
+import { useForm } from 'react-hook-form';
 
 export function GestaoComissoes() {
   const {
@@ -24,24 +27,25 @@ export function GestaoComissoes() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRegra, setEditingRegra] = useState<any>(null);
   const [termoBusca, setTermoBusca] = useState('');
-  const [formData, setFormData] = useState<RegraComissaoFormData>({
-    tipo: 'VENDEDOR',
-    valorMinimo: 0,
-    valorMaximo: null,
-    percentual: 0
+
+  const form = useForm<RegraComissaoFormData>({
+    defaultValues: {
+      tipo: 'VENDEDOR',
+      valorMinimo: 0,
+      valorMaximo: null,
+      percentual: 0
+    }
   });
 
   // Filtrar regras baseado na busca
   const regrasFiltradas = termoBusca ? buscarRegras(termoBusca) : regrasComissao;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (data: RegraComissaoFormData) => {
     let sucesso = false;
     if (editingRegra) {
-      sucesso = await atualizarRegraComissao(editingRegra.id, formData);
+      sucesso = await atualizarRegraComissao(editingRegra.id, data);
     } else {
-      sucesso = await criarRegraComissao(formData);
+      sucesso = await criarRegraComissao(data);
     }
 
     if (sucesso) {
@@ -51,7 +55,7 @@ export function GestaoComissoes() {
 
   const handleEdit = (regra: any) => {
     setEditingRegra(regra);
-    setFormData({
+    form.reset({
       tipo: regra.tipo,
       valorMinimo: regra.valorMinimo,
       valorMaximo: regra.valorMaximo,
@@ -63,7 +67,7 @@ export function GestaoComissoes() {
 
   const handleNewRegra = () => {
     setEditingRegra(null);
-    setFormData({
+    form.reset({
       tipo: 'VENDEDOR',
       valorMinimo: 0,
       valorMaximo: null,
@@ -75,7 +79,7 @@ export function GestaoComissoes() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingRegra(null);
-    setFormData({
+    form.reset({
       tipo: 'VENDEDOR',
       valorMinimo: 0,
       valorMaximo: null,
@@ -109,20 +113,166 @@ export function GestaoComissoes() {
               Nova Regra
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingRegra ? 'Editar Regra de Comissão' : 'Nova Regra de Comissão'}
-              </DialogTitle>
+          <DialogContent className="max-w-2xl h-[70vh] flex flex-col bg-white dark:bg-slate-900">
+            <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
+              <div className="flex items-center gap-2">
+                <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                  <DollarSign className="h-3 w-3 text-slate-500" />
+                </div>
+                <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {editingRegra ? 'Editar Regra de Comissão' : 'Nova Regra de Comissão'}
+                </DialogTitle>
+              </div>
             </DialogHeader>
-            <ComissaoForm
-              formData={formData}
-              onFormDataChange={setFormData}
-              onSubmit={handleSubmit}
-              onCancel={handleCloseDialog}
-              isEditing={!!editingRegra}
-              loading={loading}
-            />
+
+            <div className="flex-1 overflow-hidden">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="h-full flex flex-col">
+                  <div className="flex-1 overflow-y-auto p-2">
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                        <FormField
+                          control={form.control}
+                          name="tipo"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-slate-700">Tipo de Funcionário *</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
+                                    <SelectValue placeholder="Selecione o tipo" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="VENDEDOR">Vendedor</SelectItem>
+                                  <SelectItem value="GERENTE">Gerente</SelectItem>
+                                  <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="percentual"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-slate-700">Percentual (%) *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                  placeholder="5.0" 
+                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="valorMinimo"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-slate-700">Valor Mínimo (R$) *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="1000.00" 
+                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="valorMaximo"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs font-medium text-slate-700">Valor Máximo (R$)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="10000.00 (opcional)" 
+                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
+                                  {...field}
+                                  value={field.value || ''}
+                                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                                />
+                              </FormControl>
+                              <FormDescription className="text-xs text-slate-500">
+                                Deixe vazio para sem limite máximo
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="descricao"
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="text-xs font-medium text-slate-700">Descrição</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Descrição da regra de comissão..."
+                                  className="min-h-[60px] text-sm border-slate-300 focus:border-slate-400"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
+                    <div className="flex justify-end items-center gap-1">
+                      <button 
+                        type="button" 
+                        onClick={handleCloseDialog}
+                        className="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        disabled={loading}
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={loading}
+                        className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {loading ? (
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Salvando...
+                          </div>
+                        ) : editingRegra ? 'Atualizar Regra' : 'Salvar Regra'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

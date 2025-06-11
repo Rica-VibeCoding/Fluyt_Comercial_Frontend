@@ -11,6 +11,7 @@ import {
   FormasPagamentoSection, 
   CronogramaRecebimento, 
   AmbienteSection,
+  TravamentoControls,
   type NovaFormaState,
   type TipoFormaPagamento
 } from '@/components/modulos/orcamento';
@@ -36,6 +37,10 @@ function SimuladorPageContent() {
     adicionarForma,
     removerForma,
     limparFormas,
+    editarForma,
+    alternarTravamentoForma,
+    resetarTravamentos,
+    definirLimiteDescontoReal,
     loading,
     erro
   } = useSimulador();
@@ -241,9 +246,7 @@ function SimuladorPageContent() {
           valorNegociado={simulacao.valorNegociado}
           onValorBrutoChange={editarValorBruto}
           onDescontoChange={(desconto) => {
-            console.log('🔄 onDescontoChange chamado:', { desconto, valorBruto: simulacao.valorBruto });
             const novoValorNegociado = simulacao.valorBruto * (1 - desconto / 100);
-            console.log('🔄 Calculado novoValorNegociado:', novoValorNegociado);
             editarValorNegociado(novoValorNegociado);
           }}
           onAtualizarSimulacao={() => editarValorNegociado(simulacao.valorNegociado)}
@@ -271,7 +274,7 @@ function SimuladorPageContent() {
             onEditarForma={handleEditarForma}
             onRemoverForma={removerForma}
             onLimparFormas={limparFormas}
-            onAlternarTravamento={() => {}} // Temporário - sem travamento
+            onAlternarTravamento={alternarTravamentoForma}
             onOpenModal={handleOpenModal}
           />
           
@@ -288,6 +291,16 @@ function SimuladorPageContent() {
 
         {/* Cronograma de Recebimento */}
         <CronogramaRecebimento formasPagamento={simulacao.formasPagamento} />
+
+        {/* Controles de Travamento Avançado */}
+        <TravamentoControls
+          travamentos={simulacao.travamentos}
+          valorNegociado={simulacao.valorNegociado}
+          descontoReal={simulacao.descontoReal}
+          onResetarTravamentos={resetarTravamentos}
+          onDefinirLimiteDescontoReal={definirLimiteDescontoReal}
+          onEditarDescontoReal={editarDescontoReal}
+        />
       </div>
     </div>
   );

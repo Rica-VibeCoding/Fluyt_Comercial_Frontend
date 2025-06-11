@@ -26,7 +26,9 @@ export const DescontoInput: React.FC<DescontoInputProps> = ({
       if (isNaN(value) || value === 0) {
         setInputValue('');
       } else {
-        setInputValue(value.toString());
+        // Arredondar para 1 casa decimal e formatar
+        const valorFormatado = Math.round(value * 10) / 10;
+        setInputValue(valorFormatado.toFixed(1));
       }
     }
   }, [value, isFocused]);
@@ -44,7 +46,9 @@ export const DescontoInput: React.FC<DescontoInputProps> = ({
     // Validar se é um número
     const numValue = parseFloat(newValue);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-      onChange(numValue);
+      // Arredondar para 1 casa decimal antes de enviar
+      const valorArredondado = Math.round(numValue * 10) / 10;
+      onChange(valorArredondado);
     }
   };
 
