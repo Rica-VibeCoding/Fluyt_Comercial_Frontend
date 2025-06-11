@@ -38,7 +38,7 @@ export function ValidationAlerts() {
       )}
 
       {/* Alerta: Cliente e ambientes configurados mas orçamento incompleto */}
-      {cliente && ambientes.length > 0 && !podeGerarContrato && (
+      {cliente && ambientes.length > 0 && !podeGerarContrato() && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -50,6 +50,17 @@ export function ValidationAlerts() {
             >
               Clique aqui para finalizar o orçamento.
             </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Alerta de sucesso: Tudo pronto para gerar contrato */}
+      {cliente && ambientes.length > 0 && podeGerarContrato() && (
+        <Alert className="border-green-200 bg-green-50">
+          <AlertCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            ✅ Tudo pronto! Cliente configurado, ambientes definidos e orçamento finalizado. 
+            Você pode gerar o contrato final.
           </AlertDescription>
         </Alert>
       )}

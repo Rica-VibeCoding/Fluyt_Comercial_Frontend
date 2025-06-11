@@ -334,7 +334,23 @@ export const useSessaoStore = create<SessaoState>()(
 
       podeGerarContrato: () => {
         const state = get();
-        return state.podeGerarOrcamento() && state.orcamentoConfigurado && state.formasPagamento > 0;
+        const podeOrcamento = state.podeGerarOrcamento();
+        const temOrcamento = state.orcamentoConfigurado;
+        const temPagamento = state.formasPagamento > 0;
+        
+        // Debug temporário
+        console.log('🎯 podeGerarContrato:', {
+          podeOrcamento,
+          temOrcamento,
+          temPagamento,
+          cliente: state.cliente?.nome || 'null',
+          ambientes: state.ambientes.length,
+          valorTotal: state.valorTotalAmbientes,
+          formasPagamento: state.formasPagamento,
+          resultado: podeOrcamento && temOrcamento && temPagamento
+        });
+        
+        return podeOrcamento && temOrcamento && temPagamento;
       },
 
       obterResumo: () => {

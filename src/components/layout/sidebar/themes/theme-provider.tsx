@@ -6,18 +6,26 @@
 
 import React, { useEffect } from 'react';
 import { useSidebar } from '../core/sidebar-context';
+import { applyTheme, loadSavedTheme } from './theme-config';
 
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const { currentTheme } = useSidebar();
+  const { currentTheme, setTheme } = useSidebar();
 
+  // Carregar tema salvo na inicialização
   useEffect(() => {
-    // Aplicação básica de tema será implementada na etapa 2
-    const root = document.documentElement;
-    root.setAttribute('data-sidebar-theme', currentTheme);
+    const savedTheme = loadSavedTheme();
+    if (savedTheme !== currentTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  // Aplicar tema quando mudança
+  useEffect(() => {
+    applyTheme(currentTheme);
   }, [currentTheme]);
 
   return <>{children}</>;

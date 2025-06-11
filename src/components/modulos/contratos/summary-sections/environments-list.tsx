@@ -1,20 +1,34 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/card";
-import { Package } from "lucide-react";
+import { Button } from "../../../ui/button";
+import { Package, Plus } from "lucide-react";
 import { Badge } from "../../../ui/badge";
 import { ContratoData } from "../../../../types/contrato";
 import { formatarMoeda } from "../shared/contract-formatters";
+import { useRouter } from "next/navigation";
 
 interface EnvironmentsListProps {
   contratoData: ContratoData;
 }
 
 export function EnvironmentsList({ contratoData }: EnvironmentsListProps) {
+  const router = useRouter();
+
   if (contratoData.ambientes.length === 0) {
     return (
       <Card className="shadow-md border-0 bg-white">
         <CardContent className="text-center py-8">
           <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">Nenhum ambiente configurado</p>
+          <p className="text-gray-600 mb-4">Nenhum ambiente configurado</p>
+          <p className="text-sm text-gray-500 mb-6">
+            Adicione pelo menos um ambiente para continuar com o contrato
+          </p>
+          <Button 
+            onClick={() => router.push('/painel/ambientes')}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Ambientes
+          </Button>
         </CardContent>
       </Card>
     );

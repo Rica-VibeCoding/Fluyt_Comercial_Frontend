@@ -25,7 +25,10 @@ export function SidebarMenu({ items, className }: SidebarMenuProps) {
       <div className="space-y-1">
         {items.map((item) => {
           const Icon = item.icone;
-          const isActive = pathname.startsWith(item.href);
+          // Lógica de seleção melhorada: Dashboard só ativo se estiver exatamente na rota
+          const isActive = item.href === '/painel' 
+            ? pathname === '/painel'
+            : pathname.startsWith(item.href);
           const isDisabled = !item.ativo && item.href !== '/painel/orcamento';
           
           return (

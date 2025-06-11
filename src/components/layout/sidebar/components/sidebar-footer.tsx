@@ -14,7 +14,7 @@ interface SidebarFooterProps {
 
 export function SidebarFooter({ children, className }: SidebarFooterProps) {
   return (
-    <div className={cn("border-t px-2 py-3 space-y-3", className)}>
+    <div className={cn("border-t border-opacity-20 px-2 py-3 space-y-3", className)}>
       {children}
     </div>
   );

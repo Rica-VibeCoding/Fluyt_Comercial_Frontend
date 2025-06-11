@@ -11,10 +11,11 @@ import { StoreDataCard } from "./summary-sections/store-data-card";
 import { FinancialSummary } from "./summary-sections/financial-summary";
 import { EnvironmentsList } from "./summary-sections/environments-list";
 import { ActionBar } from "./summary-sections/action-bar";
+import { DebugPersistenciaCompacto } from "../../shared/debug-persistencia";
 
 const ContractSummary = () => {
   const router = useRouter();
-  const { contratoData, updateField } = useContractDataManager();
+  const { contratoData, updateField, updateStatus } = useContractDataManager();
 
   const handleFinalizarContrato = () => {
     console.log('🎯 Finalizando contrato:', contratoData);
@@ -30,7 +31,11 @@ const ContractSummary = () => {
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
         {/* Header com navegação e ações principais */}
-        <HeaderSection onFinalizarContrato={handleFinalizarContrato} />
+        <HeaderSection 
+          onFinalizarContrato={handleFinalizarContrato} 
+          contratoData={contratoData}
+          updateStatus={updateStatus}
+        />
 
         {/* Alertas de validação */}
         <ValidationAlerts />
@@ -71,6 +76,9 @@ const ContractSummary = () => {
           contratoData={contratoData} 
           onAvancar={handleAvancar} 
         />
+        
+        {/* Debug temporário - só para desenvolvimento */}
+        <DebugPersistenciaCompacto />
       </div>
     </div>
   );

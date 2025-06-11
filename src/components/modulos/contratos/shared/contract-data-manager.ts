@@ -97,10 +97,20 @@ export function useContractDataManager() {
     });
   }, []);
 
+  // Função para atualizar status do contrato
+  const updateStatus = useCallback((newStatus: ContratoData['status']) => {
+    console.log('📝 ContractDataManager - Atualizando status:', newStatus);
+    setContratoData(prev => ({
+      ...prev,
+      status: newStatus
+    }));
+  }, []);
+
   return {
     contratoData,
     setContratoData,
     updateField,
+    updateStatus,
     tentouRecuperar
   };
 }

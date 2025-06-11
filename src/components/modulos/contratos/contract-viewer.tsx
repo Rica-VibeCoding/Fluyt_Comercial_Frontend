@@ -13,7 +13,7 @@ import { toast } from "../../../hooks/globais/use-toast";
 
 const ContractViewer = () => {
   const router = useRouter();
-  const [contratoData] = useState<ContratoData>(contratoMock);
+  const [contratoData, setContratoData] = useState<ContratoData>(contratoMock);
   const [editMode, setEditMode] = useState(false);
 
   const formatCurrency = (value: number) => {
@@ -27,11 +27,39 @@ const ContractViewer = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'RASCUNHO':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'PRONTO':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'ENVIADO':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'ASSINADO':
+        return 'bg-green-100 text-green-700 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
   const handleAssinatura = () => {
+    // Simular processo de assinatura
+    setContratoData(prev => ({ ...prev, status: 'ENVIADO' }));
+    
     toast({
       title: "Assinatura Digital Iniciada",
       description: "O documento foi enviado para assinatura digital. Você receberá um e-mail com o link para assinar."
     });
+
+    // Simular assinatura após alguns segundos (para demo)
+    setTimeout(() => {
+      setContratoData(prev => ({ ...prev, status: 'ASSINADO' }));
+      toast({
+        title: "Contrato Assinado!",
+        description: "O contrato foi assinado com sucesso. Processo finalizado.",
+        variant: "default"
+      });
+    }, 3000);
   };
 
   return (
@@ -50,9 +78,16 @@ const ContractViewer = () => {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Contrato #{contratoData.numero}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Contrato #{contratoData.numero}
+                  </h1>
+                  <Badge 
+                    className={`${getStatusBadgeColor(contratoData.status)} px-2 py-1 text-xs font-medium`}
+                  >
+                    {contratoData.status}
+                  </Badge>
+                </div>
                 <p className="text-gray-600">Visualização e finalização</p>
               </div>
             </div>
@@ -68,15 +103,30 @@ const ContractViewer = () => {
                   loading,
                   error
                 }) => (
-                  <Button variant="outline" disabled={loading} className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    disabled={loading || !!error} 
+                    className="flex items-center gap-2"
+                    title={error ? 'Erro ao gerar PDF. Tente novamente.' : undefined}
+                  >
                     <FileText className="h-4 w-4" />
-                    {loading ? 'Gerando...' : 'Gerar PDF'}
+                    {loading ? 'Gerando PDF...' : error ? 'Erro no PDF' : 'Gerar PDF'}
                   </Button>
                 )}
               </PDFDownloadLink>
-              <Button onClick={handleAssinatura} className="bg-green-600 hover:bg-green-700 flex items-center gap-2">
+              <Button 
+                onClick={handleAssinatura} 
+                disabled={contratoData.status === 'ASSINADO'}
+                className={`flex items-center gap-2 ${
+                  contratoData.status === 'ASSINADO' 
+                    ? 'bg-green-500 cursor-not-allowed opacity-75' 
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
                 <Signature className="h-4 w-4" />
-                Assinatura Digital
+                {contratoData.status === 'ASSINADO' ? 'Já Assinado' : 
+                 contratoData.status === 'ENVIADO' ? 'Aguardando...' : 
+                 'Assinatura Digital'}
               </Button>
             </div>
           </div>

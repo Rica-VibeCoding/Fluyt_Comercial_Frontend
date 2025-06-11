@@ -22,7 +22,11 @@
       "WebFetch(domain:github.com)",
       "Bash(node:*)",
       "Bash(rg:*)",
-      "Bash(/home/ricar/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/x64-linux/rg \"EditableField.*label\" src/components/modulos/contratos/contract-summary-backup.tsx -n)"
+      "Bash(/home/ricar/.npm-global/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/x64-linux/rg \"EditableField.*label\" src/components/modulos/contratos/contract-summary-backup.tsx -n)",
+      "Bash(curl:*)",
+      "Bash(npm run lint)",
+      "mcp__supabase__restore_project",
+      "mcp__supabase__get_project"
     ],
     "deny": []
   }

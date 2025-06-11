@@ -4,15 +4,32 @@ import { Badge } from "../../../ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ClienteSelectorUniversal } from "../../../shared/cliente-selector-universal";
 import { useSessao } from "../../../../store/sessao-store";
-import { contratoMock } from "../../../../types/contrato";
+import { ContratoData } from "../../../../types/contrato";
 
 interface HeaderSectionProps {
   onFinalizarContrato: () => void;
+  contratoData: ContratoData;
+  updateStatus: (status: ContratoData['status']) => void;
 }
 
-export function HeaderSection({ onFinalizarContrato }: HeaderSectionProps) {
+export function HeaderSection({ onFinalizarContrato, contratoData, updateStatus }: HeaderSectionProps) {
   const router = useRouter();
-  const { podeGerarContrato } = useSessao();
+  const { podeGerarContrato, cliente, ambientes, orcamentoConfigurado, formasPagamento } = useSessao();
+  
+  // Debug temporário
+  console.log('🔍 HeaderSection Debug:', {
+    podeGerarContrato: podeGerarContrato(),
+    cliente: cliente?.nome || 'null',
+    ambientes: ambientes.length,
+    orcamentoConfigurado,
+    formasPagamento
+  });
+
+  const handleFinalizarClick = () => {
+    // Atualizar status para PRONTO antes de navegar
+    updateStatus('PRONTO');
+    router.push('/painel/contratos/visualizar');
+  };
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -72,12 +89,26 @@ export function HeaderSection({ onFinalizarContrato }: HeaderSectionProps) {
 
         {/* Status e botões - DIREITA */}
         <div className="flex items-center gap-3">
-          <Badge className={`${getStatusColor(contratoMock.status)} px-3 py-2 text-sm font-medium border h-12 flex items-center`}>
-            {getStatusText(contratoMock.status)}
+          <Badge className={`${getStatusColor(contratoData.status)} px-3 py-2 text-sm font-medium border h-12 flex items-center`}>
+            {getStatusText(contratoData.status)}
           </Badge>
+          
+          {/* Botão de debug temporário */}
+          {!podeGerarContrato() && (
+            <Button 
+              size="lg" 
+              onClick={handleFinalizarClick} 
+              variant="outline"
+              className="gap-3 h-12 px-4 border-2 border-orange-400 text-orange-600 hover:bg-orange-50"
+              title="Forçar finalização (DEBUG)"
+            >
+              🚧 Forçar
+            </Button>
+          )}
+          
           <Button 
             size="lg" 
-            onClick={() => router.push('/painel/contratos/visualizar')} 
+            onClick={handleFinalizarClick} 
             disabled={!podeGerarContrato()}
             className="gap-3 h-12 px-6 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-xl font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
             title={

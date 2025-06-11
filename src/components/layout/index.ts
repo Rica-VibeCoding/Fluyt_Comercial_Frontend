@@ -4,7 +4,24 @@
 
 export { PageHeader } from './page-header';
 export { ProgressStepper } from './progress-stepper';
-export { Sidebar } from './sidebar';
-export { SidebarContent } from './sidebar-content';
-export { SidebarMobile } from './sidebar-mobile';
-export { menuItems, sidebarConfig, type MenuItem } from './sidebar-config';
+
+// Sidebar refatorada
+export { 
+  AppSidebar,
+  Sidebar,
+  SidebarProvider,
+  useSidebar,
+  SidebarMenu,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarUser,
+  SidebarToggle,
+  ThemeSelector,
+  ThemeProvider,
+  menuItems,
+  sidebarThemes,
+  type MenuItem,
+  type SidebarTheme,
+  type SidebarContextType,
+  type UserInfo
+} from './sidebar';

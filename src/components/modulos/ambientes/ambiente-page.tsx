@@ -55,43 +55,6 @@ export function AmbientePage() {
     }
   }, [ambientes, clienteId, definirAmbientes]);
 
-  // Sincronizar cliente carregado com a sessão
-  useEffect(() => {
-    // LÓGICA INTELIGENTE: Respeitar intenção do usuário
-    
-    // 1. Se sessão vazia OU forçar troca → Definir cliente da URL
-    if (clienteCarregado && !clienteLoading && (!cliente || forcarTroca)) {
-      console.log('🔄 AmbientePage: Definindo cliente da URL:', {
-        clienteCarregado: clienteCarregado.nome,
-        clienteCarregadoId: clienteCarregado.id,
-        motivo: !cliente ? 'SESSAO_VAZIA' : 'FORCAR_TROCA',
-        forcarTroca
-      });
-      definirCliente(clienteCarregado);
-      
-      // Limpar parâmetro forcar da URL após usar
-      if (forcarTroca) {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.delete('forcar');
-        router.replace(newUrl.pathname + newUrl.search, { scroll: false });
-      }
-    } 
-    // 2. Se há cliente diferente na URL mas não forçar → Manter sessão atual
-    else if (clienteCarregado && cliente && cliente.id !== clienteCarregado.id && !forcarTroca) {
-      console.log('🔄 AmbientePage: Cliente diferente detectado, mantendo sessão atual:', {
-        clienteURL: clienteCarregado.nome,
-        clienteSessao: cliente.nome,
-        acao: 'MANTENDO_SESSAO_ATUAL'
-      });
-      // Manter cliente da sessão (usuário deve usar "Criar Ambientes" para trocar)
-    }
-    // 3. Se não há cliente na URL mas há na sessão → Manter sessão
-    else if (!clienteCarregado && !clienteLoading && cliente && !clienteId) {
-      console.log('🛡️ Protegendo cliente da sessão (sem clienteId na URL):', cliente.nome);
-      // Manter o cliente na sessão
-    }
-  }, [clienteCarregado, clienteLoading, cliente, clienteId, forcarTroca, definirCliente, router]);
-
   const handleAdicionarAmbiente = (data: any) => {
     adicionarAmbiente(data);
     setModalAberto(false);

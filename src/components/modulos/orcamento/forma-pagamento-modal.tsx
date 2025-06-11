@@ -96,7 +96,7 @@ export function FormaPagamentoModal({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Tipo</Label>
+            <Label>Forma de Pagamento</Label>
             <Select 
               value={novaForma.tipo} 
               onValueChange={(value: TipoFormaPagamento) => 
@@ -104,15 +104,21 @@ export function FormaPagamentoModal({
               }
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ENTRADA">Entrada (À vista)</SelectItem>
-                <SelectItem value="FINANCEIRA">Financeira</SelectItem>
-                <SelectItem value="CARTAO">Cartão</SelectItem>
-                <SelectItem value="BOLETO">Boleto Loja</SelectItem>
+                <SelectItem value="ENTRADA">💰 À Vista / Dinheiro (Entrada)</SelectItem>
+                <SelectItem value="FINANCEIRA">🏦 Financeira / Banco</SelectItem>
+                <SelectItem value="CARTAO">💳 Cartão de Crédito</SelectItem>
+                <SelectItem value="BOLETO">📄 Boleto da Loja</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              {novaForma.tipo === 'ENTRADA' && 'Pagamento imediato - menor risco, melhor para o fluxo de caixa'}
+              {novaForma.tipo === 'FINANCEIRA' && 'Financiamento bancário - cliente assume juros externos'}
+              {novaForma.tipo === 'CARTAO' && 'Pagamento com cartão - descontos da operadora aplicados'}
+              {novaForma.tipo === 'BOLETO' && 'Boleto parcelado da loja - maior prazo, custo de capital próprio'}
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -128,7 +134,7 @@ export function FormaPagamentoModal({
           {novaForma.tipo === 'FINANCEIRA' && (
             <>
               <div className="space-y-2">
-                <Label>Taxa de Juros (% a.m.)</Label>
+                <Label>Taxa de Juros do Banco (% ao mês)</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -137,10 +143,14 @@ export function FormaPagamentoModal({
                     ...prev, 
                     taxaJuros: Number(e.target.value) || 0
                   }))}
+                  placeholder="Ex: 1.5 (1,5% ao mês)"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Taxa cobrada pela instituição financeira (cliente arca com os juros)
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>Data de Vencimento</Label>
+                <Label>Data do Primeiro Vencimento</Label>
                 <Input
                   type="date"
                   value={novaForma.dataVencimento}
@@ -149,6 +159,9 @@ export function FormaPagamentoModal({
                     dataVencimento: e.target.value
                   }))}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Quando a primeira parcela vence (banco faz o repasse)
+                </p>
               </div>
             </>
           )}
@@ -156,7 +169,7 @@ export function FormaPagamentoModal({
           {novaForma.tipo === 'CARTAO' && (
             <>
               <div className="space-y-2">
-                <Label>Deflação (%)</Label>
+                <Label>Taxa da Operadora (%)</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -165,10 +178,14 @@ export function FormaPagamentoModal({
                     ...prev, 
                     deflacao: Number(e.target.value) || 0
                   }))}
+                  placeholder="Ex: 3.5 (3,5% por transação)"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Taxa cobrada pela operadora do cartão (Visa, Master, etc)
+                </p>
               </div>
               <div className="space-y-2">
-                <Label>Juros de Antecipação (% por parcela)</Label>
+                <Label>Taxa de Antecipação (% por parcela)</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -177,14 +194,18 @@ export function FormaPagamentoModal({
                     ...prev, 
                     jurosAntecipacao: Number(e.target.value) || 0
                   }))}
+                  placeholder="Ex: 2.5 (2,5% por parcela antecipada)"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Custo para antecipar as parcelas do cartão (se aplicável)
+                </p>
               </div>
             </>
           )}
 
           {novaForma.tipo === 'BOLETO' && (
             <div className="space-y-2">
-              <Label>Custo de Capital (% a.m.)</Label>
+              <Label>Custo de Capital (% ao mês)</Label>
               <Input
                 type="number"
                 step="0.1"
@@ -193,7 +214,11 @@ export function FormaPagamentoModal({
                   ...prev, 
                   custoCapital: Number(e.target.value) || 0
                 }))}
+                placeholder="Ex: 1.0 (1% ao mês)"
               />
+              <p className="text-xs text-muted-foreground">
+                Custo mensal do dinheiro da empresa (taxa Selic + spread)
+              </p>
             </div>
           )}
 
