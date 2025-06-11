@@ -14,7 +14,7 @@ import {
 } from '../../ui/select';
 import { Textarea } from '../../ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
-import { Vendedor, PROCEDENCIAS } from '../../../types/cliente';
+import { Vendedor, PROCEDENCIAS_PADRAO } from '../../../types/cliente';
 
 interface ClienteFormConfigProps {
   form: UseFormReturn<any>;
@@ -38,7 +38,7 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {PROCEDENCIAS.map(proc => (
+                  {PROCEDENCIAS_PADRAO.map(proc => (
                     <SelectItem key={proc} value={proc}>
                       {proc}
                     </SelectItem>

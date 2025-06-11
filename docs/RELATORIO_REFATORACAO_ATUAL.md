@@ -1,178 +1,187 @@
-# 📊 RELATÓRIO COMPLETO - REFATORAÇÃO SISTEMA FLUYT
+# 🚀 RELATÓRIO DE REFATORAÇÃO ATUAL - FLUYT COMERCIAL
 
-**Data**: 06/01/2025  
-**Status**: FASE 2 PRATICAMENTE COMPLETA (99%)  
-**Build**: ✅ Funcional com warnings menores
-
-## 🎯 VISÃO GERAL
-
-### ✅ CONQUISTAS PRINCIPAIS
-- **Build estável** - Compilação OK em 13s
-- **Arquitetura modernizada** - Zustand stores + barrel exports
-- **Código otimizado** - Arquivos grandes quebrados
-- **Padrões estabelecidos** - Templates para futuras migrações
-
-### 📈 MÉTRICAS DE SUCESSO
-- **Linhas reduzidas**: sidebar.tsx (761→261), simulador (556→289)
-- **Stores criadas**: 4 stores Zustand centralizadas (1139 linhas total)
-- **Barrel exports**: 8 index.ts organizando imports
-- **Warnings**: Apenas dependency arrays (não críticos)
-
-## 🏗 ARQUITETURA ATUAL
-
-### 🗂 ESTADO CENTRALIZADO (ZUSTAND)
-```
-src/store/
-├── sistema-store.ts     (237 linhas) - Empresas, Lojas, Equipe, etc.
-├── clientes-store.ts    (128 linhas) - Clientes + filtros
-├── ambientes-store.ts   (175 linhas) - Ambientes + computados  
-├── orcamento-store.ts   (204 linhas) - Simulação + UI
-├── sessao-store.ts      (387 linhas) - Persistência sessão
-└── index.ts             (8 linhas)   - Barrel export
-```
-
-### 🧩 HOOKS ESPECIALIZADOS (ORÇAMENTO)
-```
-src/hooks/modulos/orcamento/
-├── use-simulador.ts                  (246 linhas) - Principal
-├── use-desconto-real-calculator.ts   (91 linhas)  - Algoritmo
-├── use-forma-pagamento-calculator.ts (59 linhas)  - Cálculos
-├── use-valor-redistributor.ts        (68 linhas)  - Redistribuição
-├── use-sessao-integrada.ts          (181 linhas) - Integração
-└── use-sessao-integrada-singleton.ts (228 linhas) - Singleton
-```
-
-### 🎨 COMPONENTES MODULARES (ORÇAMENTO)
-```
-src/components/modulos/orcamento/
-├── dashboard-orcamento.tsx      (172 linhas) - Métricas
-├── forma-pagamento-modal.tsx    (213 linhas) - Modal pagamento
-├── edit-value-modal.tsx         (180 linhas) - Edição valores
-├── cronograma-recebimento.tsx   (174 linhas) - Cronograma
-├── forma-pagamento-card.tsx     (155 linhas) - Cards
-├── travamento-controls.tsx      (128 linhas) - Controles
-├── input-section.tsx            (118 linhas) - Inputs
-├── ambiente-section.tsx         (117 linhas) - Ambientes
-├── simulador-header.tsx         (75 linhas)  - Header
-└── formas-pagamento-section.tsx (79 linhas)  - Section
-```
-
-## 📊 ANÁLISE DE ARQUIVOS GRANDES
-
-### 🔥 HOOKS QUE PRECISAM REFATORAÇÃO
-| Arquivo | Linhas | Status | Prioridade |
-|---------|---------|---------|------------|
-| `use-simulador-backup.ts` | 476 | 🔶 Backup antigo | Baixa (deletar) |
-| `use-lojas.ts` | 454 | 🔴 Muito grande | Alta |
-| `use-equipe.ts` | 340 | 🔴 Grande | Média |
-| `use-comissoes.ts` | 313 | 🔴 Grande | Média |
-| `use-empresas.ts` | 306 | 🔴 Grande | Média |
-| `use-transportadoras.ts` | 295 | 🔴 Grande | Média |
-
-### 🎨 COMPONENTES QUE PRECISAM REFATORAÇÃO
-| Arquivo | Linhas | Status | Prioridade |
-|---------|---------|---------|------------|
-| `sidebar.tsx` | 761 | 🔴 Gigante | Alta |
-| `contract-summary.tsx` | 540 | 🔴 Muito grande | Média |
-| `debug-persistencia.tsx` | 378 | 🔶 Debug tool | Baixa |
-| `config-loja.tsx` | 345 | 🔴 Grande | Média |
-| `funcionario-form.tsx` | 331 | 🔴 Grande | Média |
-
-## 🚀 BUILD STATUS DETALHADO
-
-### ✅ SUCESSOS
-- **Compilação**: 13.0s (rápida)
-- **Bundle**: Otimizado com code splitting
-- **Linting**: Apenas warnings de dependencies
-- **Tipos**: TypeScript OK
-
-### ⚠️ WARNINGS (NÃO CRÍTICOS)
-```
-📋 37 warnings total - todos de dependency arrays
-├── React Hook useEffect missing dependencies (23x)
-├── React Hook useCallback missing dependencies (12x)  
-├── Fast refresh warnings em UI components (2x)
-```
-
-### 🎯 PRIORIDADES DE CORREÇÃO
-1. **🔴 Alta**: Quebrar `sidebar.tsx` (761 linhas)
-2. **🟡 Média**: Refatorar hooks do sistema (300+ linhas)
-3. **🟢 Baixa**: Corrigir dependency arrays
-4. **🔵 Opcional**: Deletar arquivos backup
-
-## 📋 PLANO DE AÇÃO - FASE 3
-
-### 🎯 PRÓXIMOS PASSOS CRÍTICOS
-
-#### FASE 3.1: COMPONENTIZAÇÃO SIDEBAR (2-3 sessões)
-```
-src/components/layout/sidebar.tsx (761 linhas) →
-├── sidebar-main.tsx         (~200 linhas)
-├── sidebar-menu.tsx         (~200 linhas) 
-├── sidebar-user.tsx         (~150 linhas)
-├── sidebar-mobile.tsx       (~150 linhas)
-└── sidebar-utils.ts         (~100 linhas)
-```
-
-#### FASE 3.2: REFATORAÇÃO HOOKS SISTEMA (3-4 sessões)
-```
-Quebrar 6 hooks grandes em arquivos especializados:
-- use-lojas.ts → use-lojas-crud.ts + use-lojas-validation.ts
-- use-equipe.ts → use-equipe-crud.ts + use-equipe-permissions.ts
-- Etc. para comissões, empresas, transportadoras
-```
-
-#### FASE 3.3: CORREÇÕES FINAIS (1 sessão)
-- Dependency arrays warnings
-- Cleanup arquivos backup
-- Otimizações de performance
-
-## 🏆 RESUMO EXECUTIVO
-
-### ✅ FASE 2 COMPLETADA (99%)
-- **Estrutura**: Zustand stores implementadas
-- **Organização**: Barrel exports funcionais  
-- **Performance**: Build otimizado
-- **Código**: Arquivos principais quebrados
-
-### 🎯 DECISÕES ESTRATÉGICAS
-
-#### OPÇÃO A: CONTINUAR REFATORAÇÃO (3-5 sessões)
-**Prós**: Código ainda mais limpo, manutenibilidade máxima
-**Contras**: Tempo adicional, risco de regressões
-
-#### OPÇÃO B: PARTIR PARA BACKEND (RECOMENDADO)
-**Prós**: Sistema funcional, refatoração pode continuar depois
-**Contras**: Alguns arquivos ainda grandes
-
-### 💡 RECOMENDAÇÃO FINAL
-
-**🚀 PARTIR PARA BACKEND/SUPABASE AGORA**
-
-**Justificativa**:
-1. Build estável e funcional
-2. Arquitetura sólida estabelecida  
-3. Refatoração pode continuar em paralelo
-4. Maior valor de negócio no backend
-
-**Pendências aceitáveis**:
-- Sidebar grande (funcional)
-- Hooks sistema grandes (padrão estabelecido)
-- Warnings de dependencies (não críticos)
+## 📅 Status: EM PROGRESSO AVANÇADO
+**Última Atualização**: 11/06/2025 - 16:45
 
 ---
 
-## 📞 PRÓXIMOS PASSOS IMEDIATOS
+## 🎯 CONTEXTO ATUAL
+Simulador de orçamentos com **PROBLEMAS COMPLEXOS RESOLVIDOS** e em **FASE DE MIGRAÇÃO DE REGRAS AVANÇADAS**
 
-### 🎯 PARA NOVA SESSÃO
-1. **Decisão**: Continuar refatoração OU partir para backend
-2. **Se backend**: Configurar Supabase, schemas, APIs
-3. **Se refatoração**: Começar com sidebar.tsx
+---
 
-### 💾 ARQUIVOS IMPORTANTES
-- `REFATORACAO_STATUS.md` - Status anterior
-- `RELATORIO_REFATORACAO_ATUAL.md` - Este relatório
-- `/src/store/` - Stores Zustand
-- `/src/hooks/modulos/` - Hooks organizados
+## ✅ PROBLEMAS RESOLVIDOS RECENTEMENTE
 
-**STATUS: REFATORAÇÃO ESTRUTURAL PRATICAMENTE COMPLETA! 🎉**
+### **PROBLEMA: Campo Desconto (%) com Bug de Formatação** ✅ COMPLETA
+- **Cenário 1** (sem cliente): Funcionava perfeitamente
+- **Cenário 2** (com cliente/ambientes): Campo mostrava valores estranhos, não permitia edição
+- **Causa**: Input value com NaN, formatação inadequada
+- **Solução**: Criado componente modular `DescontoInput` com controle de estado isolado
+- **Status**: ✅ **FUNCIONANDO** - Campo editável em ambos cenários
+
+### **PROBLEMA: Arredondamento 50% → 49.2%** ✅ COMPLETA  
+- **Causa**: Problemas de precisão float em cálculos
+- **Solução**: Implementado `Math.round(valor * 100) / 100` em todos os cálculos
+- **Status**: ✅ **FUNCIONANDO** - Valores exatos (50% = 50.0%)
+
+### **PROBLEMA: Formas de Pagamento Perdidas** ✅ COMPLETA
+- **Causa**: Funcionalidades removidas durante refatoração
+- **Solução**: Restauradas na versão limpa: `adicionarForma`, `removerForma`, `limparFormas`
+- **Status**: ✅ **FUNCIONANDO** - Modal e cálculos ativos
+
+---
+
+## 🧩 ARQUITETURA MODULAR IMPLEMENTADA
+
+### **Componentes Criados**
+```
+src/components/modulos/orcamento/components/
+├── desconto-input.tsx           # Campo isolado para desconto %
+├── valor-bruto-input.tsx        # Campo com formatação moeda
+├── input-section-modular.tsx    # Seção completa modularizada
+└── use-simulador-clean.ts       # Hook baseado no original funcionando
+```
+
+### **Benefícios da Modularização**
+- **Isolamento de bugs**: Cada componente gerencia seu próprio estado
+- **Debug facilitado**: Logs específicos por componente
+- **Manutenção**: Mudanças não afetam outras funcionalidades
+- **Testabilidade**: Componentes podem ser testados individualmente
+
+---
+
+## 🎯 ATUAL: MIGRAÇÃO DE REGRAS AVANÇADAS
+
+### **ANÁLISE DO SIMULADOR ORIGINAL COMPLETA** 📊
+Identificadas regras críticas que precisam ser migradas do [simulador original funcionando](https://github.com/Rica-VibeCoding/fluyt-proposta-simulador):
+
+#### **1. ALGORITMO DE BUSCA BINÁRIA**
+```typescript
+// Para encontrar valorNegociado que resulte no desconto real desejado
+- Máximo 25 iterações
+- Precisão: Para quando diferença ≤ 0.05%
+- Método: Ajusta valorNegociado para atingir % de desconto real
+```
+
+#### **2. SISTEMA DE TRAVAMENTOS**
+```typescript
+travamentos: {
+  descontoRealFixo: boolean,        // Trava desconto real
+  valorDescontoRealFixo: number,    // Valor travado
+  limiteDescontoReal: 25            // Limite global padrão
+}
+```
+
+#### **3. REDISTRIBUIÇÃO DE VALORES**
+```typescript
+PRIORIDADE_FORMAS = ['ENTRADA', 'BOLETO', 'FINANCEIRA', 'CARTAO']
+- Redistribui seguindo ordem específica
+- Só redistribui em formas não travadas
+- Retorna erro se redistribuição impossível
+```
+
+#### **4. VALIDAÇÕES E PREVENÇÕES**
+- **Limite de Desconto**: Alerta se nova forma exceder 25%
+- **Confirmação do Usuário**: Se não conseguir exato, pergunta se aceita próximo
+- **Erro de Redistribuição**: Para execução se redistribuição falhar
+
+#### **5. FLUXO DE EDIÇÃO DO DESCONTO REAL**
+1. Busca binária para encontrar valorNegociado ideal
+2. Redistribui valores nas formas de pagamento  
+3. Recalcula valores recebidos
+4. Aplica travamento se solicitado
+5. Confirma com usuário se necessário
+
+---
+
+## 📋 TASKS PENDENTES (PRIORIZADA)
+
+### **🔥 PRÓXIMA TASK CRÍTICA**
+**IMPLEMENTAR REGRAS AVANÇADAS DO DESCONTO REAL**
+- **Prioridade**: CRÍTICA
+- **Tempo Estimado**: 60-90 min
+- **Componentes**: 
+  - Algoritmo busca binária em `editarDescontoReal`
+  - Sistema de travamentos avançado
+  - Redistribuição com prioridades
+  - Validações e confirmações do usuário
+
+### **Sequence Após Migração de Regras**
+1. **TASK 2.1** → Corrigir erro sistema (estabilidade)
+2. **TASK 2.2** → Corrigir navegação (fluidez)
+3. **TASK 3.1** → Unificar stores (arquitetura)  
+4. **TASK 4.1** → Teste completo (validação)
+
+---
+
+## 🔧 STATUS TÉCNICO ATUAL
+
+### **Funcionando Perfeitamente** ✅
+- Campo desconto editável (ambos cenários)
+- Arredondamento preciso de valores
+- Formas de pagamento básicas (adicionar/remover)
+- Cálculos automáticos de desconto real
+- Interface modular e debugável
+
+### **Versão Ativa**
+- **Hook**: `use-simulador-clean.ts` (baseado no original)
+- **Componentes**: Modulares e isolados
+- **Debug**: Seção de debug ativa mostrando valores em tempo real
+
+### **Preparado Para**
+- Migração das regras avançadas do simulador original
+- Algoritmos complexos de otimização
+- Sistema completo de travamentos
+
+---
+
+## 💡 ESTRATÉGIA DE CONTINUAÇÃO
+
+### **Para Próxima Sessão**
+1. **Implementar busca binária** em `editarDescontoReal`
+2. **Adicionar sistema de travamentos** completo
+3. **Implementar redistribuição** com prioridades
+4. **Testar regras avançadas** e validações
+
+### **Arquivo de Referência**
+- **Original funcionando**: https://github.com/Rica-VibeCoding/fluyt-proposta-simulador
+- **Função crítica**: `editarDescontoReal` no `useSimulador.ts`
+
+---
+
+## 📊 PROGRESSO GERAL
+```
+FASE 1 (Base de Dados):     ██████████ 100%
+FASE 2 (Bugs Críticos):     ████████░░  80% (desconto funcionando)
+FASE 3 (Regras Avançadas):  ██░░░░░░░░  20% (análise completa)
+FASE 4 (Testes):            ░░░░░░░░░░   0%
+TOTAL:                      ██████░░░░  75%
+```
+
+---
+
+## 🎯 ESTADO IDEAL PARA CONTINUAR
+- ✅ Base sólida funcionando
+- ✅ Problemas básicos resolvidos  
+- ✅ Arquitetura modular pronta
+- ✅ Análise das regras avançadas completa
+- 🔄 **PRÓXIMO**: Implementar algoritmos avançados do simulador original
+
+---
+
+## 📂 ARQUIVOS CRÍTICOS PARA PRÓXIMA SESSÃO
+
+### **Implementação Atual (Limpa)**
+- `/src/hooks/modulos/orcamento/use-simulador-clean.ts` - Hook principal ativo
+- `/src/components/modulos/orcamento/components/` - Componentes modulares
+- `/src/app/painel/orcamento/simulador/page.tsx` - Página usando versão limpa
+
+### **Referência Original (Funcional)**
+- https://github.com/Rica-VibeCoding/fluyt-proposta-simulador/blob/main/src/hooks/useSimulador.ts
+- Função `editarDescontoReal` completa com busca binária
+- Função `redistribuirValores` com prioridades
+- Sistema de travamentos e validações
+
+### **Documentação de Tasks**
+- `/docs/REFATORACAO_COMPLETA_TASKS.md` - Tasks detalhadas
+- `/docs/RELATORIO_REFATORACAO_ATUAL.md` - Este arquivo

@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Search, X } from 'lucide-react';
-import { FiltrosCliente, Vendedor, PROCEDENCIAS } from '../../../types/cliente';
+import { FiltrosCliente, Vendedor, PROCEDENCIAS_PADRAO } from '../../../types/cliente';
 import { useState, useEffect } from 'react';
 
 interface ClienteFiltrosProps {
@@ -82,9 +82,9 @@ export function ClienteFiltros({ filtros, onFiltrosChange, vendedores }: Cliente
         </Select>
 
         <Select
-          value={filtros.procedencia || 'all'}
+          value={filtros.procedencia_id || 'all'}
           onValueChange={(value) => 
-            onFiltrosChange({ ...filtros, procedencia: value === 'all' ? undefined : value })
+            onFiltrosChange({ ...filtros, procedencia_id: value === 'all' ? undefined : value })
           }
         >
           <SelectTrigger>
@@ -92,7 +92,7 @@ export function ClienteFiltros({ filtros, onFiltrosChange, vendedores }: Cliente
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas procedências</SelectItem>
-            {PROCEDENCIAS.map(proc => (
+            {PROCEDENCIAS_PADRAO.map(proc => (
               <SelectItem key={proc} value={proc}>
                 {proc}
               </SelectItem>

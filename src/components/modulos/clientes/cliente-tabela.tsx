@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -9,8 +9,7 @@ import {
 } from '../../ui/table';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
-import { Skeleton } from '../../ui/skeleton';
-import { Edit, Phone, Mail, MapPin } from 'lucide-react';
+import { Edit, Phone, Mail, MapPin, Users, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { Cliente } from '../../../types/cliente';
 import { ClienteActionsMenu } from './cliente-actions-menu';
 
@@ -29,145 +28,234 @@ export function ClienteTabela({
 }: ClienteTabelaProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const toggleRowExpansion = (id: string) => {
-    setExpandedRows(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
+  const toggleRowExpansion = (clienteId: string) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(clienteId)) {
+      newExpandedRows.delete(clienteId);
+    } else {
+      newExpandedRows.add(clienteId);
+    }
+    setExpandedRows(newExpandedRows);
   };
 
+  const getClienteNumero = (index: number) => {
+    return String(index + 1).padStart(3, '0');
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '--';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  // Loading State
   if (isLoading) {
     return (
-      <div className="px-4 pt-4 pb-4 space-y-3">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (clientes.length === 0) {
-    return (
-      <div className="px-4 pt-4 pb-4 text-center py-12">
-        <div className="text-muted-foreground">
-          <p className="text-lg font-medium mb-2">Nenhum cliente encontrado</p>
-          <p>Ajuste os filtros ou cadastre um novo cliente</p>
+      <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center gap-2 text-gray-500">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+            Carregando clientes...
+          </div>
         </div>
       </div>
     );
   }
 
+  // Empty State
+  if (clientes.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">
+        <Users className="h-12 w-12 text-gray-400 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum cliente cadastrado</h3>
+        <p className="text-gray-500 text-center max-w-sm">
+          Comece criando seu primeiro cliente para gerenciar vendas e contratos.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-4 pt-4 pb-4">
-      <div className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/30">
-              <TableHead className="font-semibold">Cliente</TableHead>
-              <TableHead className="font-semibold">Documento</TableHead>
-              <TableHead className="font-semibold">Contato</TableHead>
-              <TableHead className="font-semibold">Tipo</TableHead>
-              <TableHead className="font-semibold">Procedência</TableHead>
-              <TableHead className="font-semibold">Vendedor</TableHead>
-              <TableHead className="font-semibold text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
+    <div className="rounded-lg border-0 bg-blue-50/30 shadow-md">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-slate-50 border-b border-slate-200">
+            <TableHead className="font-semibold text-slate-700 h-10 w-12"></TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Pedido</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Cliente</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Tipo</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Vendedor</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Data de Cadastro</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
+            <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
-          {clientes.map((cliente) => (
-            <TableRow 
-              key={cliente.id} 
-              className="hover:bg-muted/20 transition-colors cursor-pointer"
-              onClick={() => toggleRowExpansion(cliente.id)}
-            >
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="font-medium text-foreground">{cliente.nome}</div>
-                  {expandedRows.has(cliente.id) && (
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {cliente.logradouro}, {cliente.numero} - {cliente.bairro}
-                      </div>
-                      <div>{cliente.cidade}/{cliente.uf} - {cliente.cep}</div>
-                      {cliente.observacoes && (
-                        <div className="text-xs italic">{cliente.observacoes}</div>
-                      )}
-                    </div>
+          {clientes.map((cliente, index) => (
+            <React.Fragment key={cliente.id}>
+              <TableRow 
+                className="h-12 bg-white hover:bg-blue-50/50 cursor-pointer transition-colors"
+                onClick={() => toggleRowExpansion(cliente.id)}
+              >
+                {/* Expand Icon */}
+                <TableCell className="py-2 w-12">
+                  {expandedRows.has(cliente.id) ? (
+                    <ChevronDown className="h-4 w-4 text-slate-500" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-slate-500" />
                   )}
-                </div>
-              </TableCell>
-              
-              <TableCell>
-                <div className="space-y-1">
-                  <div className="font-mono text-sm">{cliente.cpf_cnpj}</div>
-                  {expandedRows.has(cliente.id) && cliente.rg_ie && (
-                    <div className="font-mono text-xs text-muted-foreground">
-                      RG/IE: {cliente.rg_ie}
-                    </div>
-                  )}
-                </div>
-              </TableCell>
-              
-              <TableCell>
-                <div className="space-y-1">
+                </TableCell>
+
+                {/* Pedido */}
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-blue-600" />
+                    <span className="font-mono text-sm font-medium">#{getClienteNumero(index)}</span>
+                  </div>
+                </TableCell>
+
+                {/* Cliente */}
+                <TableCell className="py-2">
+                  <div>
+                    <div className="font-medium text-foreground">{cliente.nome}</div>
+                    <div className="font-mono text-xs text-muted-foreground">{cliente.cpf_cnpj}</div>
+                  </div>
+                </TableCell>
+
+                {/* Contato - APENAS TELEFONE */}
+                <TableCell className="py-2">
                   <div className="flex items-center gap-1 text-sm">
-                    <Phone className="h-3 w-3" />
+                    <Phone className="h-3 w-3 text-green-600" />
                     {cliente.telefone}
                   </div>
-                  {expandedRows.has(cliente.id) && cliente.email && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Mail className="h-3 w-3" />
-                      {cliente.email}
-                    </div>
-                  )}
-                </div>
-              </TableCell>
-              
-              <TableCell>
-                <Badge 
-                  variant={cliente.tipo_venda === 'NORMAL' ? 'default' : 'secondary'}
-                  className="text-xs"
-                >
-                  {cliente.tipo_venda}
-                </Badge>
-              </TableCell>
-              
-              <TableCell>
-                <span className="text-sm text-muted-foreground">{cliente.procedencia}</span>
-              </TableCell>
-              
-              <TableCell>
-                <span className="text-sm font-medium">{cliente.vendedor_nome}</span>
-              </TableCell>
-              
-              <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEditarCliente(cliente)}
-                    className="h-8 w-8 p-0"
+                </TableCell>
+
+                {/* Tipo */}
+                <TableCell className="py-2">
+                  <Badge 
+                    variant={cliente.tipo_venda === 'NORMAL' ? "default" : "secondary"}
+                    className={cliente.tipo_venda === 'NORMAL' ? "bg-slate-600 hover:bg-slate-700 text-white" : ""}
                   >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  
-                  <ClienteActionsMenu
-                    cliente={cliente}
-                    onEditar={onEditarCliente}
-                    onRemover={onRemoverCliente}
-                  />
-                </div>
-              </TableCell>
-            </TableRow>
+                    {cliente.tipo_venda}
+                  </Badge>
+                </TableCell>
+
+                {/* Vendedor */}
+                <TableCell className="py-2">
+                  <span className="text-sm font-medium">
+                    {cliente.vendedor_nome || 'Não definido'}
+                  </span>
+                </TableCell>
+
+                {/* Data de Cadastro */}
+                <TableCell className="py-2">
+                  <span className="text-sm text-muted-foreground">
+                    {formatDate(cliente.created_at)}
+                  </span>
+                </TableCell>
+
+                {/* Status */}
+                <TableCell className="py-2">
+                  <Badge variant="outline" className="border-green-300 text-green-600 bg-green-50">
+                    Ativo
+                  </Badge>
+                </TableCell>
+
+                {/* Ações */}
+                <TableCell className="text-right py-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEditarCliente(cliente)}
+                      className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <ClienteActionsMenu
+                      cliente={cliente}
+                      onEditar={onEditarCliente}
+                      onRemover={onRemoverCliente}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+
+              {/* LINHA EXPANDIDA COM TODOS OS DADOS ADICIONAIS */}
+              {expandedRows.has(cliente.id) && (
+                <TableRow key={`${cliente.id}-expanded`} className="bg-blue-50/20 hover:bg-blue-50/30">
+                  <TableCell colSpan={9} className="py-4">
+                    <div className="space-y-4 pl-4">
+                      
+                      {/* Email */}
+                      {cliente.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Email:</span>
+                          <span className="text-sm text-muted-foreground">{cliente.email}</span>
+                        </div>
+                      )}
+
+                      {/* RG/IE */}
+                      {cliente.rg_ie && (
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-slate-600" />
+                          <span className="text-sm font-medium">RG/IE:</span>
+                          <span className="text-sm font-mono text-muted-foreground">{cliente.rg_ie}</span>
+                        </div>
+                      )}
+
+                      {/* Endereço Completo */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-red-600" />
+                          <span className="text-sm font-medium">Endereço:</span>
+                        </div>
+                        <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                          <div>
+                            <strong>Logradouro:</strong> {cliente.logradouro || 'Não informado'}
+                            {cliente.numero && `, ${cliente.numero}`}
+                            {cliente.complemento && ` - ${cliente.complemento}`}
+                          </div>
+                          <div>
+                            <strong>Bairro:</strong> {cliente.bairro || 'Não informado'} - 
+                            <strong> Cidade:</strong> {cliente.cidade || 'Não informado'}/{cliente.uf || 'UF'}
+                          </div>
+                          <div>
+                            <strong>CEP:</strong> {cliente.cep || 'Não informado'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Procedência */}
+                      {cliente.procedencia && (
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-purple-600" />
+                          <span className="text-sm font-medium">Procedência:</span>
+                          <Badge variant="outline" className="text-xs">
+                            {cliente.procedencia}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Observações */}
+                      {cliente.observacoes && (
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium text-slate-700">Observações:</div>
+                          <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-600 border-l-4 border-blue-200">
+                            {cliente.observacoes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
-    </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import { Card } from '../../ui/card';
 import { Search, X, Filter, Calendar, User, MapPin } from 'lucide-react';
-import { FiltrosCliente, Vendedor, PROCEDENCIAS } from '../../../types/cliente';
+import { FiltrosCliente, Vendedor, PROCEDENCIAS_PADRAO } from '../../../types/cliente';
 import { useState, useEffect } from 'react';
 
 interface ClienteFiltrosModernoProps {
@@ -124,9 +124,9 @@ export function ClienteFiltrosModerno({ filtros, onFiltrosChange, vendedores }: 
                   Procedência
                 </label>
                 <Select
-                  value={filtros.procedencia || 'all'}
+                  value={filtros.procedencia_id || 'all'}
                   onValueChange={(value) => 
-                    onFiltrosChange({ ...filtros, procedencia: value === 'all' ? undefined : value })
+                    onFiltrosChange({ ...filtros, procedencia_id: value === 'all' ? undefined : value })
                   }
                 >
                   <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-800">
@@ -134,7 +134,7 @@ export function ClienteFiltrosModerno({ filtros, onFiltrosChange, vendedores }: 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas</SelectItem>
-                    {PROCEDENCIAS.map(proc => (
+                    {PROCEDENCIAS_PADRAO.map(proc => (
                       <SelectItem key={proc} value={proc}>
                         {proc}
                       </SelectItem>
