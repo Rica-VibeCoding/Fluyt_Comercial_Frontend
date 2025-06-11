@@ -108,18 +108,12 @@ export function ClienteTabela({
 
                 {/* Pedido */}
                 <TableCell className="py-2">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                    <span className="font-mono text-sm font-medium">#{getClienteNumero(index)}</span>
-                  </div>
+                  <span className="font-mono text-sm font-medium">#{getClienteNumero(index)}</span>
                 </TableCell>
 
                 {/* Cliente */}
                 <TableCell className="py-2">
-                  <div>
-                    <div className="font-medium text-foreground">{cliente.nome}</div>
-                    <div className="font-mono text-xs text-muted-foreground">{cliente.cpf_cnpj}</div>
-                  </div>
+                  <div className="font-medium text-foreground">{cliente.nome}</div>
                 </TableCell>
 
                 {/* Contato - APENAS TELEFONE */}
@@ -132,12 +126,9 @@ export function ClienteTabela({
 
                 {/* Tipo */}
                 <TableCell className="py-2">
-                  <Badge 
-                    variant={cliente.tipo_venda === 'NORMAL' ? "default" : "secondary"}
-                    className={cliente.tipo_venda === 'NORMAL' ? "bg-slate-600 hover:bg-slate-700 text-white" : ""}
-                  >
+                  <span className="text-sm text-muted-foreground">
                     {cliente.tipo_venda}
-                  </Badge>
+                  </span>
                 </TableCell>
 
                 {/* Vendedor */}
@@ -165,12 +156,12 @@ export function ClienteTabela({
                 <TableCell className="text-right py-2" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-end gap-2">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => onEditarCliente(cliente)}
-                      className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400"
+                      className="h-8 w-8 p-0 hover:bg-blue-50/50"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3 w-3 text-slate-500" />
                     </Button>
                     
                     <ClienteActionsMenu
@@ -186,68 +177,94 @@ export function ClienteTabela({
               {expandedRows.has(cliente.id) && (
                 <TableRow key={`${cliente.id}-expanded`} className="bg-blue-50/20 hover:bg-blue-50/30">
                   <TableCell colSpan={9} className="py-4">
-                    <div className="space-y-4 pl-4">
-                      
-                      {/* Email */}
-                      {cliente.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium">Email:</span>
-                          <span className="text-sm text-muted-foreground">{cliente.email}</span>
-                        </div>
-                      )}
+                    <div className="pl-4">
+                      {/* Layout Grid Responsivo */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        {/* COLUNA 1 - DADOS PESSOAIS */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-slate-700 mb-3">Dados Pessoais</h4>
+                          
+                          {/* CPF/CNPJ */}
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-slate-600" />
+                            <span className="text-sm font-medium">CPF/CNPJ:</span>
+                            <span className="text-sm font-mono text-muted-foreground">{cliente.cpf_cnpj}</span>
+                          </div>
 
-                      {/* RG/IE */}
-                      {cliente.rg_ie && (
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-slate-600" />
-                          <span className="text-sm font-medium">RG/IE:</span>
-                          <span className="text-sm font-mono text-muted-foreground">{cliente.rg_ie}</span>
-                        </div>
-                      )}
+                          {/* RG/IE */}
+                          {cliente.rg_ie && (
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-slate-600" />
+                              <span className="text-sm font-medium">RG/IE:</span>
+                              <span className="text-sm font-mono text-muted-foreground">{cliente.rg_ie}</span>
+                            </div>
+                          )}
 
-                      {/* Endereço Completo */}
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-red-600" />
-                          <span className="text-sm font-medium">Endereço:</span>
+                          {/* Email */}
+                          {cliente.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium">Email:</span>
+                              <span className="text-sm text-muted-foreground">{cliente.email}</span>
+                            </div>
+                          )}
                         </div>
-                        <div className="ml-6 space-y-1 text-sm text-muted-foreground">
-                          <div>
-                            <strong>Logradouro:</strong> {cliente.logradouro || 'Não informado'}
-                            {cliente.numero && `, ${cliente.numero}`}
-                            {cliente.complemento && ` - ${cliente.complemento}`}
-                          </div>
-                          <div>
-                            <strong>Bairro:</strong> {cliente.bairro || 'Não informado'} - 
-                            <strong> Cidade:</strong> {cliente.cidade || 'Não informado'}/{cliente.uf || 'UF'}
-                          </div>
-                          <div>
-                            <strong>CEP:</strong> {cliente.cep || 'Não informado'}
+
+                        {/* COLUNA 2 - LOCALIZAÇÃO */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-slate-700 mb-3">Localização</h4>
+                          
+                          {/* Endereço Completo */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-red-600" />
+                              <span className="text-sm font-medium">Endereço:</span>
+                            </div>
+                            <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                              <div>
+                                <strong>Logradouro:</strong> {cliente.logradouro || 'Não informado'}
+                                {cliente.numero && `, ${cliente.numero}`}
+                                {cliente.complemento && ` - ${cliente.complemento}`}
+                              </div>
+                              <div>
+                                <strong>Bairro:</strong> {cliente.bairro || 'Não informado'} - 
+                                <strong> Cidade:</strong> {cliente.cidade || 'Não informado'}/{cliente.uf || 'UF'}
+                              </div>
+                              <div>
+                                <strong>CEP:</strong> {cliente.cep || 'Não informado'}
+                              </div>
+                            </div>
                           </div>
                         </div>
+
+                        {/* COLUNA 3 - INFORMAÇÕES COMERCIAIS */}
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-slate-700 mb-3">Comercial</h4>
+                          
+                          {/* Procedência */}
+                          {cliente.procedencia && (
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-purple-600" />
+                              <span className="text-sm font-medium">Procedência:</span>
+                              <Badge variant="outline" className="text-xs">
+                                {cliente.procedencia}
+                              </Badge>
+                            </div>
+                          )}
+
+                          {/* Observações */}
+                          {cliente.observacoes && (
+                            <div className="space-y-2">
+                              <div className="text-sm font-medium text-slate-700">Observações:</div>
+                              <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-600 border-l-4 border-blue-200">
+                                {cliente.observacoes}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                       </div>
-
-                      {/* Procedência */}
-                      {cliente.procedencia && (
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-purple-600" />
-                          <span className="text-sm font-medium">Procedência:</span>
-                          <Badge variant="outline" className="text-xs">
-                            {cliente.procedencia}
-                          </Badge>
-                        </div>
-                      )}
-
-                      {/* Observações */}
-                      {cliente.observacoes && (
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium text-slate-700">Observações:</div>
-                          <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-600 border-l-4 border-blue-200">
-                            {cliente.observacoes}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </TableCell>
                 </TableRow>
