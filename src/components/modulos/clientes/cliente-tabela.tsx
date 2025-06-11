@@ -108,17 +108,17 @@ export function ClienteTabela({
 
                 {/* Pedido */}
                 <TableCell className="py-2">
-                  <span className="font-mono text-sm font-medium">#{getClienteNumero(index)}</span>
+                  <span className="text-sm font-medium font-mono text-slate-900">#{getClienteNumero(index)}</span>
                 </TableCell>
 
                 {/* Cliente */}
                 <TableCell className="py-2">
-                  <div className="font-medium text-foreground">{cliente.nome}</div>
+                  <div className="text-sm font-medium text-slate-900">{cliente.nome}</div>
                 </TableCell>
 
                 {/* Contato - APENAS TELEFONE */}
                 <TableCell className="py-2">
-                  <div className="flex items-center gap-1 text-sm">
+                  <div className="flex items-center gap-1 text-sm font-normal text-slate-900">
                     <Phone className="h-3 w-3 text-green-600" />
                     {cliente.telefone}
                   </div>
@@ -126,21 +126,21 @@ export function ClienteTabela({
 
                 {/* Tipo */}
                 <TableCell className="py-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm font-normal text-slate-600">
                     {cliente.tipo_venda}
                   </span>
                 </TableCell>
 
                 {/* Vendedor */}
                 <TableCell className="py-2">
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-slate-900">
                     {cliente.vendedor_nome || 'Não definido'}
                   </span>
                 </TableCell>
 
                 {/* Data de Cadastro */}
                 <TableCell className="py-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm font-normal text-slate-600">
                     {formatDate(cliente.created_at)}
                   </span>
                 </TableCell>
@@ -188,16 +188,16 @@ export function ClienteTabela({
                           {/* CPF/CNPJ */}
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-slate-600" />
-                            <span className="text-sm font-medium">CPF/CNPJ:</span>
-                            <span className="text-sm font-mono text-muted-foreground">{cliente.cpf_cnpj}</span>
+                            <span className="text-sm font-medium text-slate-600">CPF/CNPJ:</span>
+                            <span className="text-sm font-mono text-slate-900">{cliente.cpf_cnpj}</span>
                           </div>
 
                           {/* RG/IE */}
                           {cliente.rg_ie && (
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-slate-600" />
-                              <span className="text-sm font-medium">RG/IE:</span>
-                              <span className="text-sm font-mono text-muted-foreground">{cliente.rg_ie}</span>
+                              <span className="text-sm font-medium text-slate-600">RG/IE:</span>
+                              <span className="text-sm font-mono text-slate-900">{cliente.rg_ie}</span>
                             </div>
                           )}
 
@@ -205,8 +205,8 @@ export function ClienteTabela({
                           {cliente.email && (
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm font-medium">Email:</span>
-                              <span className="text-sm text-muted-foreground">{cliente.email}</span>
+                              <span className="text-sm font-medium text-slate-600">Email:</span>
+                              <span className="text-sm text-slate-900">{cliente.email}</span>
                             </div>
                           )}
                         </div>
@@ -219,9 +219,9 @@ export function ClienteTabela({
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
                               <MapPin className="h-4 w-4 text-red-600" />
-                              <span className="text-sm font-medium">Endereço:</span>
+                              <span className="text-sm font-medium text-slate-600">Endereço:</span>
                             </div>
-                            <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                            <div className="ml-6 space-y-1 text-sm text-slate-900">
                               <div>
                                 <strong>Logradouro:</strong> {cliente.logradouro || 'Não informado'}
                                 {cliente.numero && `, ${cliente.numero}`}
@@ -246,7 +246,7 @@ export function ClienteTabela({
                           {cliente.procedencia && (
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4 text-purple-600" />
-                              <span className="text-sm font-medium">Procedência:</span>
+                              <span className="text-sm font-medium text-slate-600">Procedência:</span>
                               <Badge variant="outline" className="text-xs">
                                 {cliente.procedencia}
                               </Badge>
@@ -256,8 +256,8 @@ export function ClienteTabela({
                           {/* Observações */}
                           {cliente.observacoes && (
                             <div className="space-y-2">
-                              <div className="text-sm font-medium text-slate-700">Observações:</div>
-                              <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-600 border-l-4 border-blue-200">
+                              <div className="text-sm font-medium text-slate-600">Observações:</div>
+                              <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-900 border-l-4 border-blue-200">
                                 {cliente.observacoes}
                               </div>
                             </div>

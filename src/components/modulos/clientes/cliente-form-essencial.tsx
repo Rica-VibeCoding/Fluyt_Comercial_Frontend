@@ -44,16 +44,16 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
         <FormField
           control={form.control}
           name="nome"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Nome Completo *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Nome Completo *</FormLabel>
               <FormControl>
-                <Input placeholder="Digite o nome completo" {...field} />
+                <Input placeholder="Digite o nome completo" className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -65,10 +65,11 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
           name="cpf_cnpj"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CPF/CNPJ *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">CPF/CNPJ *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="000.000.000-00"
+                  className="h-8 text-sm"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarCPFCNPJ(e.target.value);
@@ -86,9 +87,9 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
           name="rg_ie"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>RG/IE *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">RG/IE *</FormLabel>
               <FormControl>
-                <Input placeholder="12.345.678-9" {...field} />
+                <Input placeholder="12.345.678-9" className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,11 +101,12 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Email</FormLabel>
               <FormControl>
                 <Input 
                   type="email" 
                   placeholder="exemplo@email.com" 
+                  className="h-8 text-sm"
                   {...field} 
                 />
               </FormControl>
@@ -118,10 +120,11 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
           name="telefone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Telefone *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="(11) 99999-9999"
+                  className="h-8 text-sm"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarTelefone(e.target.value);
@@ -139,10 +142,10 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
           name="tipo_venda"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Tipo de Venda *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Tipo de Venda *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione o tipo de venda" />
                   </SelectTrigger>
                 </FormControl>
@@ -151,7 +154,7 @@ export function ClienteFormEssencial({ form }: ClienteFormEssencialProps) {
                   <SelectItem value="FUTURA">Futura</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
+              <FormDescription className="text-xs text-slate-500">
                 Normal: venda imediata. Futura: venda programada para o futuro.
               </FormDescription>
               <FormMessage />

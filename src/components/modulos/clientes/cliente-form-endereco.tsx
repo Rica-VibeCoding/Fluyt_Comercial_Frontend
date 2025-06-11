@@ -72,17 +72,18 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
         <FormField
           control={form.control}
           name="cep"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CEP *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">CEP *</FormLabel>
               <FormControl>
                 <Input 
                   placeholder="00000-000"
+                  className="h-8 text-sm"
                   {...field}
                   onChange={(e) => {
                     const formatted = formatarCEP(e.target.value);
@@ -97,7 +98,7 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
                 />
               </FormControl>
               {buscandoCEP && (
-                <p className="text-xs text-muted-foreground">Buscando CEP...</p>
+                <p className="text-xs text-slate-500">Buscando CEP...</p>
               )}
               <FormMessage />
             </FormItem>
@@ -109,9 +110,9 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="numero"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Número</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Número</FormLabel>
               <FormControl>
-                <Input placeholder="123" {...field} />
+                <Input placeholder="123" className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -123,9 +124,9 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="logradouro"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Logradouro *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Logradouro *</FormLabel>
               <FormControl>
-                <Input placeholder="Rua, Avenida, etc." {...field} />
+                <Input placeholder="Rua, Avenida, etc." className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -137,9 +138,9 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="complemento"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Complemento</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Complemento</FormLabel>
               <FormControl>
-                <Input placeholder="Apto, Bloco, Sala, etc." {...field} />
+                <Input placeholder="Apto, Bloco, Sala, etc." className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -151,9 +152,9 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="bairro"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bairro *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Bairro *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome do bairro" {...field} />
+                <Input placeholder="Nome do bairro" className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,9 +166,9 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="cidade"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cidade *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Cidade *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome da cidade" {...field} />
+                <Input placeholder="Nome da cidade" className="h-8 text-sm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -179,10 +180,10 @@ export function ClienteFormEndereco({ form }: ClienteFormEnderecoProps) {
           name="uf"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Estado (UF) *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Estado (UF) *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione o estado" />
                   </SelectTrigger>
                 </FormControl>

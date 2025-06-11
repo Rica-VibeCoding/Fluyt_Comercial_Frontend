@@ -23,17 +23,17 @@ interface ClienteFormConfigProps {
 
 export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
         <FormField
           control={form.control}
           name="procedencia"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Procedência *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Procedência *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Como conheceu?" />
                   </SelectTrigger>
                 </FormControl>
@@ -55,10 +55,10 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
           name="vendedor_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vendedor Responsável *</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Vendedor Responsável *</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-8 text-sm">
                     <SelectValue placeholder="Selecione o vendedor" />
                   </SelectTrigger>
                 </FormControl>
@@ -80,11 +80,11 @@ export function ClienteFormConfig({ form, vendedores }: ClienteFormConfigProps) 
           name="observacoes"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Observações</FormLabel>
+              <FormLabel className="text-xs font-medium text-slate-700">Observações</FormLabel>
               <FormControl>
                 <Textarea 
                   placeholder="Observações adicionais sobre o cliente..."
-                  className="min-h-[80px]"
+                  className="min-h-[60px] text-sm"
                   {...field} 
                 />
               </FormControl>
