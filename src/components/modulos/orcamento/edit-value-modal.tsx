@@ -95,6 +95,12 @@ export const EditValueModal: React.FC<EditValueModalProps> = ({
   const currencyInput = useCurrencyInput(value, setValue);
 
   const handleSave = () => {
+    // Verificação de segurança para percentual de desconto
+    if (isPercentage && value >= 100) {
+      alert('Desconto não pode ser 100% ou maior. Valor máximo: 99.9%');
+      setValue(99.9);
+      return;
+    }
     onSave(value, showLockOption ? shouldLock : undefined);
     onClose();
   };
@@ -129,12 +135,17 @@ export const EditValueModal: React.FC<EditValueModalProps> = ({
             <Input
               type={isPercentage ? "number" : "text"}
               step={isPercentage ? "0.1" : undefined}
+              min={isPercentage ? "0" : undefined}
+              max={isPercentage ? "99.9" : undefined}
               value={isPercentage ? value : currencyInput.value}
-              onChange={isPercentage ? (e) => setValue(Number(e.target.value) || 0) : currencyInput.onChange}
+              onChange={isPercentage ? (e) => {
+                const newValue = Number(e.target.value) || 0;
+                setValue(newValue > 99.9 ? 99.9 : newValue);
+              } : currencyInput.onChange}
               onFocus={isPercentage ? undefined : currencyInput.onFocus}
               inputMode={isPercentage ? undefined : "numeric"}
               maxLength={isPercentage ? undefined : 17}
-              placeholder={isPercentage ? "Digite o novo percentual" : "Digite o novo valor"}
+              placeholder={isPercentage ? "Digite o novo percentual (máx. 99.9%)" : "Digite o novo valor"}
             />
           </div>
           

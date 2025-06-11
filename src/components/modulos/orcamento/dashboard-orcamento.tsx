@@ -49,8 +49,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }).format(value);
   };
   const getStatusColor = (desconto: number) => {
-    if (desconto < 15) return 'text-green-600';
-    if (desconto < 25) return 'text-yellow-600';
+    const valor = isNaN(desconto) ? 0 : desconto;
+    if (valor < 15) return 'text-green-600';
+    if (valor < 25) return 'text-yellow-600';
     return 'text-red-600';
   };
   const getValorRestanteStyle = (valor: number) => {
@@ -119,17 +120,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
               <CardTitle className="text-sm font-medium">Desconto Real</CardTitle>
-              {onEditDescontoReal && <Button variant="ghost" size="sm" onClick={() => openEditModal('Desconto Real', descontoReal, onEditDescontoReal, true, true, isDescontoRealLocked)} className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onEditDescontoReal && <Button variant="ghost" size="sm" onClick={() => {
+                const valorSeguro = isNaN(descontoReal) ? 0 : descontoReal;
+                openEditModal('Desconto Real', valorSeguro, onEditDescontoReal, true, true, isDescontoRealLocked);
+              }} className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Edit className="h-3 w-3" />
                 </Button>}
             </div>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${getStatusColor(descontoReal)}`}>
-              {descontoReal.toFixed(1)}%
+              {(isNaN(descontoReal) ? 0 : descontoReal).toFixed(1)}%
             </div>
             <p className="text-xs text-gray-500">
-              {descontoReal < 15 ? 'Ótimo' : descontoReal < 25 ? 'Moderado' : 'Alto'}
+              {(isNaN(descontoReal) ? 0 : descontoReal) < 15 ? 'Ótimo' : (isNaN(descontoReal) ? 0 : descontoReal) < 25 ? 'Moderado' : 'Alto'}
             </p>
           </CardContent>
         </Card>

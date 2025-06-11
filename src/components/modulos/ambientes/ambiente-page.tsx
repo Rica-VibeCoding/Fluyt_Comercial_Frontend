@@ -66,8 +66,9 @@ export function AmbientePage() {
   };
 
   const handleAvancarParaOrcamento = () => {
-    if (podeGerarOrcamento) {
-      router.push('/painel/orcamento/simulador');
+    if (podeGerarOrcamento && clienteId) {
+      const clienteNome = clienteCarregado?.nome || cliente?.nome || 'Cliente';
+      router.push(`/painel/orcamento/simulador?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`);
     }
   };
 

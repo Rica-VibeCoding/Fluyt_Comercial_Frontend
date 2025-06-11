@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSimulador } from '@/hooks';
+import { useSimuladorClean as useSimulador } from '../../../../hooks/modulos/orcamento/use-simulador-clean';
 import { useSessaoStore } from '@/store';
 import { 
-  InputSection, 
   Dashboard, 
   SimuladorHeader, 
   FormaPagamentoModal, 
@@ -15,6 +14,7 @@ import {
   type NovaFormaState,
   type TipoFormaPagamento
 } from '@/components/modulos/orcamento';
+import { InputSectionModular } from '../../../../components/modulos/orcamento/components/input-section-modular';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
@@ -28,16 +28,16 @@ function SimuladorPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { 
-    simulacao, 
-    recalcularSimulacao, 
-    adicionarForma, 
-    removerForma, 
-    limparFormas, 
-    atualizarForma,
-    alternarTravamentoForma,
-    editarValorNegociado,
+    simulacao,
+    recalcularSimulacao,
     editarValorBruto,
-    editarDescontoReal
+    editarValorNegociado,
+    editarDescontoReal,
+    adicionarForma,
+    removerForma,
+    limparFormas,
+    loading,
+    erro
   } = useSimulador();
   
   const {
@@ -105,6 +105,7 @@ function SimuladorPageContent() {
     const forma: Omit<FormaPagamento, 'id' | 'valorRecebido'> = {
       tipo: novaForma.tipo,
       valor: novaForma.valor,
+      travado: false,
       ...(novaForma.tipo === 'FINANCEIRA' && {
         parcelas: novaForma.parcelas,
         taxaJuros: novaForma.taxaJuros,
@@ -121,11 +122,8 @@ function SimuladorPageContent() {
       })
     };
 
-    if (editandoForma) {
-      atualizarForma(editandoForma.id, forma);
-    } else {
-      adicionarForma(forma);
-    }
+    // Por enquanto só adicionar (edição será implementada depois)
+    adicionarForma(forma);
     
     setModalOpen(false);
     resetForm();
@@ -145,9 +143,9 @@ function SimuladorPageContent() {
   useEffect(() => {
     if (valorTotalAmbientes > 0 && simulacao.valorBruto !== valorTotalAmbientes) {
       console.log('Sincronizando valor bruto dos ambientes:', valorTotalAmbientes);
-      recalcularSimulacao({ valorBruto: valorTotalAmbientes });
+      editarValorBruto(valorTotalAmbientes);
     }
-  }, [valorTotalAmbientes, recalcularSimulacao, simulacao.valorBruto]);
+  }, [valorTotalAmbientes, editarValorBruto, simulacao.valorBruto]);
 
   // Sincronizar estado do orçamento com a store
   useEffect(() => {
@@ -236,17 +234,23 @@ function SimuladorPageContent() {
           clienteNome={cliente?.nome}
         />
 
-        {/* Input Section */}
-        <InputSection
+        {/* Input Section Modular */}
+        <InputSectionModular
           valorBruto={simulacao.valorBruto}
           desconto={simulacao.desconto}
           valorNegociado={simulacao.valorNegociado}
-          onValorBrutoChange={(valor) => recalcularSimulacao({ valorBruto: valor })}
-          onDescontoChange={(desconto) => recalcularSimulacao({ desconto })}
+          onValorBrutoChange={editarValorBruto}
+          onDescontoChange={(desconto) => {
+            console.log('🔄 onDescontoChange chamado:', { desconto, valorBruto: simulacao.valorBruto });
+            const novoValorNegociado = simulacao.valorBruto * (1 - desconto / 100);
+            console.log('🔄 Calculado novoValorNegociado:', novoValorNegociado);
+            editarValorNegociado(novoValorNegociado);
+          }}
           onAtualizarSimulacao={() => editarValorNegociado(simulacao.valorNegociado)}
           valorVemDosAmbientes={valorTotalAmbientes > 0}
           valorTotalAmbientes={valorTotalAmbientes}
         />
+
 
         {/* Dashboard com capacidade de edição */}
         <Dashboard
@@ -267,7 +271,7 @@ function SimuladorPageContent() {
             onEditarForma={handleEditarForma}
             onRemoverForma={removerForma}
             onLimparFormas={limparFormas}
-            onAlternarTravamento={alternarTravamentoForma}
+            onAlternarTravamento={() => {}} // Temporário - sem travamento
             onOpenModal={handleOpenModal}
           />
           

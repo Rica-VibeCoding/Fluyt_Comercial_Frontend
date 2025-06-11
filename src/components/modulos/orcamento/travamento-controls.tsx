@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Switch } from '../../ui/switch';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
-import { Lock } from 'lucide-react';
+import { Button } from '../../ui/button';
+import { Lock, Unlock } from 'lucide-react';
 import { TravamentoConfig } from '../../../types/simulador';
 
 interface TravamentoControlsProps {
@@ -12,13 +13,15 @@ interface TravamentoControlsProps {
   valorNegociado: number;
   descontoReal: number;
   onAlternarTravamento: (tipo: keyof TravamentoConfig, valor?: number) => void;
+  onResetarTravamentos?: () => void;
 }
 
 export const TravamentoControls: React.FC<TravamentoControlsProps> = ({
   travamentos,
   valorNegociado,
   descontoReal,
-  onAlternarTravamento
+  onAlternarTravamento,
+  onResetarTravamentos
 }) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -30,10 +33,23 @@ export const TravamentoControls: React.FC<TravamentoControlsProps> = ({
   return (
     <Card className="border-2 border-blue-200 bg-blue-50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-blue-800">
-          <Lock className="h-5 w-5" />
-          🔒 Sistema de Travamentos
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-blue-800">
+            <Lock className="h-5 w-5" />
+            🔒 Sistema de Travamentos
+          </CardTitle>
+          {onResetarTravamentos && (travamentos.descontoRealFixo || travamentos.valorNegociado || travamentos.descontoReal) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onResetarTravamentos}
+              className="flex items-center gap-1 text-xs"
+            >
+              <Unlock className="h-3 w-3" />
+              Destravar Tudo
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Travamento Valor Negociado */}

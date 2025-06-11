@@ -100,7 +100,25 @@ export const InputSection: React.FC<InputSectionProps> = ({
         
         <div className="space-y-2">
           <Label htmlFor="desconto">Desconto (%)</Label>
-          <Input id="desconto" type="number" min="0" max="100" value={desconto || ''} onChange={e => onDescontoChange(Number(e.target.value) || 0)} />
+          <Input 
+            id="desconto" 
+            type="number" 
+            min="0" 
+            max="100" 
+            step="0.1"
+            value={isNaN(desconto) ? '' : desconto.toFixed(1)} 
+            onChange={e => {
+              const value = e.target.value;
+              if (value === '') {
+                onDescontoChange(0);
+              } else {
+                const numValue = Number(value);
+                if (!isNaN(numValue)) {
+                  onDescontoChange(numValue);
+                }
+              }
+            }} 
+          />
         </div>
         
         <div className="space-y-2">

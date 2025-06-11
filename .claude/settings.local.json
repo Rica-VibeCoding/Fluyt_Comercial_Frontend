@@ -26,7 +26,8 @@
       "Bash(curl:*)",
       "Bash(npm run lint)",
       "mcp__supabase__restore_project",
-      "mcp__supabase__get_project"
+      "mcp__supabase__get_project",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": []
   }

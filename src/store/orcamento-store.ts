@@ -30,6 +30,7 @@ interface OrcamentoState {
   
   // Ações de travamento
   alternarTravamento: (campo: keyof TravamentoConfig, valor?: boolean) => void;
+  resetarTravamentos: () => void;
   
   // Ações de valores
   definirValorBruto: (valor: number) => void;
@@ -149,6 +150,20 @@ export const useOrcamentoStore = create<OrcamentoState>()(
           }
         }
       })),
+      
+      // Método para destravar todos os travamentos
+      resetarTravamentos: () => set((state) => ({
+        simulacao: {
+          ...state.simulacao,
+          travamentos: {
+            ...state.simulacao.travamentos,
+            descontoRealFixo: false,
+            valorDescontoRealFixo: 0,
+            valorNegociado: false
+          }
+        }
+      })),
+
       
       // Ações de valores
       definirValorBruto: (valor) => set((state) => ({

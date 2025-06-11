@@ -48,7 +48,19 @@ export function useFormaPagamentoCalculator() {
   }, []);
 
   const calcularDescontoReal = useCallback((valorBruto: number, valorRecebidoTotal: number): number => {
-    return valorBruto > 0 ? ((valorBruto - valorRecebidoTotal) / valorBruto) * 100 : 0;
+    // Se não há valor bruto ou valor recebido, desconto é 0
+    if (valorBruto <= 0 || valorRecebidoTotal <= 0) {
+      return 0;
+    }
+    
+    const resultado = ((valorBruto - valorRecebidoTotal) / valorBruto) * 100;
+    
+    // Garantir que sempre retorna um número válido
+    if (isNaN(resultado) || !isFinite(resultado)) {
+      return 0;
+    }
+    
+    return resultado;
   }, []);
 
   return {

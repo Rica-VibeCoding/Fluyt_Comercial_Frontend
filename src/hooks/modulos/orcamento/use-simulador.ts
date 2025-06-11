@@ -2,7 +2,7 @@
  * Hook principal do simulador usando Zustand store
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { FormaPagamento } from '@/types/simulador';
 import { useOrcamentoStore } from '@/store/orcamento-store';
 import { useFormaPagamentoCalculator } from './use-forma-pagamento-calculator';
@@ -26,8 +26,14 @@ export const useSimulador = () => {
     calcularValorRecebidoForma
   });
 
+
   const recalcularSimulacao = useCallback((novosDados: Partial<typeof store.simulacao>) => {
     const updated = { ...store.simulacao, ...novosDados };
+    
+    // Se valorBruto foi alterado e valorNegociado é 0, inicializar valorNegociado = valorBruto
+    if (novosDados.valorBruto !== undefined && updated.valorNegociado === 0) {
+      updated.valorNegociado = updated.valorBruto;
+    }
     
     // Recalcular valores derivados
     updated.desconto = updated.valorBruto > 0 ? ((updated.valorBruto - updated.valorNegociado) / updated.valorBruto) * 100 : 0;
@@ -231,6 +237,7 @@ export const useSimulador = () => {
     limparFormas: store.limparFormasPagamento,
     alternarTravamento: store.alternarTravamento,
     alternarTravamentoForma: store.alternarTravamentoForma,
+    resetarTravamentos: store.resetarTravamentos,
     editarValorNegociado,
     editarValorBruto,
     editarDescontoReal,
