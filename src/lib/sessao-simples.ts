@@ -14,10 +14,22 @@ export interface AmbienteSimples {
   valor: number;
 }
 
+export interface FormaPagamento {
+  id: string;
+  tipo: 'a-vista' | 'boleto' | 'cartao' | 'financeira';
+  valor: number;
+  valorPresente: number;
+  parcelas?: number;
+  dados: any; // dados específicos de cada modal
+  criadaEm: string;
+  travada?: boolean; // para futura funcionalidade de travamento
+}
+
 export interface SessaoSimples {
   cliente: ClienteSimples | null;
   ambientes: AmbienteSimples[];
   valorTotal: number;
+  formasPagamento: FormaPagamento[];
 }
 
 class SessaoSimplesManager {
@@ -33,6 +45,10 @@ class SessaoSimplesManager {
       const dados = localStorage.getItem(this.CHAVE);
       if (dados) {
         const sessao = JSON.parse(dados) as SessaoSimples;
+        // Garantir compatibilidade com versões antigas
+        if (!sessao.formasPagamento) {
+          sessao.formasPagamento = [];
+        }
         console.log('📥 Sessão carregada:', sessao);
         return sessao;
       }
@@ -64,9 +80,10 @@ class SessaoSimplesManager {
     const novaSessao: SessaoSimples = {
       ...sessaoAtual,
       cliente,
-      // Se mudou cliente, limpar ambientes
+      // Se mudou cliente, limpar ambientes e formas
       ambientes: sessaoAtual.cliente?.id === cliente.id ? sessaoAtual.ambientes : [],
-      valorTotal: sessaoAtual.cliente?.id === cliente.id ? sessaoAtual.valorTotal : 0
+      valorTotal: sessaoAtual.cliente?.id === cliente.id ? sessaoAtual.valorTotal : 0,
+      formasPagamento: sessaoAtual.cliente?.id === cliente.id ? sessaoAtual.formasPagamento : []
     };
     
     this.salvar(novaSessao);
@@ -85,7 +102,10 @@ class SessaoSimplesManager {
                  preservarAmbientes ? sessaoAtual.ambientes : [],
       valorTotal: (preservarAmbientes && sessaoAtual.cliente?.id === cliente.id) ? 
                   sessaoAtual.valorTotal : 
-                  preservarAmbientes ? sessaoAtual.valorTotal : 0
+                  preservarAmbientes ? sessaoAtual.valorTotal : 0,
+      formasPagamento: (preservarAmbientes && sessaoAtual.cliente?.id === cliente.id) ? 
+                       sessaoAtual.formasPagamento : 
+                       preservarAmbientes ? sessaoAtual.formasPagamento : []
     };
     
     this.salvar(novaSessao);
@@ -115,7 +135,74 @@ class SessaoSimplesManager {
     this.salvar(novaSessao);
     return novaSessao;
   }
-  
+
+  // === MÉTODOS PARA FORMAS DE PAGAMENTO ===
+
+  // Adicionar forma de pagamento
+  public adicionarFormaPagamento(forma: Omit<FormaPagamento, 'id' | 'criadaEm'>): SessaoSimples {
+    const sessaoAtual = this.carregar();
+    const novaForma: FormaPagamento = {
+      ...forma,
+      id: `forma_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      criadaEm: new Date().toISOString()
+    };
+    
+    const novaSessao: SessaoSimples = {
+      ...sessaoAtual,
+      formasPagamento: [...sessaoAtual.formasPagamento, novaForma]
+    };
+    
+    this.salvar(novaSessao);
+    console.log('➕ Forma de pagamento adicionada:', novaForma);
+    return novaSessao;
+  }
+
+  // Remover forma de pagamento
+  public removerFormaPagamento(id: string): SessaoSimples {
+    const sessaoAtual = this.carregar();
+    const novaSessao: SessaoSimples = {
+      ...sessaoAtual,
+      formasPagamento: sessaoAtual.formasPagamento.filter(forma => forma.id !== id)
+    };
+    
+    this.salvar(novaSessao);
+    console.log('🗑️ Forma de pagamento removida:', id);
+    return novaSessao;
+  }
+
+  // Editar forma de pagamento
+  public editarFormaPagamento(id: string, dadosAtualizados: Partial<Omit<FormaPagamento, 'id' | 'criadaEm'>>): SessaoSimples {
+    const sessaoAtual = this.carregar();
+    const novaSessao: SessaoSimples = {
+      ...sessaoAtual,
+      formasPagamento: sessaoAtual.formasPagamento.map(forma => 
+        forma.id === id ? { ...forma, ...dadosAtualizados } : forma
+      )
+    };
+    
+    this.salvar(novaSessao);
+    console.log('✏️ Forma de pagamento editada:', id, dadosAtualizados);
+    return novaSessao;
+  }
+
+  // Obter formas de pagamento
+  public obterFormasPagamento(): FormaPagamento[] {
+    const sessao = this.carregar();
+    return sessao.formasPagamento;
+  }
+
+  // Obter valor total das formas de pagamento
+  public obterValorTotalFormas(): number {
+    const formas = this.obterFormasPagamento();
+    return formas.reduce((total, forma) => total + forma.valor, 0);
+  }
+
+  // Obter valor presente total das formas
+  public obterValorPresenteTotal(): number {
+    const formas = this.obterFormasPagamento();
+    return formas.reduce((total, forma) => total + forma.valorPresente, 0);
+  }
+
   // Limpar tudo
   public limpar(): SessaoSimples {
     const sessaoVazia = this.getEstadoVazio();
@@ -134,7 +221,8 @@ class SessaoSimplesManager {
     return {
       cliente: null,
       ambientes: [],
-      valorTotal: 0
+      valorTotal: 0,
+      formasPagamento: []
     };
   }
   

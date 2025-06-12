@@ -17,9 +17,10 @@ import { ModalFinanceira } from './modal-financeira';
 interface ModalFormasPagamentoProps {
   isOpen: boolean;
   onClose: () => void;
+  onFormaPagamentoAdicionada?: (forma: { tipo: string; valor?: number; detalhes?: any }) => void;
 }
 
-export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoProps) {
+export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdicionada }: ModalFormasPagamentoProps) {
   const [modalAVistaAberto, setModalAVistaAberto] = useState(false);
   const [modalBoletoAberto, setModalBoletoAberto] = useState(false);
   const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
@@ -80,28 +81,56 @@ export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoPr
 
   const handleSalvarAVista = (dados: { valor: number; data: string }) => {
     console.log('Dados À Vista salvos:', dados);
-    // TODO: Adicionar à lista de formas de pagamento
+    
+    // Notificar o componente pai
+    onFormaPagamentoAdicionada?.({
+      tipo: 'À Vista',
+      valor: dados.valor,
+      detalhes: dados
+    });
+    
     setModalAVistaAberto(false);
     onClose();
   };
 
   const handleSalvarBoleto = (dados: { valor: number; parcelas: any[] }) => {
     console.log('Dados Boleto salvos:', dados);
-    // TODO: Adicionar à lista de formas de pagamento
+    
+    // Notificar o componente pai
+    onFormaPagamentoAdicionada?.({
+      tipo: 'Boleto',
+      valor: dados.valor,
+      detalhes: dados
+    });
+    
     setModalBoletoAberto(false);
     onClose();
   };
 
   const handleSalvarCartao = (dados: { valor: number; vezes: number; taxa: number; valorPresente: number; desconto: number }) => {
     console.log('Dados Cartão salvos:', dados);
-    // TODO: Adicionar à lista de formas de pagamento
+    
+    // Notificar o componente pai
+    onFormaPagamentoAdicionada?.({
+      tipo: 'Cartão',
+      valor: dados.valor,
+      detalhes: dados
+    });
+    
     setModalCartaoAberto(false);
     onClose();
   };
 
   const handleSalvarFinanceira = (dados: { valor: number; vezes: number; percentual: number; parcelas: any[]; valorPresente: number }) => {
     console.log('Dados Financeira salvos:', dados);
-    // TODO: Adicionar à lista de formas de pagamento
+    
+    // Notificar o componente pai
+    onFormaPagamentoAdicionada?.({
+      tipo: 'Financeira',
+      valor: dados.valor,
+      detalhes: dados
+    });
+    
     setModalFinanceiraAberto(false);
     onClose();
   };

@@ -1,7 +1,9 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { useContractDataManager } from "./shared/contract-data-manager";
+import { useSessao } from "@/store/sessao-store";
 
 // Seções modulares
 import { HeaderSection } from "./summary-sections/header-section";
@@ -15,7 +17,41 @@ import { DebugPersistenciaCompacto } from "../../shared/debug-persistencia";
 
 const ContractSummary = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessao = useSessao();
   const { contratoData, updateField, updateStatus, isLoading } = useContractDataManager();
+
+  // Carregar dados da URL se necessário
+  useEffect(() => {
+    const clienteId = searchParams.get('clienteId');
+    const clienteNome = searchParams.get('clienteNome');
+    
+    console.log('🔍 ContractSummary - Parâmetros URL:', { clienteId, clienteNome });
+    
+    // Se tem dados na URL mas não tem cliente na sessão Zustand, forçar carregamento
+    if (clienteId && clienteNome && !sessao.cliente) {
+      console.log('📥 Carregando cliente da URL na sessão Zustand...');
+      sessao.definirCliente({
+        id: clienteId,
+        nome: decodeURIComponent(clienteNome),
+        cpf_cnpj: '',
+        telefone: '',
+        tipo_venda: 'NORMAL' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
+  }, [searchParams, sessao]);
+
+  // Debug da sessão
+  useEffect(() => {
+    console.log('🔄 ContractSummary - Estado da sessão:', {
+      cliente: sessao.cliente?.nome || 'null',
+      ambientes: sessao.ambientes.length,
+      orcamentoConfigurado: sessao.orcamentoConfigurado,
+      podeGerarContrato: sessao.podeGerarContrato()
+    });
+  }, [sessao.cliente, sessao.ambientes, sessao.orcamentoConfigurado]);
 
   // Loading state
   if (isLoading) {
