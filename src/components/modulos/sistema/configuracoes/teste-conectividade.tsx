@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Wifi, WifiOff, CheckCircle, XCircle, Database } from 'lucide-react';
 import { testConnection, checkAuthStatus, isSupabaseConfigured } from '@/lib/supabase';
+import { DebugWrapper } from '../debug-wrapper';
 
 interface TestResult {
   success: boolean;
@@ -13,27 +14,73 @@ interface TestResult {
 }
 
 export function TesteConectividade() {
+  // ========== LOGS DE DEBUG ==========
+  console.log('🧩 [DEBUG] TesteConectividade: Componente iniciando...')
+  console.log('🧩 [DEBUG] TesteConectividade: typeof window:', typeof window)
+  console.log('🧩 [DEBUG] TesteConectividade: isSupabaseConfigured:', isSupabaseConfigured)
+
+  const [isClient, setIsClient] = useState(false);
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [authStatus, setAuthStatus] = useState<any>(null);
 
+  // Evitar hidratação SSR
+  useEffect(() => {
+    console.log('🧩 [DEBUG] TesteConectividade: useEffect executando...')
+    console.log('🧩 [DEBUG] TesteConectividade: Definindo isClient como true')
+    setIsClient(true);
+  }, []);
+
+  // ========== LOGS DE DEBUG ==========
+  console.log('🧩 [DEBUG] TesteConectividade: isClient atual:', isClient)
+
+  // Loading durante hidratação
+  if (!isClient) {
+    console.log('🧩 [DEBUG] TesteConectividade: Renderizando loading SSR...')
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Teste de Conectividade Supabase
+            </CardTitle>
+            <CardDescription>
+              Verificar se a conexão com o banco de dados Supabase está funcionando
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-sm text-muted-foreground mt-2">Carregando configurações...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  console.log('🧩 [DEBUG] TesteConectividade: Renderizando componente principal...')
+
   const handleTestConnection = async () => {
+    console.log('🧩 [DEBUG] TesteConectividade: handleTestConnection iniciando...')
     setTesting(true);
     setResult(null);
     setAuthStatus(null);
 
     try {
       // Teste de conectividade
-      console.log('🚀 Iniciando teste de conectividade...');
+      console.log('🧩 [DEBUG] TesteConectividade: Chamando testConnection...');
       const connectionResult = await testConnection();
+      console.log('🧩 [DEBUG] TesteConectividade: testConnection resultado:', connectionResult);
       setResult(connectionResult);
 
       // Teste de autenticação
-      console.log('🔐 Verificando status de autenticação...');
+      console.log('🧩 [DEBUG] TesteConectividade: Chamando checkAuthStatus...');
       const authResult = await checkAuthStatus();
+      console.log('🧩 [DEBUG] TesteConectividade: checkAuthStatus resultado:', authResult);
       setAuthStatus(authResult);
 
     } catch (error) {
+      console.error('❌ [DEBUG] TesteConectividade: Erro durante os testes:', error);
       setResult({
         success: false,
         message: 'Erro durante os testes',
@@ -45,17 +92,18 @@ export function TesteConectividade() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Teste de Conectividade Supabase
-          </CardTitle>
-          <CardDescription>
-            Verificar se a conexão com o banco de dados Supabase está funcionando
-          </CardDescription>
-        </CardHeader>
+    <DebugWrapper fallbackTitle="Erro no Componente de Teste de Conectividade">
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Teste de Conectividade Supabase
+            </CardTitle>
+            <CardDescription>
+              Verificar se a conexão com o banco de dados Supabase está funcionando
+            </CardDescription>
+          </CardHeader>
         <CardContent className="space-y-4">
           
           {/* Botão de Teste */}
@@ -154,6 +202,19 @@ export function TesteConectividade() {
             </Card>
           )}
 
+          {/* DEBUG: Estado Atual */}
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="space-y-2">
+              <h4 className="font-medium text-yellow-900">🐛 Estado de Debug</h4>
+              <div className="text-sm text-yellow-700 space-y-1">
+                <p>• <strong>isClient:</strong> {isClient.toString()}</p>
+                <p>• <strong>typeof window:</strong> {typeof window}</p>
+                <p>• <strong>isSupabaseConfigured:</strong> {isSupabaseConfigured.toString()}</p>
+                <p>• <strong>NODE_ENV:</strong> {process.env.NODE_ENV}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Informações de Configuração */}
           <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <div className="space-y-2">
@@ -184,5 +245,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anonima`}
         </CardContent>
       </Card>
     </div>
+    </DebugWrapper>
   );
 }

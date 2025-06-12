@@ -16,6 +16,7 @@ export function useContractDataManager() {
   
   const [contratoData, setContratoData] = useState<ContratoData>(contratoMock);
   const [tentouRecuperar, setTentouRecuperar] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Tentar recuperar sessão automaticamente se cliente foi perdido
   useEffect(() => {
@@ -28,17 +29,31 @@ export function useContractDataManager() {
     }
   }, [cliente, searchParams, carregarSessaoCliente, tentouRecuperar]);
 
-  // Sincronizar dados da sessão com o contrato
+  // Controle de loading
   useEffect(() => {
-    console.log('🔍 ContractDataManager - Sincronizando dados da sessão:', {
-      temCliente: !!cliente,
-      clienteNome: cliente?.nome || 'null',
-      quantidadeAmbientes: ambientes.length,
-      valorTotalAmbientes,
-      descontoReal
-    });
+    // Simular loading mínimo para evitar flicker
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (cliente && ambientes.length > 0) {
+  // Sincronizar dados da sessão com o contrato (com debounce)
+  useEffect(() => {
+    // Evitar re-renders durante loading inicial
+    if (isLoading) return;
+
+    const timer = setTimeout(() => {
+      console.log('🔍 ContractDataManager - Sincronizando dados da sessão:', {
+        temCliente: !!cliente,
+        clienteNome: cliente?.nome || 'null',
+        quantidadeAmbientes: ambientes.length,
+        valorTotalAmbientes,
+        descontoReal
+      });
+
+      if (cliente && ambientes.length > 0) {
       // Usar desconto real da sessão ou valor padrão do mock
       const descontoParaUsar = descontoReal > 0 ? descontoReal / 100 : contratoMock.desconto;
       
@@ -78,7 +93,10 @@ export function useContractDataManager() {
         tentouRecuperar
       });
     }
-  }, [cliente, ambientes, valorTotalAmbientes, descontoReal, searchParams, tentouRecuperar]);
+    }, 100); // debounce de 100ms
+
+    return () => clearTimeout(timer);
+  }, [cliente, ambientes, valorTotalAmbientes, descontoReal, searchParams, tentouRecuperar, isLoading]);
 
   // Função para atualizar campos do contrato
   const updateField = useCallback((path: string, value: string | number) => {
@@ -111,6 +129,7 @@ export function useContractDataManager() {
     setContratoData,
     updateField,
     updateStatus,
-    tentouRecuperar
+    tentouRecuperar,
+    isLoading
   };
 }

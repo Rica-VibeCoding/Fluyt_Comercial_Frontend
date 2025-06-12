@@ -21,6 +21,7 @@ import { Toaster as SonnerToaster } from '../ui/sonner';
 import { DebugPersistenciaCompacto } from '../shared/debug-persistencia';
 import { usePersistenciaBasica } from '../../hooks/globais/use-persistencia-sessao';
 import { ErrorBoundary } from '../error-boundary';
+// import { FluytProvider } from '@/context/fluyt-context'; // TEMPORARIAMENTE DESABILITADO
 
 // Criar QueryClient uma única vez para evitar recriação em re-renders
 const queryClient = new QueryClient({
@@ -57,18 +58,20 @@ export function ClientProviders({ children }: ClientProvidersProps) {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <PersistenceManager>
-            {children}
-            
-            {/* Sistema de notificações */}
-            <Toaster />
-            <SonnerToaster />
-            
-            {/* Debug de persistência - REATIVADO com correções de loop */}
-            {process.env.NODE_ENV === 'development' && (
-              <DebugPersistenciaCompacto />
-            )}
-          </PersistenceManager>
+          {/* <FluytProvider> TEMPORARIAMENTE DESABILITADO */}
+            <PersistenceManager>
+              {children}
+              
+              {/* Sistema de notificações */}
+              <Toaster />
+              <SonnerToaster />
+              
+              {/* Debug de persistência - REATIVADO com correções de loop */}
+              {process.env.NODE_ENV === 'development' && (
+                <DebugPersistenciaCompacto />
+              )}
+            </PersistenceManager>
+          {/* </FluytProvider> */}
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

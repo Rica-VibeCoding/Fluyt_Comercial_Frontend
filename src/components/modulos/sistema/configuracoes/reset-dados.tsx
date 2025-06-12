@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { RefreshCw, Database, AlertTriangle, Building2, Store } from 'lucide-react';
+import { RefreshCw, Database, AlertTriangle, Building2, Store, Loader2 } from 'lucide-react';
 import { useEmpresas } from '@/hooks/modulos/sistema/use-empresas';
 import { useLojas } from '@/hooks/modulos/sistema/use-lojas';
 
 export function ResetDados() {
+  const [isClient, setIsClient] = useState(false);
+  
+  // Evitar hidratação SSR
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const { resetarDados: resetarEmpresas } = useEmpresas();
   const { resetarDados: resetarLojas } = useLojas();
+  
+  // Loading durante hidratação
+  if (!isClient) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Gerenciamento de Dados
+            </CardTitle>
+            <CardDescription>
+              Ferramentas para gerenciar os dados de desenvolvimento e teste
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-12 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+            <p className="text-sm text-muted-foreground mt-2">Carregando configurações...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleResetCompleto = () => {
     resetarEmpresas();

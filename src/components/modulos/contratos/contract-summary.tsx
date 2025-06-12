@@ -15,7 +15,21 @@ import { DebugPersistenciaCompacto } from "../../shared/debug-persistencia";
 
 const ContractSummary = () => {
   const router = useRouter();
-  const { contratoData, updateField, updateStatus } = useContractDataManager();
+  const { contratoData, updateField, updateStatus, isLoading } = useContractDataManager();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Carregando contrato...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleFinalizarContrato = () => {
     console.log('🎯 Finalizando contrato:', contratoData);

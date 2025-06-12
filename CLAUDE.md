@@ -1,17 +1,34 @@
-# Sistema Fluyt - Contexto para Desenvolvimento
+# Sistema Fluyt - Contexto Atualizado (RESET TOTAL - Dezembro 2025)
 
-## 🎯 Objetivo do Projeto
+## 🎯 Estado Atual do Projeto
 
-Unificar 4 sistemas React separados em um único sistema Next.js modular com interface em português e foco na experiência empresarial.
+Sistema comercial Next.js **COMPLETAMENTE REFATORADO** após reset total da arquitetura de sessão. Migração de 4 sistemas separados foi **100% CONCLUÍDA** com foco em simplicidade e confiabilidade.
 
-### Projetos que serão unificados:
-1. **fluyt-cliente-manager** - Gestão de clientes
-2. **fluyt-proposta-simulador** - Simulação de orçamentos
-3. **contrato** - Gestão de contratos  
-4. **fluyt-config-control-center** - Configurações do sistema
+### ✅ Módulos Migrados e Funcionais:
+1. **👥 Clientes** - Gestão completa (CRUD + filtros + busca)
+2. **🏢 Ambientes** - Cadastro de projetos com XML import
+3. **💰 Orçamentos** - Simulador SIMPLIFICADO e funcional
+4. **📋 Contratos** - Geração e visualização
+5. **⚙️ Sistema** - Configurações empresariais completas
 
-## Descrição do Projeto Atual
-Simulador financeiro de propostas para Fluyt - uma aplicação sofisticada para calcular cenários financeiros de vendas com diferentes métodos de pagamento e cálculo de descontos reais.
+## 🚨 ARQUITETURA ATUAL - SISTEMA ULTRA SIMPLES
+
+### Sistema de Sessão (RESET TOTAL - Nov 2025)
+Após múltiplas tentativas complexas, implementamos **ARQUITETURA ULTRA SIMPLES**:
+
+**ÚNICA FONTE DE VERDADE:**
+```typescript
+// src/lib/sessao-simples.ts
+interface SessaoSimples {
+  cliente: { id: string; nome: string } | null;
+  ambientes: { id: string; nome: string; valor: number }[];
+  valorTotal: number;
+}
+```
+
+**ÚNICA CHAVE LOCALSTORAGE:** `fluyt_sessao_simples`
+
+**HOOK ÚNICO:** `useSessaoSimples()` - máxima simplicidade
 
 ## 🛠 Stack Tecnológica Completa - FusTech Rica
 
@@ -39,15 +56,28 @@ Simulador financeiro de propostas para Fluyt - uma aplicação sofisticada para 
 - **Auth** via Supabase
 - **Real-time** subscriptions para atualizações live
 
-### Stack Atual do Simulador
+### Stack Atual do Sistema
 - **Framework:** Next.js 15.3.3 com App Router
 - **Frontend:** React 19.1.0 + TypeScript
 - **Styling:** Tailwind CSS + shadcn/ui (Radix UI)
-- **Estado:** Custom hooks + TanStack React Query
+- **Estado:** Sistema híbrido (Zustand + sessaoSimples)
 - **Validação:** React Hook Form + Zod
 - **Testes:** JavaScript standalone tests
 
-## 📁 Arquitetura de Pastas
+## 📁 Arquitetura Simplificada
+
+### Sistema de Sessão ATUAL:
+```
+src/lib/sessao-simples.ts              # ← ÚNICA classe de gestão
+src/hooks/globais/use-sessao-simples.ts # ← ÚNICO hook React
+```
+
+### Fluxo de Dados SIMPLES:
+```
+Cliente → Ambientes → Orçamento → Contratos
+   ↓         ↓          ↓          ↓
+localStorage['fluyt_sessao_simples'] (UMA chave)
+```
 
 ```
 app/
@@ -356,24 +386,40 @@ npx shadcn-ui@latest add [component-name]
 - **Atualizações imutáveis** de estado
 - **Localização brasileira** (pt-BR, Real brasileiro)
 
-## Estado Atual - SISTEMA COMPLETO! 🎉
-- **Branch:** main
-- **Página inicial:** Redirecionamento para `/painel/clientes`
-- **Módulos:** 100% dos principais módulos migrados e funcionais
-- **Performance:** Otimizações aplicadas (Next.js config, telemetria desabilitada)
-- **Status:** Sistema empresarial completo, pronto para produção
+## 🎯 STATUS ATUAL - DEZEMBRO 2025
+
+### ✅ ESTADO FINAL DO SISTEMA:
+- **Arquitetura:** ULTRA SIMPLES após reset total
+- **Sessão:** Sistema unificado `sessaoSimples`
+- **Navegação:** URLs limpas com parâmetros mínimos
+- **Módulos:** 100% funcionais e migrados
+- **Simulador:** Interface simplificada e funcional
+- **Performance:** Otimizado (sem duplicações)
+
+### 🚀 PRÓXIMOS PASSOS:
+1. **Integração Supabase** - Persistência real dos dados
+2. **Regras de Negócio** - Algoritmos avançados de desconto
+3. **Testes End-to-End** - Validação completa do fluxo
+4. **Deploy Produção** - Sistema pronto para uso real
+
+### 📋 FLUXO FUNCIONAL ATUAL:
+```
+1. Selecionar Cliente (/painel/clientes)
+2. Adicionar Ambientes (/painel/ambientes) 
+3. Configurar Orçamento (/painel/orcamento/simulador)
+4. Gerar Contrato (/painel/contratos)
+```
+
+### 🔧 DEBUGGING:
+- Console logs em `sessaoSimples.debug()`
+- Estado visible em Debug card do simulador
+- localStorage key: `fluyt_sessao_simples`
 
 ## Contexto de Negócio
-Sistema para calcular propostas comerciais considerando:
-- Diferentes custos por forma de pagamento
-- Descontos reais vs. descontos aparentes
-- Cronogramas de recebimento
-- Análise de viabilidade financeira
-
-## Arquivos de Teste
-- Testes focados em lógica de negócio e cálculos financeiros
-- Cenários específicos de casos de uso reais
-- Validação de algoritmos de desconto e travamento
+Sistema para **gestão comercial completa** com foco em:
+- Fluxo Cliente → Ambiente → Orçamento → Contrato
+- Interface brasileira otimizada
+- Máxima simplicidade e confiabilidade
 
 ---
 

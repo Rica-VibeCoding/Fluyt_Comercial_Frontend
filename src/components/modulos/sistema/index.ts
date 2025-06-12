@@ -2,6 +2,9 @@
  * Barrel exports para componentes do sistema
  */
 
+// Debug
+export { DebugWrapper } from './debug-wrapper';
+
 // Empresas
 export { GestaoEmpresas } from './empresas/gestao-empresas';
 export { EmpresaForm } from './empresas/empresa-form';

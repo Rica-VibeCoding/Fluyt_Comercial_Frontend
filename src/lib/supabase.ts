@@ -13,9 +13,20 @@ const isConfigured = supabaseUrl &&
                     supabaseUrl.includes('.supabase.co')
 
 // Cliente Supabase - só criar se configurado corretamente
-export const supabase = isConfigured 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null
+let supabase = null
+try {
+  supabase = isConfigured 
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null
+  
+  if (!isConfigured) {
+    console.warn('⚠️ Supabase não configurado. Configure as variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  }
+} catch (error) {
+  console.error('❌ Erro ao criar cliente Supabase:', error)
+}
+
+export { supabase }
 
 // Flag para verificar se está configurado
 export const isSupabaseConfigured = isConfigured

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
 import { Download, Plus, Upload, User, Home, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAmbientes } from '../../../hooks/modulos/ambientes/use-ambientes';
 import { useClientesRealista } from '../../../hooks/modulos/clientes/use-clientes-realista';
+import { useSessaoSimples } from '../../../hooks/globais/use-sessao-simples';
 import { AmbienteModal } from './ambiente-modal';
 import { AmbienteCard } from './ambiente-card';
 import { ClienteSelectorUniversal } from '../../shared/cliente-selector-universal';
@@ -38,6 +39,8 @@ export function AmbientePage() {
     limparSessaoCompleta
   } = useSessao();
   
+  const { definirAmbientes: definirAmbientesSimples } = useSessaoSimples();
+  
   const {
     ambientes,
     adicionarAmbiente,
@@ -48,12 +51,23 @@ export function AmbientePage() {
   } = useAmbientes(clienteId || undefined);
   const [modalAberto, setModalAberto] = useState(false);
 
-  // Sincronizar ambientes locais com a sessão
+  // Sincronizar ambientes locais com AMBAS as sessões
   useEffect(() => {
     if (clienteId && ambientes.length > 0) {
+      // Sessão antiga (manter compatibilidade)
       definirAmbientes(ambientes);
+      
+      // Sessão SIMPLES (nova)
+      const ambientesSimples = ambientes.map(amb => ({
+        id: amb.id,
+        nome: amb.nome,
+        valor: amb.valorTotal || 0
+      }));
+      definirAmbientesSimples(ambientesSimples);
+      
+      console.log('🔄 Ambientes sincronizados:', ambientesSimples);
     }
-  }, [ambientes, clienteId, definirAmbientes]);
+  }, [ambientes, clienteId]); // Removido funções das dependências para evitar loops
 
   const handleAdicionarAmbiente = (data: any) => {
     adicionarAmbiente(data);
