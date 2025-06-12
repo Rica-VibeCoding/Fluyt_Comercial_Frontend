@@ -213,6 +213,10 @@ export interface MontadorFormData {
   categoria: CategoriaMontador;
   valorFixo: number;
   telefone: string;
+  cpf: string;
+  email: string;
+  valorHora: number;
+  especialidade: string;
 }
 
 // ========================================

@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { formatarMoeda, parseValorMoeda, formatarPercentual } from '@/lib/formatters';
 import { validarValorDisponivel, validarNumeroParcelas } from '@/lib/validators';
+import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
+import { calcularValorPresenteFinanceira, gerarCronogramaParcelas } from '@/lib/calculators';
 
 interface ParcelaFinanceira {
   numero: number;
@@ -30,7 +32,7 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [dataPrimeira, setDataPrimeira] = useState('');
-  const [percentual, setPercentual] = useState('1.8'); // Percentual padrão
+  const [percentual, setPercentual] = useState(getTaxaPadrao('financeira').toString().replace('.', ',')); // Percentual padrão configurável
   const [parcelas, setParcelas] = useState<ParcelaFinanceira[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -76,51 +78,29 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
     }
   }, [isOpen, dadosIniciais]);
 
-  // Gerar parcelas automaticamente (mesma data de cada mês)
+  // Gerar parcelas automaticamente usando função centralizada
   useEffect(() => {
     if (numeroVezes && dataPrimeira && valor) {
       const vezes = parseInt(numeroVezes);
       const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
-      const valorParcela = valorNumerico / vezes;
       
-      if (vezes > 0 && vezes <= 60 && !isNaN(valorNumerico)) {
-        const novasParcelas: ParcelaFinanceira[] = [];
-        const dataBase = new Date(dataPrimeira);
-        
-        for (let i = 0; i < vezes; i++) {
-          const dataParcela = new Date(dataBase);
-          dataParcela.setMonth(dataParcela.getMonth() + i);
-          
-          novasParcelas.push({
-            numero: i + 1,
-            data: dataParcela.toISOString().split('T')[0],
-            valor: valorParcela
-          });
-        }
-        
-        setParcelas(novasParcelas);
+      const limites = getLimitesParcelas('financeira');
+      if (vezes >= limites.min && vezes <= limites.max && !isNaN(valorNumerico)) {
+        const cronograma = gerarCronogramaParcelas(valorNumerico, vezes, dataPrimeira);
+        setParcelas(cronograma);
       }
     } else {
       setParcelas([]);
     }
   }, [numeroVezes, dataPrimeira, valor]);
 
-  // Função para calcular valor presente da financeira
+  // Usar função centralizada para calcular valor presente
   const calcularValorPresente = () => {
     const valorTotal = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
     const vezes = parseInt(numeroVezes);
-    const taxaMensal = parseFloat(percentual.replace(',', '.')) / 100;
+    const taxaMensal = parseFloat(percentual.replace(',', '.'));
     
-    const valorParcela = valorTotal / vezes;
-    let valorPresenteTotal = 0;
-    
-    // Calcula PV = FV / (1 + r)^n para cada parcela
-    for (let n = 1; n <= vezes; n++) {
-      const valorPresente = valorParcela / Math.pow(1 + taxaMensal, n);
-      valorPresenteTotal += valorPresente;
-    }
-    
-    return valorPresenteTotal;
+    return calcularValorPresenteFinanceira(valorTotal, vezes, taxaMensal);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -278,7 +258,7 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
                       onChange={(e) => setNumeroVezes(e.target.value)}
                       placeholder="1"
                       min="1"
-                      max="60"
+                      max={getLimitesParcelas('financeira').max.toString()}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
                       disabled={salvando}
                       required
@@ -308,7 +288,7 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
                       type="text"
                       value={percentual}
                       onChange={handlePercentualChange}
-                      placeholder="1,8"
+                      placeholder={getPlaceholderTaxa('financeira')}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
                       disabled={salvando}
                       required

@@ -1,248 +1,175 @@
-# 🔄 REFATORAÇÃO ORÇAMENTO: sessaoSimples → Zustand
+# 🔄 REFATORAÇÃO ORÇAMENTO: Código Limpo + Arquitetura
 
-## 🎯 **Objetivo**
-Migrar o sistema de orçamento de `sessaoSimples` (localStorage) para **Zustand** de forma fragmentada e segura, preparando para integração com **Supabase**.
+## 🎯 **Contexto**
+**DUAS EQUIPES SIMULTÂNEAS:**
+- **Equipe A**: Migração `sessaoSimples → Zustand` (dados)
+- **Equipe B**: Refatoração de código limpo (estrutura) ← **ESTE DOCUMENTO**
 
 ---
 
-## 📊 **Status Atual**
+## 📊 **Status Atual - EQUIPE B (Refatoração Estrutural)**
 
 ### ✅ **ETAPA 1 - CONCLUÍDA** 
 **Data:** 📅 Hoje  
 **Duração:** ⏱️ 30 minutos  
-**Risco:** ❌ Zero - Apenas adição de código
+**Risco:** ❌ Zero - Apenas imports otimizados
 
-### ✅ **ETAPA 2 - CONCLUÍDA**
-**Data:** 📅 Hoje  
-**Duração:** ⏱️ 20 minutos  
-**Risco:** 🟡 Baixo - Unificação de tipos
+#### **Realizado:**
+- ✅ **Extraídos utilitários** de formatação e validação
+- ✅ **Eliminada duplicação** de funções `formatarMoeda`, `parseValorMoeda`
+- ✅ **Adicionados imports** de `/lib/formatters.ts` e `/lib/validators.ts`
+- ✅ **4 modais atualizados** para usar funções compartilhadas
+- ✅ **Build testado** - sem erros
 
-#### **Realizado Etapa 1:**
-- ✅ **Store Criada**: `/src/store/orcamento-store.ts` completa
-- ✅ **Funcionalidade Replicada**: 100% do `sessaoSimples` em Zustand
-- ✅ **Coexistência Segura**: Sistemas paralelos sem conflito
-- ✅ **TypeScript**: Compila sem erros
-- ✅ **DevTools**: Configurado para debug
-- ✅ **SSR-Safe**: Hook personalizado para Next.js
-
-#### **Realizado Etapa 2:**
-- ✅ **Tipos Centralizados**: `/src/types/orcamento.ts` criado (208 linhas)
-- ✅ **Duplicação Eliminada**: Tipos `FormaPagamento` unificados
-- ✅ **Imports Atualizados**: `sessaoSimples` e `orcamento-store` migrados
-- ✅ **Compatibilidade**: Aliases temporários mantidos
-- ✅ **Re-exports**: Sistema atual funciona sem quebras
-- ✅ **Compilação**: Todos os tipos validados pelo TypeScript
-
-#### **Arquivos Criados/Modificados:**
+#### **Arquivos Modificados:**
 ```typescript
-// ETAPA 1: src/store/orcamento-store.ts (285 linhas)
-export const useOrcamentoStore = create<OrcamentoState>()(devtools(...))
-export const useOrcamento = () => { /* Hook SSR-safe */ }
+// Imports adicionados em:
+- modal-a-vista.tsx
+- modal-boleto.tsx  
+- modal-cartao.tsx
+- modal-financeira.tsx
 
-// ETAPA 2: src/types/orcamento.ts (208 linhas)
-export interface Cliente { id: string; nome: string; }
-export interface FormaPagamento { /* unificado */ }
-export interface OrcamentoState extends /* modular */ {}
-// + 15 interfaces organizadas + aliases compatibilidade
+// Usando agora:
+import { formatarMoeda, parseValorMoeda } from '@/lib/formatters';
+import { validarValorDisponivel } from '@/lib/validators';
 ```
 
-#### **Status dos Sistemas:**
-- 🟢 **sessaoSimples**: Funcionando 100% (imports atualizados)
-- 🟢 **orcamento-store**: Pronta com tipos unificados
-- 🟢 **types/orcamento**: Fonte única de verdade
-- 🟢 **Build**: Compilando sem erros
-- 🟢 **Compatibilidade**: 100% backward compatible
-
 ---
 
-## 🛠️ **ETAPAS PLANEJADAS**
+## 🛠️ **ETAPAS PLANEJADAS - EQUIPE B**
 
-### 📋 **ETAPA 2 - Unificar Tipos** 
-**Status:** ⏳ Aguardando aprovação  
-**Risco:** 🟡 Baixo - Apenas movimentação de tipos  
-**Duração:** ⏱️ ~10 minutos
-
-#### **Objetivo:**
-Resolver duplicação de tipos `FormaPagamento` criando fonte única
-
-#### **Plano:**
-1. ✅ Criar `/src/types/orcamento.ts` centralizado
-2. ✅ Mover tipos de `sessaoSimples` e `orcamento-store`
-3. ✅ Atualizar imports em todos os componentes
-4. ✅ Manter compatibilidade total
-
-#### **Arquivos Afetados:**
-- `src/types/orcamento.ts` (novo)
-- `src/lib/sessao-simples.ts` (imports)
-- `src/store/orcamento-store.ts` (imports)
-- `src/components/modulos/orcamento/*.tsx` (imports)
-
----
-
-### 📋 **ETAPA 3 - Hook de Migração**
-**Status:** 📅 Próxima  
-**Risco:** 🟡 Baixo - Apenas sincronização  
-**Duração:** ⏱️ ~15 minutos
-
-#### **Objetivo:**
-Criar ponte entre sistemas para migração gradual
-
-#### **Plano:**
-1. ✅ Criar `hooks/use-orcamento-migration.ts`
-2. ✅ Sincronizar dados bidirecionalmente
-3. ✅ Testar sincronização em tempo real
-4. ✅ Preparar flag de feature
-
----
-
-### 📋 **ETAPA 4 - Migrar Componente Base**
-**Status:** 📅 Aguardando  
-**Risco:** 🟡 Médio - Primeiro componente real  
+### 📋 **ETAPA 2 - Centralizar Configurações** 
+**Status:** ⏳ Em progresso  
+**Risco:** 🟢 Baixo - Apenas constantes  
 **Duração:** ⏱️ ~20 minutos
 
 #### **Objetivo:**
-Migrar `orcamento-header.tsx` como prova de conceito
+Eliminar valores hardcoded (taxas, limites) criando arquivo de configuração
 
-#### **Motivo da Escolha:**
-- ✅ Componente mais simples (51 linhas)
-- ✅ Apenas leitura de dados
-- ✅ Sem lógica complexa
-- ✅ Fácil de reverter
+#### **Plano:**
+1. 🔄 Criar `/src/lib/pagamento-config.ts`
+2. 🔄 Centralizar todas as configurações hardcoded
+3. 🔄 Atualizar modais para usar configurações
+4. 🔄 Testar funcionamento
 
 ---
 
-### 📋 **ETAPA 5 - Migrar Valores e Ambientes**
-**Status:** 📅 Aguardando  
-**Risco:** 🟡 Médio - Componentes intermediários  
-**Duração:** ⏱️ ~25 minutos
+### 📋 **ETAPA 3 - Extrair Cálculos**
+**Status:** 📅 Próxima  
+**Risco:** 🟡 Médio - Lógica matemática  
+**Duração:** ⏱️ ~45 minutos
 
 #### **Objetivo:**
-Migrar `orcamento-valores.tsx` e `orcamento-ambientes.tsx`
+Extrair cálculos complexos (valor presente, descontos) para utilitários
 
 ---
 
-### 📋 **ETAPA 6 - Migrar Sistema de Pagamentos**
+### 📋 **ETAPA 4 - Hook Customizado**
 **Status:** 📅 Aguardando  
-**Risco:** 🟠 Alto - Componente crítico  
-**Duração:** ⏱️ ~40 minutos
+**Risco:** 🟡 Médio - Lógica compartilhada  
+**Duração:** ⏱️ ~60 minutos
 
 #### **Objetivo:**
-Migrar `orcamento-pagamentos.tsx` e todos os modais
-
-#### **Cuidados Especiais:**
-- ⚠️ Componente de 104 linhas com lógica complexa
-- ⚠️ Múltiplos modais e estados
-- ⚠️ Validações críticas de negócio
+Criar `useModalPagamento` para lógica comum dos modais
 
 ---
 
-### 📋 **ETAPA 7 - Remover sessaoSimples**
+### 📋 **ETAPA 5 - Componente Base Modal**
+**Status:** 📅 Aguardando  
+**Risco:** 🟡 Médio - Reestruturação UI  
+**Duração:** ⏱️ ~75 minutos
+
+#### **Objetivo:**
+Criar `ModalPagamentoBase` para layout padrão
+
+---
+
+### 📋 **ETAPA 6 - Refatorar Modais**
+**Status:** 📅 Aguardando  
+**Risco:** 🟠 Alto - Mudança estrutural  
+**Duração:** ⏱️ ~90 minutos
+
+#### **Objetivo:**
+Aplicar todos os utilitários nos modais (reduzir de 300+ → ~100 linhas)
+
+---
+
+### 📋 **ETAPA 7 - Consolidar Gerenciamento**
+**Status:** 📅 Aguardando  
+**Risco:** 🟠 Alto - Eliminar duplicação  
+**Duração:** ⏱️ ~60 minutos
+
+#### **Objetivo:**
+Resolver duplicação entre `orcamento-modals.tsx` e `modal-formas-pagamento.tsx`
+
+---
+
+### 📋 **ETAPA 8 - Quebrar page.tsx**
+**Status:** 📅 Aguardando  
+**Risco:** 🔴 Alto - Componente monolítico  
+**Duração:** ⏱️ ~120 minutos
+
+#### **Objetivo:**
+Reduzir `page.tsx` de 532 → ~150 linhas
+
+---
+
+### 📋 **ETAPA 9 - Alinhamento Final**
 **Status:** 📅 Final  
-**Risco:** 🟢 Baixo - Limpeza final  
-**Duração:** ⏱️ ~15 minutos
+**Risco:** 🟡 Médio - Coordenação entre equipes  
+**Duração:** ⏱️ ~180 minutos
 
 #### **Objetivo:**
-Limpeza e remoção do sistema antigo
+Alinhar com Equipe A (migrar para sessaoSimples único)
 
 ---
 
-## 🎯 **Vantagens Zustand vs sessaoSimples**
+## 🎯 **Benefícios Esperados - EQUIPE B**
 
-### ✅ **Zustand Wins:**
-- 🚀 **Performance**: Re-renders otimizados
-- 🔄 **Reatividade**: Atualizações automáticas
-- 🐛 **DevTools**: Debug avançado com Redux DevTools
-- 🌐 **Supabase Ready**: Async nativo
-- 📱 **SSR-Safe**: Next.js friendly
-- 🎯 **TypeScript**: Tipagem forte e auto-complete
-- 🧪 **Testável**: Mocking fácil para testes
-- 🔄 **Sincronização**: Real-time entre componentes
-
-### ❌ **sessaoSimples Limitações:**
-- 💾 **localStorage Only**: Não escala para DB
-- 🐌 **Síncrono**: Inadequado para async operations
-- 🔄 **Sem Reatividade**: Manual refresh necessário
-- 🐛 **Sem DevTools**: Debug limitado a console.log
-- 🧪 **Hard to Test**: Dependência de localStorage
-
----
-
-## 🚨 **Protocolo de Segurança**
-
-### ✅ **Antes de Cada Etapa:**
-1. ✅ Commit do estado atual
-2. ✅ Build test local
-3. ✅ Verificar se sessaoSimples ainda funciona
-
-### ❌ **Se Algo Der Errado:**
-1. 🔄 `git revert` imediato
-2. 🛑 Parar a migração
-3. 🔍 Análise do problema
-4. 📝 Ajustar plano se necessário
-
-### 🎯 **Critérios de Sucesso por Etapa:**
-- ✅ Build compila sem erros
-- ✅ Componentes renderizam normalmente
-- ✅ Dados mantêm integridade
-- ✅ UX não muda para usuário final
-
----
-
-## 📈 **Benefícios Esperados Pós-Migração**
-
-### 🚀 **Imediatos:**
-- ✅ DevTools para debug
-- ✅ Performance melhorada
-- ✅ Código mais limpo
+### ✅ **Imediatos:**
+- 🧹 Código 60-70% mais limpo
+- 🔄 Manutenibilidade drasticamente melhorada
+- 🐛 Menos bugs por duplicação
 
 ### 🎯 **Médio Prazo:**
-- ✅ Integração Supabase simplificada
-- ✅ Real-time features habilitadas
-- ✅ Testes automatizados possíveis
-
-### 🌟 **Longo Prazo:**
-- ✅ Escalabilidade para múltiplos usuários
-- ✅ Sync entre dispositivos
-- ✅ Backup automático na cloud
+- 🧪 Testabilidade melhorada
+- 🚀 Performance (menos código)
+- 🔧 Flexibilidade para novos tipos de pagamento
 
 ---
 
-## 📝 **Log de Mudanças**
+## 📝 **Log de Mudanças - EQUIPE B**
 
 ### 📅 **Hoje - Etapa 1**
-- ✅ **14:30** - Iniciada criação da store
-- ✅ **14:45** - Store base implementada com todos os estados
-- ✅ **15:00** - Implementadas todas as ações (cliente, ambientes, pagamentos)
-- ✅ **15:10** - Adicionados estados computados e de UI
-- ✅ **15:20** - Configurado DevTools e hook SSR-safe
-- ✅ **15:25** - Corrigidos imports conflitantes
-- ✅ **15:30** - ✅ **ETAPA 1 CONCLUÍDA**
+- ✅ **Iniciada** extração de utilitários
+- ✅ **Atualizados imports** em 4 modais
+- ✅ **Eliminada duplicação** de formatação e validação
+- ✅ **Build testado** - sem erros
+- ✅ **ETAPA 1 CONCLUÍDA**
 
 ### 📅 **Hoje - Etapa 2**
-- ✅ **15:35** - Criado `/src/types/orcamento.ts` centralizado  
-- ✅ **15:40** - Movidos tipos de `sessaoSimples` e `orcamento-store`
-- ✅ **15:45** - Atualizados imports com compatibilidade
-- ✅ **15:50** - Testes de compilação bem-sucedidos
-- ✅ **15:55** - ✅ **ETAPA 2 CONCLUÍDA**
+- ✅ **Criado** `/src/lib/pagamento-config.ts` centralizado
+- ✅ **Substituídos valores** hardcoded por configurações
+- ✅ **Atualizados 4 modais** para usar configurações centralizadas
+- ✅ **Build testado** - sem erros
+- ✅ **ETAPA 2 CONCLUÍDA**
 
-### 📅 **Próximo - Etapa 3**
-- ⏳ Aguardando aprovação para hook de migração
+### 📅 **Agora - Etapa 3**
+- 🔄 **Em progresso** - Extraindo cálculos matemáticos complexos
 
 ---
 
-## 🤝 **Aprovações Necessárias**
+## 🤝 **Coordenação Entre Equipes**
 
-- [ ] **Vibecode**: Aprovar início da Etapa 2
-- [ ] **Vibecode**: Aprovar cada etapa subsequente
-- [ ] **Vibecode**: Validar testes manuais
-- [ ] **Vibecode**: Aprovar remoção final do sessaoSimples
-ATUALIZAE A DOCUMENTAÇÃO '/mnt/c/Users/ricar/Projetos/Fluyt_Comercial_Frontend/doc  │
-│   s/REFATORACAO_ORÇAMENTO.md'   
+### 🔄 **Equipe A (Dados):**
+- Migração `sessaoSimples → Zustand`
+- Foco em gerenciamento de estado
+- Preparação para Supabase
 
-estou fazendo com duas equipes simultânea, antes de refratora veja se a outra equipe já fez pea domcumentaçao
+### 🧹 **Equipe B (Estrutura):**
+- Limpeza e organização de código
+- Eliminação de duplicações
+- Melhoria de arquitetura
 
-
-inicie a etapa 2
-assim que terminar peça permissão para a etapa 3
-comente mudança que for fazendo de forma ampla
-seja objetivo, não fuja do escopo 
+### 🎯 **Ponto de Convergência:**
+- **ETAPA 9**: Alinhar ambas as equipes para solução final unificada

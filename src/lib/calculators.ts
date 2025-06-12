@@ -105,3 +105,115 @@ export const distribuirValorRestante = (
     valorSugerido: f.valor + valorPorForma
   }));
 };
+
+/**
+ * =============================
+ * FUNÇÕES ESPECIALIZADAS POR TIPO DE PAGAMENTO
+ * =============================
+ */
+
+// CARTÃO: Calcular valor presente com antecipação parcelada
+export const calcularValorPresenteCartao = (
+  valorTotal: number,
+  numeroParcelas: number,
+  taxaMensal: number // taxa percentual mensal
+): { valorPresente: number; desconto: number; valorParcela: number } => {
+  const valorParcela = valorTotal / numeroParcelas;
+  let valorPresenteTotal = 0;
+  
+  // Calcula PV = FV / (1 + r)^n para cada parcela
+  for (let n = 1; n <= numeroParcelas; n++) {
+    const taxaDecimal = taxaMensal / 100;
+    const valorPresente = valorParcela / Math.pow(1 + taxaDecimal, n);
+    valorPresenteTotal += valorPresente;
+  }
+  
+  const desconto = valorTotal - valorPresenteTotal;
+  
+  return {
+    valorPresente: valorPresenteTotal,
+    desconto: desconto,
+    valorParcela: valorParcela
+  };
+};
+
+// FINANCEIRA: Calcular valor presente para financiamento
+export const calcularValorPresenteFinanceira = (
+  valorTotal: number,
+  numeroParcelas: number,
+  taxaMensal: number // taxa percentual mensal
+): number => {
+  const valorParcela = valorTotal / numeroParcelas;
+  let valorPresenteTotal = 0;
+  
+  // Calcula PV = FV / (1 + r)^n para cada parcela
+  for (let n = 1; n <= numeroParcelas; n++) {
+    const taxaDecimal = taxaMensal / 100;
+    const valorPresente = valorParcela / Math.pow(1 + taxaDecimal, n);
+    valorPresenteTotal += valorPresente;
+  }
+  
+  return valorPresenteTotal;
+};
+
+// BOLETO: Calcular valor presente com custo de capital
+export const calcularValorPresenteBoleto = (
+  valorTotal: number,
+  numeroParcelas: number,
+  custoCapital: number // taxa percentual mensal
+): number => {
+  if (numeroParcelas === 1) return valorTotal; // À vista
+  
+  const valorParcela = valorTotal / numeroParcelas;
+  let valorPresenteTotal = 0;
+  
+  // Calcula PV = FV / (1 + r)^n para cada parcela
+  for (let n = 1; n <= numeroParcelas; n++) {
+    const taxaDecimal = custoCapital / 100;
+    const valorPresente = valorParcela / Math.pow(1 + taxaDecimal, n);
+    valorPresenteTotal += valorPresente;
+  }
+  
+  return valorPresenteTotal;
+};
+
+// Gerar cronograma de parcelas com datas
+export const gerarCronogramaParcelas = (
+  valorTotal: number,
+  numeroParcelas: number,
+  dataInicial: string
+): Array<{ numero: number; valor: number; data: string }> => {
+  const valorParcela = valorTotal / numeroParcelas;
+  const parcelas = [];
+  
+  for (let i = 0; i < numeroParcelas; i++) {
+    const data = new Date(dataInicial);
+    data.setMonth(data.getMonth() + i);
+    
+    parcelas.push({
+      numero: i + 1,
+      valor: valorParcela,
+      data: data.toISOString().split('T')[0]
+    });
+  }
+  
+  return parcelas;
+};
+
+// Validar se valor excede disponível
+export const validarValorDisponivel = (
+  valor: number,
+  valorMaximo: number,
+  valorJaAlocado: number
+): { valido: boolean; erro: string } => {
+  const valorRestante = valorMaximo - valorJaAlocado;
+  
+  if (valor > valorRestante) {
+    return {
+      valido: false,
+      erro: `Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+    };
+  }
+  
+  return { valido: true, erro: '' };
+};

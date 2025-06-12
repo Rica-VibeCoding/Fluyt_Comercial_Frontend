@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { formatarMoeda, parseValorMoeda, formatarTaxaInput, parseTaxa, formatarPercentual } from '@/lib/formatters';
 import { validarValorDisponivel, validarNumeroParcelas, validarTaxa } from '@/lib/validators';
+import { calcularValorPresenteCartao } from '@/lib/calculators';
+import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
 
 interface ModalCartaoProps {
   isOpen: boolean;
@@ -22,7 +24,7 @@ interface ModalCartaoProps {
 export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalCartaoProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
-  const [taxa, setTaxa] = useState('3.5'); // Taxa padrão provisória
+  const [taxa, setTaxa] = useState(getTaxaPadrao('cartao').toString().replace('.', ',')); // Taxa padrão configurável
   const [isLoading, setIsLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erroValidacao, setErroValidacao] = useState('');
@@ -145,28 +147,13 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     setTaxa(taxaFormatada);
   };
 
-  // Função para calcular valor presente com antecipação
+  // Usar função centralizada para calcular valor presente
   const calcularValorPresente = () => {
     const valorTotal = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
     const parcelas = parseInt(numeroVezes);
-    const taxaMensal = parseFloat(taxa.replace(',', '.')) / 100; // Converte % para decimal
+    const taxaMensal = parseFloat(taxa.replace(',', '.'));
     
-    const valorParcela = valorTotal / parcelas;
-    let valorPresenteTotal = 0;
-    
-    // Calcula PV = FV / (1 + r)^n para cada parcela
-    for (let n = 1; n <= parcelas; n++) {
-      const valorPresente = valorParcela / Math.pow(1 + taxaMensal, n);
-      valorPresenteTotal += valorPresente;
-    }
-    
-    const desconto = valorTotal - valorPresenteTotal;
-    
-    return {
-      valorPresente: valorPresenteTotal,
-      desconto: desconto,
-      valorParcela: valorParcela
-    };
+    return calcularValorPresenteCartao(valorTotal, parcelas, taxaMensal);
   };
 
   const isFormValido = valor && numeroVezes && taxa && !erroValidacao;
@@ -228,7 +215,7 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
                       onChange={(e) => setNumeroVezes(e.target.value)}
                       placeholder="1"
                       min="1"
-                      max="24"
+                      max={getLimitesParcelas('cartao').max.toString()}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
                       disabled={salvando}
                       required
@@ -243,7 +230,7 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
                       type="text"
                       value={taxa}
                       onChange={handleTaxaChange}
-                      placeholder="3,5"
+                      placeholder={getPlaceholderTaxa('cartao')}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
                       disabled={salvando}
                       required

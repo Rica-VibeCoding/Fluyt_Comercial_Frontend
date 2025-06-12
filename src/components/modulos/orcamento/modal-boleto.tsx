@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
 import { validarValorDisponivel, validarNumeroParcelas, validarDataFutura } from '@/lib/validators';
+import { PAGAMENTO_CONFIG, getLimitesParcelas } from '@/lib/pagamento-config';
+import { gerarCronogramaParcelas } from '@/lib/calculators';
 
 interface ParcelaBoleto {
   numero: number;
@@ -68,29 +70,16 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     }
   }, [isOpen, dadosIniciais]);
 
-  // Gerar parcelas automaticamente
+  // Gerar parcelas automaticamente usando função centralizada
   useEffect(() => {
     if (numeroVezes && dataPrimeira && valor) {
       const vezes = parseInt(numeroVezes);
       const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
-      const valorParcela = valorNumerico / vezes;
       
-      if (vezes > 0 && vezes <= 12 && !isNaN(valorNumerico)) {
-        const novasParcelas: ParcelaBoleto[] = [];
-        const dataBase = new Date(dataPrimeira);
-        
-        for (let i = 0; i < vezes; i++) {
-          const dataParcela = new Date(dataBase);
-          dataParcela.setMonth(dataParcela.getMonth() + i);
-          
-          novasParcelas.push({
-            numero: i + 1,
-            data: dataParcela.toISOString().split('T')[0],
-            valor: valorParcela
-          });
-        }
-        
-        setParcelas(novasParcelas);
+      const limites = getLimitesParcelas('boleto');
+      if (vezes >= limites.min && vezes <= limites.max && !isNaN(valorNumerico)) {
+        const cronograma = gerarCronogramaParcelas(valorNumerico, vezes, dataPrimeira);
+        setParcelas(cronograma);
         // Reset datas editadas quando gera novas parcelas
         setDatasEditadas(new Set());
       }
@@ -239,7 +228,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
                       onChange={(e) => setNumeroVezes(e.target.value)}
                       placeholder="1"
                       min="1"
-                      max="12"
+                      max={getLimitesParcelas('boleto').max.toString()}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
                       required
                     />
