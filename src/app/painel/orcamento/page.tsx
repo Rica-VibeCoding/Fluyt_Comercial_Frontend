@@ -6,14 +6,16 @@ import { useSessaoSimples } from '@/hooks/globais/use-sessao-simples';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { ModalFormasPagamento } from '@/components/modulos/orcamento/modal-formas-pagamento';
 
 export default function OrcamentoPage() {
   const searchParams = useSearchParams();
   const { cliente, ambientes, carregarClienteDaURL } = useSessaoSimples();
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [modalFormasAberto, setModalFormasAberto] = useState(false);
   
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
@@ -175,11 +177,19 @@ export default function OrcamentoPage() {
                       %
                     </span>
                   </div>
-                  {desconto && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      Desconto aplicado: {desconto}%
-                    </p>
-                  )}
+
+                </div>
+
+                {/* Botão para adicionar forma de pagamento */}
+                <div className="mt-6">
+                  <Button
+                    onClick={() => setModalFormasAberto(true)}
+                    variant="outline"
+                    className="w-full gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Forma de Pagamento
+                  </Button>
                 </div>
                 
               </CardContent>
@@ -188,6 +198,12 @@ export default function OrcamentoPage() {
           </div>
           
         </div>
+        
+        {/* Modal de Formas de Pagamento */}
+        <ModalFormasPagamento
+          isOpen={modalFormasAberto}
+          onClose={() => setModalFormasAberto(false)}
+        />
         
       </div>
     </div>
