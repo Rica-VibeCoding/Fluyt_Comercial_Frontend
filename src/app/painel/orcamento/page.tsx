@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useOrcamento } from '@/hooks/data/use-orcamento';
+import { useFormasPagamento } from '@/hooks/data/use-formas-pagamento';
 import { useSessaoSimples } from '@/hooks/globais/use-sessao-simples';
 import { useSessao } from '@/store/sessao-store';
 import { Button } from '@/components/ui/button';
@@ -15,28 +17,38 @@ import { ModalAVista } from '@/components/modulos/orcamento/modal-a-vista';
 import { ModalBoleto } from '@/components/modulos/orcamento/modal-boleto';
 import { ModalCartao } from '@/components/modulos/orcamento/modal-cartao';
 import { ModalFinanceira } from '@/components/modulos/orcamento/modal-financeira';
-import { sessaoSimples, FormaPagamento } from '@/lib/sessao-simples';
+import { FormaPagamento } from '@/types/orcamento';
 
 export default function OrcamentoPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { cliente, ambientes, carregarClienteDaURL } = useSessaoSimples();
+  
+  // Hook original que carrega cliente + ambientes 
+  const { cliente: clienteOriginal, ambientes: ambientesOriginais, carregarClienteDaURL } = useSessaoSimples();
+  
+  // Hooks Zustand
+  const {
+    cliente, ambientes, valorTotal, valorNegociado, valorRestante, descontoPercentual,
+    definirCliente, definirAmbientes, definirDesconto, podeGerarContrato
+  } = useOrcamento();
+  
+  const {
+    formasPagamento, modalFormasAberto, modalAVistaAberto, modalBoletoAberto,
+    modalCartaoAberto, modalFinanceiraAberto, formaEditando,
+    adicionarFormaPagamento, editarFormaPagamento, removerFormaPagamento,
+    abrirModalFormas, fecharModalFormas, abrirModalEdicao, fecharModalEdicao
+  } = useFormasPagamento();
+  
   const sessaoStore = useSessao();
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
-  const [modalFormasAberto, setModalFormasAberto] = useState(false);
-  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([]);
-  const [modalAVistaAberto, setModalAVistaAberto] = useState(false);
-  const [modalBoletoAberto, setModalBoletoAberto] = useState(false);
-  const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
-  const [modalFinanceiraAberto, setModalFinanceiraAberto] = useState(false);
-  const [formaEditando, setFormaEditando] = useState<FormaPagamento | null>(null);
   
-  // Carregar formas de pagamento do localStorage na inicialização
+  // Sincronizar desconto com store
   useEffect(() => {
-    const formasCarregadas = sessaoSimples.obterFormasPagamento();
-    setFormasPagamento(formasCarregadas);
-  }, []);
+    if (desconto !== descontoPercentual.toString()) {
+      setDesconto(descontoPercentual.toString());
+    }
+  }, [descontoPercentual]);
 
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
@@ -52,13 +64,28 @@ export default function OrcamentoPage() {
     setIsLoaded(true);
   }, [searchParams, carregarClienteDaURL]);
   
-  // Função para sincronizar dados do sistema simples para o Zustand
+  // Sincronizar dados do sessaoSimples para o store Zustand
+  useEffect(() => {
+    if (clienteOriginal && (!cliente || cliente.id !== clienteOriginal.id)) {
+      console.log('🔄 Sincronizando cliente: sessaoSimples → Zustand');
+      definirCliente(clienteOriginal);
+    }
+  }, [clienteOriginal, cliente, definirCliente]);
+
+  useEffect(() => {
+    if (ambientesOriginais.length > 0 && ambientesOriginais.length !== ambientes.length) {
+      console.log('🔄 Sincronizando ambientes: sessaoSimples → Zustand');
+      definirAmbientes(ambientesOriginais);
+    }
+  }, [ambientesOriginais, ambientes, definirAmbientes]);
+  
+  // Função para sincronizar dados para o sistema legado (sessaoStore)
   const sincronizarParaZustand = () => {
     if (!cliente || ambientes.length === 0) return false;
     
-    console.log('🔄 Sincronizando dados: sessaoSimples → sessaoStore');
+    console.log('🔄 Sincronizando dados: orcamentoStore → sessaoStore');
     
-    // 1. Definir cliente no Zustand
+    // 1. Definir cliente no Zustand legado
     sessaoStore.definirCliente({
       id: cliente.id,
       nome: cliente.nome,
@@ -69,7 +96,7 @@ export default function OrcamentoPage() {
       updated_at: new Date().toISOString()
     });
     
-    // 2. Converter e definir ambientes no Zustand
+    // 2. Converter e definir ambientes no Zustand legado
     const ambientesConvertidos = ambientes.map(amb => ({
       id: amb.id,
       nome: amb.nome,
@@ -82,10 +109,7 @@ export default function OrcamentoPage() {
     
     // 3. Definir orçamento se tiver formas de pagamento
     if (formasPagamento.length > 0) {
-      const valorTotal = ambientes.reduce((total, amb) => total + amb.valor, 0);
       const descontoNumero = parseFloat(desconto) || 0;
-      const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-      
       sessaoStore.definirOrcamento(valorNegociado, formasPagamento.length, descontoNumero);
     }
     
@@ -94,9 +118,9 @@ export default function OrcamentoPage() {
   
   // Função para navegar para contratos
   const navegarParaContratos = () => {
-    if (sincronizarParaZustand()) {
+    if (clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0 && sincronizarParaZustand()) {
       console.log('✅ Dados sincronizados - navegando para contratos');
-      router.push(`/painel/contratos?clienteId=${cliente?.id}&clienteNome=${encodeURIComponent(cliente?.nome || '')}`);
+      router.push(`/painel/contratos?clienteId=${clienteOriginal?.id}&clienteNome=${encodeURIComponent(clienteOriginal?.nome || '')}`);
     }
   };
   
@@ -121,60 +145,24 @@ export default function OrcamentoPage() {
       }
     })() as 'a-vista' | 'boleto' | 'cartao' | 'financeira';
     
-    const novaForma: FormaPagamento = {
-      id: `forma_${Date.now()}`,
+    const novaForma = {
       tipo: tipoMapeado,
       valor: forma.valor || 0,
       valorPresente: forma.detalhes?.valorPresente || forma.valor || 0,
       parcelas: forma.detalhes?.vezes || forma.detalhes?.parcelas?.length || 1,
-      dados: forma.detalhes,
-      criadaEm: new Date().toISOString()
+      dados: forma.detalhes
     };
     
-    // Salvar no sistema de sessão
-    sessaoSimples.adicionarFormaPagamento(novaForma);
-    
-    // Atualizar estado local
-    setFormasPagamento(prev => [...prev, novaForma]);
-    setModalFormasAberto(false);
+    // Adicionar no store Zustand
+    adicionarFormaPagamento(novaForma);
+    fecharModalFormas();
   };
 
   const handleEditarForma = (forma: FormaPagamento) => {
     console.log('✏️ Editando forma:', forma);
     
-    // Armazenar qual forma está sendo editada
-    setFormaEditando(forma);
-    
-    // Fechar modal principal se estiver aberto
-    setModalFormasAberto(false);
-    
-    // Abrir modal específico baseado no tipo
-    switch (forma.tipo) {
-      case 'a-vista':
-        setModalAVistaAberto(true);
-        break;
-      case 'boleto':
-        setModalBoletoAberto(true);
-        break;
-      case 'cartao':
-        setModalCartaoAberto(true);
-        break;
-      case 'financeira':
-        setModalFinanceiraAberto(true);
-        break;
-      default:
-        console.warn('Tipo de forma de pagamento não reconhecido:', forma.tipo);
-    }
-  };
-
-  const handleRemoverForma = (id: string) => {
-    console.log('🗑️ Removendo forma:', id);
-    
-    // Remover do sistema de sessão
-    sessaoSimples.removerFormaPagamento(id);
-    
-    // Atualizar estado local
-    setFormasPagamento(prev => prev.filter(f => f.id !== id));
+    // Usar action do store para abrir modal de edição
+    abrirModalEdicao(forma);
   };
 
   // Handler para atualizar forma existente
@@ -183,59 +171,42 @@ export default function OrcamentoPage() {
 
     console.log('📝 Atualizando forma:', { id: formaEditando.id, dadosNovos });
     
-    // Criar nova forma atualizada
-    const formaAtualizada: FormaPagamento = {
-      ...formaEditando,
+    // Criar dados atualizados
+    const dadosAtualizados = {
       valor: dadosNovos.valor || 0,
       valorPresente: dadosNovos.valorPresente || dadosNovos.valor || 0,
       parcelas: dadosNovos.vezes || dadosNovos.parcelas?.length || 1,
-      dados: dadosNovos,
-      criadaEm: formaEditando.criadaEm // Manter data de criação original
+      dados: dadosNovos
     };
     
-    // Atualizar no sistema de sessão
-    sessaoSimples.editarFormaPagamento(formaEditando.id, formaAtualizada);
+    // Atualizar usando action do store
+    editarFormaPagamento(formaEditando.id, dadosAtualizados);
     
-    // Atualizar estado local
-    setFormasPagamento(prev => 
-      prev.map(f => f.id === formaEditando.id ? formaAtualizada : f)
-    );
-    
-    // Fechar modal e limpar edição
-    setFormaEditando(null);
+    // Fechar modal de edição
+    fecharModalEdicao();
   };
 
-  // Função para fechar modais de edição
-  const fecharModalEdicao = () => {
-    setModalAVistaAberto(false);
-    setModalBoletoAberto(false);
-    setModalCartaoAberto(false);
-    setModalFinanceiraAberto(false);
-    setFormaEditando(null);
+  const handleRemoverForma = (id: string) => {
+    console.log('🟡️ Removendo forma:', id);
+    
+    // Remover usando action do store
+    removerFormaPagamento(id);
   };
 
-  // Validações
-  const podeGerarContrato = () => {
-    return !!(cliente && ambientes.length > 0 && formasPagamento.length > 0);
-  };
-
-  // Função para calcular valores de validação
-  const obterValoresValidacao = () => {
-    const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-    const descontoNumero = parseFloat(desconto) || 0;
-    const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-    const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
-    
-    // Se estamos editando, excluir o valor da forma atual do total já alocado
-    const valorJaAlocado = formaEditando ? 
-      valorTotalFormas - formaEditando.valor : 
-      valorTotalFormas;
-    
-
-    return {
-      valorMaximo: valorNegociado,
-      valorJaAlocado: valorJaAlocado
-    };
+  // Valores para validação usando store
+  const obterValoresValidacao = () => ({
+    valorMaximo: valorNegociado,
+    valorJaAlocado: formaEditando ? 
+      (valorTotal - valorRestante - formaEditando.valor) : 
+      (valorTotal - valorRestante)
+  });
+  
+  // Handler para mudança de desconto
+  const handleDescontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valor = e.target.value;
+    setDesconto(valor);
+    const percentual = parseFloat(valor) || 0;
+    definirDesconto(percentual);
   };
   
   // Evitar hidration mismatch - mostrar loading até carregar
@@ -262,17 +233,17 @@ export default function OrcamentoPage() {
                 </Button>
               </Link>
               
-              <p className="text-lg font-semibold">{cliente ? cliente.nome : 'Sem cliente'}</p>
+              <p className="text-lg font-semibold">{clienteOriginal ? clienteOriginal.nome : 'Sem cliente'}</p>
             </div>
             
             {/* Botão Gerar Contrato */}
             <Button
               onClick={navegarParaContratos}
-              disabled={!podeGerarContrato()}
+              disabled={!(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0)}
               className="gap-2 bg-green-600 hover:bg-green-700 text-white"
             >
-              {podeGerarContrato() ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-              {podeGerarContrato() ? 'Gerar Contrato' : 'Configure Pagamento'}
+              {(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0) ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+              {(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0) ? 'Gerar Contrato' : 'Configure Pagamento'}
             </Button>
           </div>
         </div>
@@ -289,7 +260,7 @@ export default function OrcamentoPage() {
                 <CardContent className="p-4 h-full flex flex-col justify-between">
                   <h3 className="font-semibold">Valor Total</h3>
                   <p className="text-2xl font-bold text-green-600">
-                    R$ {ambientes.reduce((total, ambiente) => total + ambiente.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {ambientesOriginais.reduce((total, ambiente) => total + ambiente.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </CardContent>
               </Card>
@@ -306,7 +277,7 @@ export default function OrcamentoPage() {
                 </div>
                 
                 <div className="space-y-1">
-                  {ambientes.length > 0 ? ambientes.map((ambiente) => (
+                  {ambientesOriginais.length > 0 ? ambientesOriginais.map((ambiente) => (
                     <div key={ambiente.id} className="flex justify-between py-1 border-b">
                       <span className="font-medium">{ambiente.nome}</span>
                       <span className="text-green-600">
@@ -334,12 +305,7 @@ export default function OrcamentoPage() {
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Valor Negociado</h3>
                     <p className="text-2xl font-bold text-blue-600">
-                      {(() => {
-                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-                        const descontoNumero = parseFloat(desconto) || 0;
-                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-                        return `R$ ${valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                      })()}
+                      R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
                   </CardContent>
                 </Card>
@@ -375,30 +341,11 @@ export default function OrcamentoPage() {
                   <div className="text-sm">
                     <span className="text-gray-600">Restante: </span>
                     <span className={`font-bold ${
-                      (() => {
-                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-                        const descontoNumero = parseFloat(desconto) || 0;
-                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-                        const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
-                        const valorRestante = valorNegociado - valorTotalFormas;
-                        return valorRestante >= 0 ? 'text-green-600' : 'text-red-500';
-                      })()
+                      valorRestante >= 0 ? 'text-green-600' : 'text-red-500'
                     }`}>
-                      {(() => {
-                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-                        const descontoNumero = parseFloat(desconto) || 0;
-                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-                        const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
-                        const valorRestante = valorNegociado - valorTotalFormas;
-                        return `R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                      })()}
+                      R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-gray-500"> / {(() => {
-                      const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-                      const descontoNumero = parseFloat(desconto) || 0;
-                      const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-                      return `R$ ${valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                    })()}</span>
+                    <span className="text-gray-500"> / R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
                 
@@ -412,7 +359,7 @@ export default function OrcamentoPage() {
                       <Input
                         type="number"
                         value={desconto}
-                        onChange={(e) => setDesconto(e.target.value)}
+                        onChange={handleDescontoChange}
                         placeholder="0"
                         className="pr-8"
                         max="100"
@@ -428,7 +375,7 @@ export default function OrcamentoPage() {
                   {/* Botão Adicionar - ocupa espaço restante */}
                   <div className="flex-1 flex flex-col justify-end">
                     <Button
-                      onClick={() => setModalFormasAberto(true)}
+                      onClick={abrirModalFormas}
                       variant="outline"
                       className="w-full gap-2 h-10"
                     >
@@ -461,7 +408,7 @@ export default function OrcamentoPage() {
         {/* Modal de Formas de Pagamento */}
         <ModalFormasPagamento
           isOpen={modalFormasAberto}
-          onClose={() => setModalFormasAberto(false)}
+          onClose={fecharModalFormas}
           onFormaPagamentoAdicionada={handleFormaPagamentoAdicionada}
           {...obterValoresValidacao()}
         />

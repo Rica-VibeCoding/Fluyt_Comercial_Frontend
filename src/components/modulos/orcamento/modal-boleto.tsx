@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { formatarDataInput } from '@/lib/formatters';
 import { gerarCronogramaParcelas } from '@/lib/calculators';
-import { getLimitesParcelas } from '@/lib/pagamento-config';
 import { useModalPagamento } from '@/hooks/modulos/orcamento';
+import { ModalPagamentoBase } from './ModalPagamentoBase';
+import { CampoValor } from './CampoValor';
 
 interface ParcelaBoleto {
   numero: number;
@@ -27,14 +27,31 @@ interface ModalBoletoProps {
 }
 
 export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalBoletoProps) {
-  const [valor, setValor] = useState('');
-  const [numeroVezes, setNumeroVezes] = useState('');
+  // Hook centralizado com toda a lógica comum dos modais de pagamento
+  const {
+    valor,
+    setValor,
+    numeroVezes,
+    setNumeroVezes,
+    isLoading,
+    setIsLoading,
+    salvando,
+    setSalvando,
+    erroValidacao,
+    setErroValidacao,
+    limitesConfig
+  } = useModalPagamento({
+    isOpen,
+    tipo: 'boleto',
+    valorMaximo,
+    valorJaAlocado,
+    dadosIniciais
+  });
+
+  // Estados específicos apenas para boleto (data e parcelas)
   const [dataPrimeira, setDataPrimeira] = useState('');
   const [parcelas, setParcelas] = useState<ParcelaBoleto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
-  const [salvando, setSalvando] = useState(false);
-  const [erroValidacao, setErroValidacao] = useState('');
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -76,8 +93,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       const vezes = parseInt(numeroVezes);
       const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
       
-      const limites = getLimitesParcelas('boleto');
-      if (vezes >= limites.min && vezes <= limites.max && !isNaN(valorNumerico)) {
+      if (vezes >= limitesConfig.min && vezes <= limitesConfig.max && !isNaN(valorNumerico)) {
         const cronograma = gerarCronogramaParcelas(valorNumerico, vezes, dataPrimeira);
         setParcelas(cronograma);
         // Reset datas editadas quando gera novas parcelas
@@ -179,142 +195,99 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   const isFormValido = valor && numeroVezes && dataPrimeira && parcelas.length > 0 && !erroValidacao;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col bg-white dark:bg-slate-900">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
-          <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Boleto
-          </DialogTitle>
-        </DialogHeader>
+    <ModalPagamentoBase
+      isOpen={isOpen}
+      onClose={onClose}
+      titulo="Boleto"
+      isLoading={isLoading}
+      salvando={salvando}
+      erroValidacao={erroValidacao}
+      onSubmit={handleSubmit}
+      isFormValido={isFormValido}
+    >
+      {/* Campo Valor usando componente reutilizável */}
+      <CampoValor
+        valor={valor}
+        onChange={handleValorChange}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
+        erroValidacao={erroValidacao}
+        disabled={salvando}
+      />
 
-        <div className="flex-1 overflow-hidden">
-          <form onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto p-2">
-              <div className="space-y-1">
-                
-                {/* Campo Valor */}
-                <div>
-                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    Valor * {valorMaximo > 0 && (
-                      <span className="text-gray-500">
-                        (Disponível: R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
-                      </span>
-                    )}
-                  </label>
-                  <Input
-                    type="text"
-                    value={valor}
-                    onChange={handleValorChange}
-                    placeholder="R$ 0,00"
-                    className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
-                      erroValidacao ? 'border-red-500 focus:border-red-500' : ''
-                    }`}
-                    required
-                  />
-                  {erroValidacao && (
-                    <p className="text-xs text-red-500 mt-1">{erroValidacao}</p>
-                  )}
-                </div>
-
-                {/* Grid: Número de Vezes + Data Primeira */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Número de Vezes *
-                    </label>
-                    <Input
-                      type="number"
-                      value={numeroVezes}
-                      onChange={(e) => setNumeroVezes(e.target.value)}
-                      placeholder="1"
-                      min="1"
-                      max={getLimitesParcelas('boleto').max.toString()}
-                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Data da Primeira *
-                    </label>
-                    <Input
-                      type="date"
-                      value={dataPrimeira}
-                      onChange={(e) => setDataPrimeira(e.target.value)}
-                      min={getDataMinima()}
-                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Minitabela de Parcelas */}
-                {parcelas.length > 0 && (
-                  <div className="mt-2">
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
-                      Datas das Parcelas
-                    </label>
-                    
-                    <div className="border border-slate-200 dark:border-slate-600 rounded text-xs">
-                      {/* Header da tabela */}
-                      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-300">
-                        <span>Parcela</span>
-                        <span>Data</span>
-                        <span>Valor</span>
-                      </div>
-                      
-                      {/* Linhas das parcelas */}
-                      <div className={parcelas.length > 10 ? "max-h-48 overflow-y-auto" : ""}>
-                        {parcelas.map((parcela, index) => (
-                          <div key={index} className={`grid grid-cols-3 gap-1 p-1 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors duration-200 ${getCellClass(index)}`}>
-                            <span className="text-slate-600 dark:text-slate-400 self-center">
-                              {parcela.numero}x
-                            </span>
-                            <Input
-                              type="date"
-                              value={parcela.data}
-                              onChange={(e) => handleDataParcelaChange(index, e.target.value)}
-                              className="h-6 text-xs border-slate-200 focus:border-slate-300 dark:border-slate-600 dark:focus:border-slate-500"
-                              min={getDataMinima()}
-                              disabled={salvando}
-                            />
-                            <span className="text-slate-600 dark:text-slate-400 self-center text-xs">
-                              {parcela.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
-              <div className="flex justify-end items-center gap-1">
-                <button 
-                  type="button" 
-                  onClick={onClose}
-                  className="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                  disabled={isLoading}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isLoading || !isFormValido}
-                  className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-                >
-                  {salvando ? 'Salvando...' : 'Salvar'}
-                </button>
-              </div>
-            </div>
-          </form>
+      {/* Grid: Número de Vezes + Data Primeira */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+        <div>
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            Número de Vezes *
+          </label>
+          <Input
+            type="number"
+            value={numeroVezes}
+            onChange={(e) => setNumeroVezes(e.target.value)}
+            placeholder="1"
+            min="1"
+            max={limitesConfig.max.toString()}
+            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            required
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <div>
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            Data da Primeira *
+          </label>
+          <Input
+            type="date"
+            value={dataPrimeira}
+            onChange={(e) => setDataPrimeira(e.target.value)}
+            min={getDataMinima()}
+            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Minitabela de Parcelas */}
+      {parcelas.length > 0 && (
+        <div className="mt-2">
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
+            Datas das Parcelas
+          </label>
+          
+          <div className="border border-slate-200 dark:border-slate-600 rounded text-xs">
+            {/* Header da tabela */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-300">
+              <span>Parcela</span>
+              <span>Data</span>
+              <span>Valor</span>
+            </div>
+            
+            {/* Linhas das parcelas */}
+            <div className={parcelas.length > 10 ? "max-h-48 overflow-y-auto" : ""}>
+              {parcelas.map((parcela, index) => (
+                <div key={index} className={`grid grid-cols-3 gap-1 p-1 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors duration-200 ${getCellClass(index)}`}>
+                  <span className="text-slate-600 dark:text-slate-400 self-center">
+                    {parcela.numero}x
+                  </span>
+                  <Input
+                    type="date"
+                    value={parcela.data}
+                    onChange={(e) => handleDataParcelaChange(index, e.target.value)}
+                    className="h-6 text-xs border-slate-200 focus:border-slate-300 dark:border-slate-600 dark:focus:border-slate-500"
+                    min={getDataMinima()}
+                    disabled={salvando}
+                  />
+                  <span className="text-slate-600 dark:text-slate-400 self-center text-xs">
+                    {parcela.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+    </ModalPagamentoBase>
   );
 }

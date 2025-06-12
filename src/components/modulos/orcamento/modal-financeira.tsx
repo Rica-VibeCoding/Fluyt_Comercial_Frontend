@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { formatarMoeda, parseValorMoeda, formatarPercentual } from '@/lib/formatters';
 import { validarValorDisponivel, validarNumeroParcelas } from '@/lib/validators';
 import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
 import { calcularValorPresenteFinanceira, gerarCronogramaParcelas } from '@/lib/calculators';
+import { ModalPagamentoBase } from './ModalPagamentoBase';
+import { CampoValor } from './CampoValor';
 
 interface ParcelaFinanceira {
   numero: number;
@@ -199,154 +200,106 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
     return new Date().toISOString().split('T')[0];
   };
 
-  // Classe CSS para feedback visual durante salvamento
-  const getCellClass = () => {
-    if (salvando) return "bg-green-100 dark:bg-green-900/30 transition-colors duration-200";
-    return "";
-  };
+
 
   const isFormValido = valor && numeroVezes && dataPrimeira && percentual && parcelas.length > 0 && !erroValidacao;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col bg-white dark:bg-slate-900">
-        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
-          <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Financeira
-          </DialogTitle>
-        </DialogHeader>
+    <ModalPagamentoBase
+      isOpen={isOpen}
+      onClose={onClose}
+      titulo="Financeira"
+      isLoading={isLoading}
+      salvando={salvando}
+      erroValidacao={erroValidacao}
+      onSubmit={handleSubmit}
+      isFormValido={isFormValido}
+    >
+      
+      {/* Campo Valor usando componente reutilizável */}
+      <CampoValor
+        valor={valor}
+        onChange={handleValorChange}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
+        erroValidacao={erroValidacao}
+        disabled={salvando}
+      />
 
-        <div className="flex-1 overflow-hidden">
-          <form onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className={`flex-1 overflow-y-auto p-2 ${getCellClass()}`}>
-              <div className="space-y-1">
-                
-                {/* Campo Valor */}
-                <div>
-                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    Valor * {valorMaximo > 0 && (
-                      <span className="text-gray-500">
-                        (Disponível: R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
-                      </span>
-                    )}
-                  </label>
-                  <Input
-                    type="text"
-                    value={valor}
-                    onChange={handleValorChange}
-                    placeholder="R$ 0,00"
-                    className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
-                      erroValidacao ? 'border-red-500 focus:border-red-500' : ''
-                    }`}
-                    disabled={salvando}
-                    required
-                  />
-                  {erroValidacao && (
-                    <p className="text-xs text-red-500 mt-1">{erroValidacao}</p>
-                  )}
-                </div>
-
-                {/* Grid: Número de Vezes + Data Primeira + Percentual */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Número de Vezes *
-                    </label>
-                    <Input
-                      type="number"
-                      value={numeroVezes}
-                      onChange={(e) => setNumeroVezes(e.target.value)}
-                      placeholder="1"
-                      min="1"
-                      max={getLimitesParcelas('financeira').max.toString()}
-                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-                      disabled={salvando}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Data da Primeira *
-                    </label>
-                    <Input
-                      type="date"
-                      value={dataPrimeira}
-                      onChange={(e) => setDataPrimeira(e.target.value)}
-                      min={getDataMinima()}
-                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-                      disabled={salvando}
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                      Percentual (%) *
-                    </label>
-                    <Input
-                      type="text"
-                      value={percentual}
-                      onChange={handlePercentualChange}
-                      placeholder={getPlaceholderTaxa('financeira')}
-                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-                      disabled={salvando}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Preview com Valor Presente */}
-                {valor && numeroVezes && percentual && (
-                  <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded">
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
-                      <strong>Resumo:</strong>
-                    </p>
-                    <div className="text-xs space-y-0.5">
-                      <p>Valor: <strong>{valor}</strong></p>
-                      <p>Parcelas: <strong>{numeroVezes}x</strong></p>
-                      <p>Percentual: <strong>{percentual}% a.m.</strong></p>
-                      <div className="pt-1 border-t border-slate-200 dark:border-slate-600 mt-1">
-                        <p className="text-green-700 dark:text-green-400">
-                          Valor Presente: <strong>
-                            {calcularValorPresente().toLocaleString('pt-BR', { 
-                              style: 'currency', 
-                              currency: 'BRL' 
-                            })}
-                          </strong>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 pt-1">
-              <div className="flex justify-end items-center gap-1">
-                <button 
-                  type="button" 
-                  onClick={onClose}
-                  className="px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                  disabled={isLoading}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isLoading || !isFormValido}
-                  className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-                >
-                  {salvando ? 'Salvando...' : 'Salvar'}
-                </button>
-              </div>
-            </div>
-          </form>
+      {/* Grid: Número de Vezes + Data Primeira + Percentual */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+        <div>
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            Número de Vezes *
+          </label>
+          <Input
+            type="number"
+            value={numeroVezes}
+            onChange={(e) => setNumeroVezes(e.target.value)}
+            placeholder="1"
+            min="1"
+            max={getLimitesParcelas('financeira').max.toString()}
+            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            disabled={salvando}
+            required
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <div>
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            Data da Primeira *
+          </label>
+          <Input
+            type="date"
+            value={dataPrimeira}
+            onChange={(e) => setDataPrimeira(e.target.value)}
+            min={getDataMinima()}
+            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            disabled={salvando}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            Percentual (%) *
+          </label>
+          <Input
+            type="text"
+            value={percentual}
+            onChange={handlePercentualChange}
+            placeholder={getPlaceholderTaxa('financeira')}
+            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            disabled={salvando}
+            required
+          />
+        </div>
+      </div>
+
+      {/* Preview com Valor Presente */}
+      {valor && numeroVezes && percentual && (
+        <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+            <strong>Resumo:</strong>
+          </p>
+          <div className="text-xs space-y-0.5">
+            <p>Valor: <strong>{valor}</strong></p>
+            <p>Parcelas: <strong>{numeroVezes}x</strong></p>
+            <p>Percentual: <strong>{percentual}% a.m.</strong></p>
+            <div className="pt-1 border-t border-slate-200 dark:border-slate-600 mt-1">
+              <p className="text-green-700 dark:text-green-400">
+                Valor Presente: <strong>
+                  {calcularValorPresente().toLocaleString('pt-BR', { 
+                    style: 'currency', 
+                    currency: 'BRL' 
+                  })}
+                </strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+    </ModalPagamentoBase>
   );
 }

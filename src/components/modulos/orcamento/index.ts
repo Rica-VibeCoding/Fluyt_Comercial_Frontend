@@ -19,3 +19,7 @@ export { ModalAVista } from './modal-a-vista';
 export { ModalBoleto } from './modal-boleto';
 export { ModalCartao } from './modal-cartao';
 export { ModalFinanceira } from './modal-financeira';
+
+// Componentes base reutilizáveis
+export { ModalPagamentoBase } from './ModalPagamentoBase';
+export { CampoValor } from './CampoValor';
