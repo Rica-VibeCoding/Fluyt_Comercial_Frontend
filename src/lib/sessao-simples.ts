@@ -50,12 +50,15 @@ class SessaoSimplesManager {
     try {
       localStorage.setItem(this.CHAVE, JSON.stringify(sessao));
       console.log('💾 Sessão salva:', sessao);
+      
+      // Disparar evento customizado para sincronização
+      window.dispatchEvent(new CustomEvent('sessaoSimples-changed'));
     } catch (error) {
       console.warn('Erro ao salvar sessão:', error);
     }
   }
   
-  // Definir cliente
+  // Definir cliente (comportamento original - limpa ambientes se cliente diferente)
   public definirCliente(cliente: ClienteSimples): SessaoSimples {
     const sessaoAtual = this.carregar();
     const novaSessao: SessaoSimples = {
@@ -68,6 +71,34 @@ class SessaoSimplesManager {
     
     this.salvar(novaSessao);
     return novaSessao;
+  }
+  
+  // Definir cliente preservando contexto (para navegação URL)
+  public definirClienteComContexto(cliente: ClienteSimples, preservarAmbientes: boolean = true): SessaoSimples {
+    const sessaoAtual = this.carregar();
+    const novaSessao: SessaoSimples = {
+      ...sessaoAtual,
+      cliente,
+      // Preservar ambientes se solicitado e cliente for o mesmo
+      ambientes: (preservarAmbientes && sessaoAtual.cliente?.id === cliente.id) ? 
+                 sessaoAtual.ambientes : 
+                 preservarAmbientes ? sessaoAtual.ambientes : [],
+      valorTotal: (preservarAmbientes && sessaoAtual.cliente?.id === cliente.id) ? 
+                  sessaoAtual.valorTotal : 
+                  preservarAmbientes ? sessaoAtual.valorTotal : 0
+    };
+    
+    this.salvar(novaSessao);
+    return novaSessao;
+  }
+  
+  // Verificar se é navegação URL (preservar contexto)
+  private isNavegacaoURL(): boolean {
+    if (typeof window === 'undefined') return false;
+    
+    // Se tem parâmetros na URL, é navegação de continuidade
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.has('clienteId');
   }
   
   // Definir ambientes

@@ -80,10 +80,13 @@ export function AmbientePage() {
   };
 
   const handleAvancarParaOrcamento = () => {
-    if (podeGerarOrcamento && clienteId) {
-      const clienteNome = clienteCarregado?.nome || cliente?.nome || 'Cliente';
-      router.push(`/painel/orcamento/simulador?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`);
-    }
+    if (!podeGerarOrcamento) return;
+    
+    const clienteNome = clienteCarregado?.nome || cliente?.nome || 'Cliente';
+    const url = `/painel/orcamento?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`;
+    
+    console.log('🚀 Indo para orçamento:', url);
+    router.push(url);
   };
 
   return (

@@ -7,7 +7,7 @@ function PainelDashboardContent() {
   const router = useRouter();
   
   useEffect(() => {
-    router.replace('/painel/orcamento/simulador');
+    router.replace('/painel/clientes');
   }, [router]);
 
   return <div>Redirecionando...</div>;
