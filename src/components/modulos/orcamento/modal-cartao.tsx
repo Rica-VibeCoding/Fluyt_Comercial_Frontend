@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { formatarMoeda, parseValorMoeda, formatarTaxaInput, parseTaxa, formatarPercentual } from '@/lib/formatters';
-import { validarValorDisponivel, validarNumeroParcelas, validarTaxa } from '@/lib/validators';
+import { formatarTaxaInput, formatarPercentual } from '@/lib/formatters';
 import { calcularValorPresenteCartao } from '@/lib/calculators';
-import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
+import { getPlaceholderTaxa, getLimitesParcelas } from '@/lib/pagamento-config';
+import { useModalPagamento } from '@/hooks/modulos/orcamento';
 
 interface ModalCartaoProps {
   isOpen: boolean;
@@ -22,12 +22,33 @@ interface ModalCartaoProps {
 }
 
 export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalCartaoProps) {
-  const [valor, setValor] = useState('');
-  const [numeroVezes, setNumeroVezes] = useState('');
-  const [taxa, setTaxa] = useState(getTaxaPadrao('cartao').toString().replace('.', ',')); // Taxa padrão configurável
-  const [isLoading, setIsLoading] = useState(false);
-  const [salvando, setSalvando] = useState(false);
-  const [erroValidacao, setErroValidacao] = useState('');
+  // Usar hook centralizado para toda lógica comum
+  const {
+    valor,
+    setValor,
+    numeroVezes,
+    setNumeroVezes,
+    taxa,
+    setTaxa,
+    isLoading,
+    setIsLoading,
+    salvando,
+    setSalvando,
+    erroValidacao,
+    setErroValidacao,
+    validarFormulario,
+    getValorNumerico,
+    getNumeroVezesNumerico,
+    getTaxaNumerica,
+    limitesConfig,
+    isFormValido
+  } = useModalPagamento({
+    isOpen,
+    tipo: 'cartao',
+    valorMaximo,
+    valorJaAlocado,
+    dadosIniciais
+  });
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -156,7 +177,6 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     return calcularValorPresenteCartao(valorTotal, parcelas, taxaMensal);
   };
 
-  const isFormValido = valor && numeroVezes && taxa && !erroValidacao;
 
   // Classe CSS para feedback visual durante salvamento
   const getFormClass = () => {

@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
-import { validarValorDisponivel, validarNumeroParcelas, validarDataFutura } from '@/lib/validators';
-import { PAGAMENTO_CONFIG, getLimitesParcelas } from '@/lib/pagamento-config';
+import { formatarDataInput } from '@/lib/formatters';
 import { gerarCronogramaParcelas } from '@/lib/calculators';
+import { getLimitesParcelas } from '@/lib/pagamento-config';
+import { useModalPagamento } from '@/hooks/modulos/orcamento';
 
 interface ParcelaBoleto {
   numero: number;

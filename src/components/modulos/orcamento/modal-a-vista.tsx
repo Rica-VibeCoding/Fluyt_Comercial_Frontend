@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
-import { validarValorDisponivel, validarDataFutura } from '@/lib/validators';
 import { Input } from '@/components/ui/input';
+import { formatarValorInput } from '@/lib/formatters';
+import { useModalPagamento } from '@/hooks/modulos/orcamento';
 
 interface ModalAVistaProps {
   isOpen: boolean;
@@ -19,93 +19,49 @@ interface ModalAVistaProps {
 }
 
 export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalAVistaProps) {
-  const [valor, setValor] = useState('');
-  const [data, setData] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [erroValidacao, setErroValidacao] = useState('');
-
-  // Carregar dados iniciais quando modal abrir para edição
-  useEffect(() => {
-    if (isOpen && dadosIniciais) {
-      if (dadosIniciais.valor) {
-        setValor(formatarMoeda(dadosIniciais.valor));
-      }
-      
-      if (dadosIniciais.data) {
-        setData(formatarDataInput(dadosIniciais.data));
-      }
-    } else if (isOpen) {
-      // Limpar campos se for nova forma
-      setValor('');
-      setData('');
-    }
-  }, [isOpen, dadosIniciais]);
+  const {
+    valor,
+    setValor,
+    data,
+    setData,
+    isLoading,
+    setIsLoading,
+    erroValidacao,
+    validarFormulario,
+    getValorNumerico,
+    limparCampos,
+    isFormValido
+  } = useModalPagamento({
+    isOpen,
+    tipo: 'a-vista',
+    valorMaximo,
+    valorJaAlocado,
+    dadosIniciais
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const valorNumerico = parseValorMoeda(valor);
-    
-    // Validações usando funções compartilhadas
-    const validacaoValor = validarValorDisponivel(valorNumerico, valorMaximo, valorJaAlocado);
-    if (!validacaoValor.isValid) {
-      setErroValidacao(validacaoValor.message || '');
+    // Usar validação centralizada do hook
+    if (!validarFormulario()) {
       return;
-    }
-    
-    if (data) {
-      const validacaoData = validarDataFutura(data);
-      if (!validacaoData.isValid) {
-        setErroValidacao(validacaoData.message || '');
-        return;
-      }
     }
     
     setIsLoading(true);
 
     try {
       onSalvar({
-        valor: valorNumerico,
+        valor: getValorNumerico(),
         data: data
       });
 
-      // Reset form
-      setValor('');
-      setData('');
-      setErroValidacao('');
+      // Reset form usando função do hook
+      limparCampos();
       onClose();
     } catch (error) {
       console.error('Erro ao salvar:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const formatarValor = (value: string) => {
-    // Remove tudo que não é dígito
-    const numero = value.replace(/\D/g, '');
-    
-    // Converte para número e formata
-    const valorNumerico = parseInt(numero) / 100;
-    
-    return valorNumerico.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  };
-
-  const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const valorFormatado = formatarValor(e.target.value);
-    setValor(valorFormatado);
-    
-    // Validar em tempo real
-    const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
-    const valorRestante = valorMaximo - valorJaAlocado;
-    
-    if (valorNumerico > valorRestante) {
-      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-    } else {
-      setErroValidacao('');
     }
   };
 
@@ -139,7 +95,7 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
                   <Input
                     type="text"
                     value={valor}
-                    onChange={handleValorChange}
+                    onChange={(e) => setValor(formatarValorInput(e.target.value))}
                     placeholder="R$ 0,00"
                     className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
                       erroValidacao ? 'border-red-500 focus:border-red-500' : ''
