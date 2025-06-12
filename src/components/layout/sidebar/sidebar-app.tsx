@@ -12,7 +12,6 @@ import { SidebarHeader } from './components/sidebar-header';
 import { SidebarMenu } from './components/sidebar-menu';
 import { SidebarFooter } from './components/sidebar-footer';
 import { SidebarUser } from './components/sidebar-user';
-import { ThemeSelector } from './themes/theme-selector';
 import { menuItems } from './config/menu-config';
 
 export function AppSidebar() {
@@ -24,7 +23,6 @@ export function AppSidebar() {
           <SidebarMenu items={menuItems} />
           <SidebarFooter>
             <SidebarUser />
-            <ThemeSelector />
           </SidebarFooter>
         </Sidebar>
       </ThemeProvider>

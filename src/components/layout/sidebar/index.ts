@@ -9,7 +9,6 @@ export { SidebarHeader } from './components/sidebar-header';
 export { SidebarFooter } from './components/sidebar-footer';
 export { SidebarUser } from './components/sidebar-user';
 export { SidebarToggle } from './components/sidebar-toggle';
-export { ThemeSelector } from './themes/theme-selector';
 export { ThemeProvider } from './themes/theme-provider';
 export { AppSidebar } from './sidebar-app';
 export { menuItems } from './config/menu-config';

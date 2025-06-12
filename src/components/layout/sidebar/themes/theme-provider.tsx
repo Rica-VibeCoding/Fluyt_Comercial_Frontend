@@ -13,20 +13,12 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const { currentTheme, setTheme } = useSidebar();
+  const { currentTheme } = useSidebar();
 
-  // Carregar tema salvo na inicialização
+  // Aplicar tema fixo "Azul Clarinho" na inicialização
   useEffect(() => {
-    const savedTheme = loadSavedTheme();
-    if (savedTheme !== currentTheme) {
-      setTheme(savedTheme);
-    }
+    applyTheme('blue-light');
   }, []);
-
-  // Aplicar tema quando mudança
-  useEffect(() => {
-    applyTheme(currentTheme);
-  }, [currentTheme]);
 
   return <>{children}</>;
 } 

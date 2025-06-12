@@ -15,7 +15,6 @@ import { SidebarHeader } from '../../components/layout/sidebar/components/sideba
 import { SidebarMenu } from '../../components/layout/sidebar/components/sidebar-menu';
 import { SidebarFooter } from '../../components/layout/sidebar/components/sidebar-footer';
 import { SidebarUser } from '../../components/layout/sidebar/components/sidebar-user';
-import { ThemeSelector } from '../../components/layout/sidebar/themes/theme-selector';
 import { menuItems } from '../../components/layout/sidebar/config/menu-config';
 
 // Importar ProgressStepper dinamicamente sem SSR
@@ -68,7 +67,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarMenu items={menuItems} />
           <SidebarFooter>
             <SidebarUser />
-            <ThemeSelector />
           </SidebarFooter>
         </Sidebar>
       </div>

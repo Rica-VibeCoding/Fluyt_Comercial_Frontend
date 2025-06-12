@@ -14,7 +14,6 @@ export * from './shared';
 // Componentes de módulos
 export * from './modulos/clientes';
 export * from './modulos/ambientes';
-export * from './modulos/orcamento';
 export * from './modulos/contratos';
 export * from './modulos/sistema';
 

@@ -65,76 +65,97 @@ export default function OrcamentoPage() {
           </div>
         </div>
         
-        {/* Cards superiores - linha única */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Valor Total</h3>
-              <p className="text-2xl font-bold text-green-600">
-                R$ {ambientes.reduce((total, ambiente) => total + ambiente.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Valor Negociado</h3>
-              <p className="text-2xl font-bold text-blue-600">
-                {(() => {
-                  const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
-                  const descontoNumero = parseFloat(desconto) || 0;
-                  const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
-                  return `R$ ${valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-                })()}
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Desconto Real</h3>
-              <p className="text-2xl text-gray-400">Calculando...</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">Valor Recebido</h3>
-              <p className="text-2xl text-gray-400">Calculando...</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Layout inferior - perfeitamente alinhado */}
+        {/* Layout: 1/3 esquerda + 2/3 direita - com alinhamento superior */}
         <div className="grid grid-cols-3 gap-6">
           
-          {/* Card Ambientes */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold mb-4">Ambientes</h3>
+          {/* Coluna esquerda (1/3) - Valor Total + Ambientes */}
+          <div className="col-span-1 flex flex-col">
+            
+            {/* Card Valor Total - altura dinâmica igual aos cards da direita */}
+            <div className="flex-none h-[88px] mb-6">
+              <Card className="h-full">
+                <CardContent className="p-4 h-full flex flex-col justify-between">
+                  <h3 className="font-semibold">Valor Total</h3>
+                  <p className="text-2xl font-bold text-green-600">
+                    R$ {ambientes.reduce((total, ambiente) => total + ambiente.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Card Ambientes */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold mb-4">Ambientes</h3>
+                
+                <div className="flex justify-between border-b-2 pb-2 mb-2 font-semibold text-sm">
+                  <span>Nome</span>
+                  <span>Valor</span>
+                </div>
+                
+                <div className="space-y-1">
+                  {ambientes.length > 0 ? ambientes.map((ambiente) => (
+                    <div key={ambiente.id} className="flex justify-between py-1 border-b">
+                      <span className="font-medium">{ambiente.nome}</span>
+                      <span className="text-green-600">
+                        R$ {ambiente.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )) : (
+                    <p className="text-gray-500 text-center py-4">Nenhum ambiente</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+          </div>
+
+          {/* Coluna direita (2/3) - 3 Cards superiores + Plano de Pagamento */}
+          <div className="col-span-2 flex flex-col">
+            
+            {/* 3 Cards superiores - altura fixa igual ao Valor Total */}
+            <div className="flex-none grid grid-cols-3 gap-4 h-[88px] mb-6">
               
-              <div className="flex justify-between border-b-2 pb-2 mb-2 font-semibold text-sm">
-                <span>Nome</span>
-                <span>Valor</span>
+              {/* Card Valor Negociado */}
+              <div className="flex">
+                <Card className="flex-1">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <h3 className="font-semibold">Valor Negociado</h3>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {(() => {
+                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+                        const descontoNumero = parseFloat(desconto) || 0;
+                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
+                        return `R$ ${valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                      })()}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Card Desconto Real */}
+              <div className="flex">
+                <Card className="flex-1">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <h3 className="font-semibold">Desconto Real</h3>
+                    <p className="text-2xl text-gray-400">Calculando...</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Card Valor Recebido */}
+              <div className="flex">
+                <Card className="flex-1">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <h3 className="font-semibold">Valor Recebido</h3>
+                    <p className="text-2xl text-gray-400">Calculando...</p>
+                  </CardContent>
+                </Card>
               </div>
               
-              <div className="space-y-1">
-                {ambientes.length > 0 ? ambientes.map((ambiente) => (
-                  <div key={ambiente.id} className="flex justify-between py-1 border-b">
-                    <span className="font-medium">{ambiente.nome}</span>
-                    <span className="text-green-600">
-                      R$ {ambiente.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                )) : (
-                  <p className="text-gray-500 text-center py-4">Nenhum ambiente</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Card Plano de Pagamento */}
-          <div className="col-span-2">
+            </div>
+
+            {/* Card Plano de Pagamento */}
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">Plano de Pagamento</h3>
@@ -163,6 +184,7 @@ export default function OrcamentoPage() {
                 
               </CardContent>
             </Card>
+            
           </div>
           
         </div>
