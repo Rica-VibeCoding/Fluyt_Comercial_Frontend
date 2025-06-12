@@ -14,9 +14,13 @@ interface ModalBoletoProps {
   isOpen: boolean;
   onClose: () => void;
   onSalvar: (dados: { valor: number; parcelas: ParcelaBoleto[] }) => void;
+  dadosIniciais?: {
+    valor?: number;
+    parcelas?: ParcelaBoleto[];
+  };
 }
 
-export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
+export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalBoletoProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [dataPrimeira, setDataPrimeira] = useState('');
@@ -24,6 +28,40 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
   const [salvando, setSalvando] = useState(false);
+
+  // Carregar dados iniciais quando modal abrir para edição
+  useEffect(() => {
+    if (isOpen && dadosIniciais) {
+      if (dadosIniciais.valor) {
+        const valorFormatado = dadosIniciais.valor.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        setValor(valorFormatado);
+      }
+      
+      if (dadosIniciais.parcelas && dadosIniciais.parcelas.length > 0) {
+        setNumeroVezes(dadosIniciais.parcelas.length.toString());
+        
+        // Definir data da primeira parcela
+        const primeiraParcela = dadosIniciais.parcelas[0];
+        if (primeiraParcela.data) {
+          const dataFormatada = new Date(primeiraParcela.data).toISOString().split('T')[0];
+          setDataPrimeira(dataFormatada);
+        }
+        
+        // Carregar todas as parcelas
+        setParcelas(dadosIniciais.parcelas);
+      }
+    } else if (isOpen) {
+      // Limpar campos se for nova forma
+      setValor('');
+      setNumeroVezes('');
+      setDataPrimeira('');
+      setParcelas([]);
+      setDatasEditadas(new Set());
+    }
+  }, [isOpen, dadosIniciais]);
 
   // Gerar parcelas automaticamente
   useEffect(() => {

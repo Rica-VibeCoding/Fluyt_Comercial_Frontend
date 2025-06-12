@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
@@ -8,12 +8,39 @@ interface ModalAVistaProps {
   isOpen: boolean;
   onClose: () => void;
   onSalvar: (dados: { valor: number; data: string }) => void;
+  dadosIniciais?: {
+    valor?: number;
+    data?: string;
+  };
 }
 
-export function ModalAVista({ isOpen, onClose, onSalvar }: ModalAVistaProps) {
+export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalAVistaProps) {
   const [valor, setValor] = useState('');
   const [data, setData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Carregar dados iniciais quando modal abrir para edição
+  useEffect(() => {
+    if (isOpen && dadosIniciais) {
+      if (dadosIniciais.valor) {
+        const valorFormatado = dadosIniciais.valor.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        setValor(valorFormatado);
+      }
+      
+      if (dadosIniciais.data) {
+        // Converter data para formato do input (YYYY-MM-DD)
+        const dataFormatada = new Date(dadosIniciais.data).toISOString().split('T')[0];
+        setData(dataFormatada);
+      }
+    } else if (isOpen) {
+      // Limpar campos se for nova forma
+      setValor('');
+      setData('');
+    }
+  }, [isOpen, dadosIniciais]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

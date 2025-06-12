@@ -14,9 +14,15 @@ interface ModalFinanceiraProps {
   isOpen: boolean;
   onClose: () => void;
   onSalvar: (dados: { valor: number; vezes: number; percentual: number; parcelas: ParcelaFinanceira[]; valorPresente: number }) => void;
+  dadosIniciais?: {
+    valor?: number;
+    vezes?: number;
+    percentual?: number;
+    parcelas?: ParcelaFinanceira[];
+  };
 }
 
-export function ModalFinanceira({ isOpen, onClose, onSalvar }: ModalFinanceiraProps) {
+export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais }: ModalFinanceiraProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [dataPrimeira, setDataPrimeira] = useState('');
@@ -24,6 +30,46 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar }: ModalFinanceiraPr
   const [parcelas, setParcelas] = useState<ParcelaFinanceira[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  // Carregar dados iniciais quando modal abrir para edição
+  useEffect(() => {
+    if (isOpen && dadosIniciais) {
+      if (dadosIniciais.valor) {
+        const valorFormatado = dadosIniciais.valor.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        setValor(valorFormatado);
+      }
+      
+      if (dadosIniciais.vezes) {
+        setNumeroVezes(dadosIniciais.vezes.toString());
+      }
+      
+      if (dadosIniciais.percentual) {
+        setPercentual(dadosIniciais.percentual.toString().replace('.', ','));
+      }
+      
+      if (dadosIniciais.parcelas && dadosIniciais.parcelas.length > 0) {
+        // Definir data da primeira parcela
+        const primeiraParcela = dadosIniciais.parcelas[0];
+        if (primeiraParcela.data) {
+          const dataFormatada = new Date(primeiraParcela.data).toISOString().split('T')[0];
+          setDataPrimeira(dataFormatada);
+        }
+        
+        // Carregar todas as parcelas
+        setParcelas(dadosIniciais.parcelas);
+      }
+    } else if (isOpen) {
+      // Limpar campos se for nova forma
+      setValor('');
+      setNumeroVezes('');
+      setDataPrimeira('');
+      setPercentual('1.8');
+      setParcelas([]);
+    }
+  }, [isOpen, dadosIniciais]);
 
   // Gerar parcelas automaticamente (mesma data de cada mês)
   useEffect(() => {

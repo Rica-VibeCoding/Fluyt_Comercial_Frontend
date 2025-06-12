@@ -10,6 +10,12 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Plus, FileText, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { ModalFormasPagamento } from '@/components/modulos/orcamento/modal-formas-pagamento';
+import { ListaFormasPagamento } from '@/components/modulos/orcamento/lista-formas-pagamento';
+import { ModalAVista } from '@/components/modulos/orcamento/modal-a-vista';
+import { ModalBoleto } from '@/components/modulos/orcamento/modal-boleto';
+import { ModalCartao } from '@/components/modulos/orcamento/modal-cartao';
+import { ModalFinanceira } from '@/components/modulos/orcamento/modal-financeira';
+import { sessaoSimples, FormaPagamento } from '@/lib/sessao-simples';
 
 export default function OrcamentoPage() {
   const searchParams = useSearchParams();
@@ -19,8 +25,19 @@ export default function OrcamentoPage() {
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [modalFormasAberto, setModalFormasAberto] = useState(false);
-  const [formasPagamento, setFormasPagamento] = useState<any[]>([]);
+  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([]);
+  const [modalAVistaAberto, setModalAVistaAberto] = useState(false);
+  const [modalBoletoAberto, setModalBoletoAberto] = useState(false);
+  const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
+  const [modalFinanceiraAberto, setModalFinanceiraAberto] = useState(false);
+  const [formaEditando, setFormaEditando] = useState<FormaPagamento | null>(null);
   
+  // Carregar formas de pagamento do localStorage na inicialização
+  useEffect(() => {
+    const formasCarregadas = sessaoSimples.obterFormasPagamento();
+    setFormasPagamento(formasCarregadas);
+  }, []);
+
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
     const clienteNome = searchParams.get('clienteNome');
@@ -83,6 +100,120 @@ export default function OrcamentoPage() {
     }
   };
   
+  // Handlers para formas de pagamento
+  const handleFormaPagamentoAdicionada = (forma: { tipo: string; valor?: number; detalhes?: any }) => {
+    console.log('📥 Forma de pagamento adicionada:', forma);
+    
+    // Converter dados para interface FormaPagamento com mapeamento correto de tipos
+    const tipoMapeado = (() => {
+      switch (forma.tipo) {
+        case 'À Vista':
+          return 'a-vista';
+        case 'Boleto':
+          return 'boleto';
+        case 'Cartão':
+          return 'cartao';
+        case 'Financeira':
+          return 'financeira';
+        default:
+          console.warn('Tipo não reconhecido:', forma.tipo);
+          return 'a-vista'; // fallback
+      }
+    })() as 'a-vista' | 'boleto' | 'cartao' | 'financeira';
+    
+    const novaForma: FormaPagamento = {
+      id: `forma_${Date.now()}`,
+      tipo: tipoMapeado,
+      valor: forma.valor || 0,
+      valorPresente: forma.detalhes?.valorPresente || forma.valor || 0,
+      parcelas: forma.detalhes?.vezes || forma.detalhes?.parcelas?.length || 1,
+      dados: forma.detalhes,
+      criadaEm: new Date().toISOString()
+    };
+    
+    // Salvar no sistema de sessão
+    sessaoSimples.adicionarFormaPagamento(novaForma);
+    
+    // Atualizar estado local
+    setFormasPagamento(prev => [...prev, novaForma]);
+    setModalFormasAberto(false);
+  };
+
+  const handleEditarForma = (forma: FormaPagamento) => {
+    console.log('✏️ Editando forma:', forma);
+    
+    // Armazenar qual forma está sendo editada
+    setFormaEditando(forma);
+    
+    // Fechar modal principal se estiver aberto
+    setModalFormasAberto(false);
+    
+    // Abrir modal específico baseado no tipo
+    switch (forma.tipo) {
+      case 'a-vista':
+        setModalAVistaAberto(true);
+        break;
+      case 'boleto':
+        setModalBoletoAberto(true);
+        break;
+      case 'cartao':
+        setModalCartaoAberto(true);
+        break;
+      case 'financeira':
+        setModalFinanceiraAberto(true);
+        break;
+      default:
+        console.warn('Tipo de forma de pagamento não reconhecido:', forma.tipo);
+    }
+  };
+
+  const handleRemoverForma = (id: string) => {
+    console.log('🗑️ Removendo forma:', id);
+    
+    // Remover do sistema de sessão
+    sessaoSimples.removerFormaPagamento(id);
+    
+    // Atualizar estado local
+    setFormasPagamento(prev => prev.filter(f => f.id !== id));
+  };
+
+  // Handler para atualizar forma existente
+  const handleAtualizarForma = (dadosNovos: any, tipo: 'a-vista' | 'boleto' | 'cartao' | 'financeira') => {
+    if (!formaEditando) return;
+
+    console.log('📝 Atualizando forma:', { id: formaEditando.id, dadosNovos });
+    
+    // Criar nova forma atualizada
+    const formaAtualizada: FormaPagamento = {
+      ...formaEditando,
+      valor: dadosNovos.valor || 0,
+      valorPresente: dadosNovos.valorPresente || dadosNovos.valor || 0,
+      parcelas: dadosNovos.vezes || dadosNovos.parcelas?.length || 1,
+      dados: dadosNovos,
+      criadaEm: formaEditando.criadaEm // Manter data de criação original
+    };
+    
+    // Atualizar no sistema de sessão
+    sessaoSimples.editarFormaPagamento(formaEditando.id, formaAtualizada);
+    
+    // Atualizar estado local
+    setFormasPagamento(prev => 
+      prev.map(f => f.id === formaEditando.id ? formaAtualizada : f)
+    );
+    
+    // Fechar modal e limpar edição
+    setFormaEditando(null);
+  };
+
+  // Função para fechar modais de edição
+  const fecharModalEdicao = () => {
+    setModalAVistaAberto(false);
+    setModalBoletoAberto(false);
+    setModalCartaoAberto(false);
+    setModalFinanceiraAberto(false);
+    setFormaEditando(null);
+  };
+
   // Validações
   const podeGerarContrato = () => {
     return !!(cliente && ambientes.length > 0 && formasPagamento.length > 0);
@@ -222,46 +353,52 @@ export default function OrcamentoPage() {
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">Plano de Pagamento</h3>
                 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Desconto (%)</label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={desconto}
-                      onChange={(e) => setDesconto(e.target.value)}
-                      placeholder="0"
-                      className="pr-8"
-                      max="100"
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      %
-                    </span>
+                {/* Layout em linha: Desconto + Botão Adicionar */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  
+                  {/* Campo Desconto - 1/3 da largura */}
+                  <div className="flex-shrink-0 w-full sm:w-48">
+                    <label className="block text-sm font-medium mb-2">Desconto (%)</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        value={desconto}
+                        onChange={(e) => setDesconto(e.target.value)}
+                        placeholder="0"
+                        className="pr-8"
+                        max="100"
+                        min="0"
+                        step="0.1"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                        %
+                      </span>
+                    </div>
                   </div>
 
-                </div>
-
-                {/* Botão para adicionar forma de pagamento */}
-                <div className="mt-6">
-                  <Button
-                    onClick={() => setModalFormasAberto(true)}
-                    variant="outline"
-                    className="w-full gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Adicionar Forma de Pagamento
-                  </Button>
+                  {/* Botão Adicionar - ocupa espaço restante */}
+                  <div className="flex-1 flex flex-col justify-end">
+                    <Button
+                      onClick={() => setModalFormasAberto(true)}
+                      variant="outline"
+                      className="w-full gap-2 h-10"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Adicionar Forma de Pagamento
+                    </Button>
+                  </div>
+                  
                 </div>
                 
-                {/* Lista de formas de pagamento adicionadas */}
+                {/* Seção: Formas de Pagamento Configuradas */}
                 {formasPagamento.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <h4 className="font-medium">Formas de Pagamento Configuradas:</h4>
-                    {formasPagamento.map((forma, index) => (
-                      <div key={index} className="p-2 bg-green-50 border border-green-200 rounded text-sm">
-                        <span className="font-medium">{forma.tipo}</span>
-                        {forma.valor && <span className="text-green-600 ml-2">R$ {forma.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
-                      </div>
-                    ))}
+                  <div>
+                    <h4 className="font-medium mb-3">Formas de Pagamento Configuradas:</h4>
+                    <ListaFormasPagamento
+                      formas={formasPagamento}
+                      onEditar={handleEditarForma}
+                      onRemover={handleRemoverForma}
+                    />
                   </div>
                 )}
                 
@@ -276,10 +413,63 @@ export default function OrcamentoPage() {
         <ModalFormasPagamento
           isOpen={modalFormasAberto}
           onClose={() => setModalFormasAberto(false)}
-          onFormaPagamentoAdicionada={(forma) => {
-            setFormasPagamento(prev => [...prev, forma]);
-            setModalFormasAberto(false);
+          onFormaPagamentoAdicionada={handleFormaPagamentoAdicionada}
+        />
+
+        {/* Modais específicos para edição */}
+        <ModalAVista
+          isOpen={modalAVistaAberto}
+          onClose={fecharModalEdicao}
+          onSalvar={(dados) => {
+            console.log('📝 Editando À Vista:', dados);
+            handleAtualizarForma(dados, 'a-vista');
           }}
+          dadosIniciais={formaEditando?.tipo === 'a-vista' ? {
+            valor: formaEditando.valor,
+            data: formaEditando.dados?.data
+          } : undefined}
+        />
+
+        <ModalBoleto
+          isOpen={modalBoletoAberto}
+          onClose={fecharModalEdicao}
+          onSalvar={(dados) => {
+            console.log('📝 Editando Boleto:', dados);
+            handleAtualizarForma(dados, 'boleto');
+          }}
+          dadosIniciais={formaEditando?.tipo === 'boleto' ? {
+            valor: formaEditando.valor,
+            parcelas: formaEditando.dados?.parcelas
+          } : undefined}
+        />
+
+        <ModalCartao
+          isOpen={modalCartaoAberto}
+          onClose={fecharModalEdicao}
+          onSalvar={(dados) => {
+            console.log('📝 Editando Cartão:', dados);
+            handleAtualizarForma(dados, 'cartao');
+          }}
+          dadosIniciais={formaEditando?.tipo === 'cartao' ? {
+            valor: formaEditando.valor,
+            vezes: formaEditando.parcelas,
+            taxa: formaEditando.dados?.taxa
+          } : undefined}
+        />
+
+        <ModalFinanceira
+          isOpen={modalFinanceiraAberto}
+          onClose={fecharModalEdicao}
+          onSalvar={(dados) => {
+            console.log('📝 Editando Financeira:', dados);
+            handleAtualizarForma(dados, 'financeira');
+          }}
+          dadosIniciais={formaEditando?.tipo === 'financeira' ? {
+            valor: formaEditando.valor,
+            vezes: formaEditando.parcelas,
+            percentual: formaEditando.dados?.percentual,
+            parcelas: formaEditando.dados?.parcelas
+          } : undefined}
         />
         
       </div>

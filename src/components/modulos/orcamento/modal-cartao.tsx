@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
@@ -8,14 +8,45 @@ interface ModalCartaoProps {
   isOpen: boolean;
   onClose: () => void;
   onSalvar: (dados: { valor: number; vezes: number; taxa: number; valorPresente: number; desconto: number }) => void;
+  dadosIniciais?: {
+    valor?: number;
+    vezes?: number;
+    taxa?: number;
+  };
 }
 
-export function ModalCartao({ isOpen, onClose, onSalvar }: ModalCartaoProps) {
+export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalCartaoProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [taxa, setTaxa] = useState('3.5'); // Taxa padrão provisória
   const [isLoading, setIsLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  // Carregar dados iniciais quando modal abrir para edição
+  useEffect(() => {
+    if (isOpen && dadosIniciais) {
+      if (dadosIniciais.valor) {
+        const valorFormatado = dadosIniciais.valor.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        setValor(valorFormatado);
+      }
+      
+      if (dadosIniciais.vezes) {
+        setNumeroVezes(dadosIniciais.vezes.toString());
+      }
+      
+      if (dadosIniciais.taxa) {
+        setTaxa(dadosIniciais.taxa.toString().replace('.', ','));
+      }
+    } else if (isOpen) {
+      // Limpar campos se for nova forma
+      setValor('');
+      setNumeroVezes('');
+      setTaxa('3.5');
+    }
+  }, [isOpen, dadosIniciais]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

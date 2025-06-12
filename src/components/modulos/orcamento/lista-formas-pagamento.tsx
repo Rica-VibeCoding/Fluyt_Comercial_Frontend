@@ -53,34 +53,39 @@ const formatarValor = (valor: number): string => {
   });
 };
 
-// Função para obter dados formatados por tipo
-const obterDadosFormatados = (forma: FormaPagamento): string[] => {
-  const dados = [];
+// Função para obter dados formatados resumidos (para 2 linhas)
+const obterDadosResumidos = (forma: FormaPagamento) => {
+  const dados = {
+    modalidade: CORES_FORMAS[forma.tipo].nome,
+    valor: formatarValor(forma.valor),
+    detalhes: ''  // Detalhes específicos
+  };
   
-  // Valor principal
-  dados.push(formatarValor(forma.valor));
-  
-  // Dados específicos por tipo
+  // Detalhes específicos por tipo
   switch (forma.tipo) {
-    case 'a-vista':
+    case 'a-vista': {
       if (forma.dados?.data) {
         const data = new Date(forma.dados.data).toLocaleDateString('pt-BR');
-        dados.push(`Recebimento: ${data}`);
+        dados.detalhes = `Recebimento em ${data}`;
+      } else {
+        dados.detalhes = 'Pagamento à vista';
       }
       break;
+    }
       
     case 'boleto':
     case 'cartao':
-    case 'financeira':
-      if (forma.parcelas) {
-        dados.push(`${forma.parcelas}x de ${formatarValor(forma.valor / forma.parcelas)}`);
+    case 'financeira': {
+      const parcelas = forma.parcelas || 1;
+      const valorParcela = forma.valor / parcelas;
+      dados.detalhes = `${parcelas}x de ${formatarValor(valorParcela)}`;
+      
+      // Adicionar valor deflacionado se diferente
+      if (forma.valorPresente !== forma.valor) {
+        dados.detalhes += ` • VP: ${formatarValor(forma.valorPresente)}`;
       }
       break;
-  }
-  
-  // Valor deflacionado (sempre mostrar se diferente do valor nominal)
-  if (forma.valorPresente !== forma.valor) {
-    dados.push(`Deflacionado: ${formatarValor(forma.valorPresente)}`);
+    }
   }
   
   return dados;
@@ -98,11 +103,11 @@ export function ListaFormasPagamento({
   }
 
   return (
-    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+    <div className="space-y-2">
       {formas.map((forma) => {
         const config = CORES_FORMAS[forma.tipo];
         const IconeComponent = config.icon;
-        const dadosFormatados = obterDadosFormatados(forma);
+        const dadosResumidos = obterDadosResumidos(forma);
         
         return (
           <Card 
@@ -110,60 +115,63 @@ export function ListaFormasPagamento({
             className={`${config.bg} ${config.border} border transition-all duration-200 hover:shadow-sm`}
           >
             <CardContent className="p-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 
-                {/* Seção esquerda: Ícone + Dados */}
+                {/* Seção esquerda: Ícone + Dados (2 linhas) */}
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className={`p-2 rounded-lg ${config.bg} ${config.border} border`}>
-                    <IconeComponent className={`h-4 w-4 ${config.text}`} />
+                  <div className={`p-1.5 rounded ${config.bg} ${config.border} border flex-shrink-0`}>
+                    <IconeComponent className={`h-3.5 w-3.5 ${config.text}`} />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h4 className={`text-sm font-semibold ${config.text} mb-1`}>
-                      {config.nome}
-                    </h4>
-                    <div className="space-y-0.5">
-                      {dadosFormatados.map((dado, index) => (
-                        <p 
-                          key={index}
-                          className={`text-xs ${index === 0 ? config.text : 'text-slate-600 dark:text-slate-400'} truncate`}
-                        >
-                          {dado}
-                        </p>
-                      ))}
+                    {/* Linha 1: Modalidade + Valor */}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className={`text-sm font-medium ${config.text}`}>
+                        {dadosResumidos.modalidade}
+                      </span>
+                      <span className="text-slate-400">•</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        {dadosResumidos.valor}
+                      </span>
                     </div>
+                    {/* Linha 2: Detalhes específicos */}
+                    <p className="text-xs text-slate-600 dark:text-slate-400 truncate leading-relaxed">
+                      {dadosResumidos.detalhes}
+                    </p>
                   </div>
                 </div>
 
-                {/* Seção direita: Travamento + Ações */}
-                <div className="flex items-center gap-1 ml-2">
+                {/* Seção direita: Cadeado + Ações */}
+                <div className="flex items-center gap-1 flex-shrink-0">
                   
-                  {/* Ícone de Travamento */}
-                  {onToggleTravamento && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onToggleTravamento(forma.id)}
-                      className={`h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 ${config.text}`}
-                      title={forma.travada ? 'Destravado' : 'Travado'}
-                    >
-                      {forma.travada ? (
-                        <Lock className="h-3.5 w-3.5" />
-                      ) : (
-                        <Unlock className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  )}
+                  {/* Ícone de Cadeado/Travamento */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onToggleTravamento?.(forma.id)}
+                    className={`h-7 w-7 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      forma.travada 
+                        ? 'text-red-600 dark:text-red-400' 
+                        : 'text-green-600 dark:text-green-400'
+                    }`}
+                    title={forma.travada ? 'Destravado (clique para travar)' : 'Travado (clique para destravar)'}
+                  >
+                    {forma.travada ? (
+                      <Unlock className="h-3 w-3" />
+                    ) : (
+                      <Lock className="h-3 w-3" />
+                    )}
+                  </Button>
 
                   {/* Botão Editar */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEditar(forma)}
-                    className={`h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 ${config.text}`}
-                    title="Editar"
+                    className={`h-7 w-7 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 ${config.text}`}
+                    title="Editar forma de pagamento"
                   >
-                    <Edit className="h-3.5 w-3.5" />
+                    <Edit className="h-3 w-3" />
                   </Button>
 
                   {/* Botão Remover */}
@@ -171,10 +179,10 @@ export function ListaFormasPagamento({
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemover(forma.id)}
-                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                    title="Remover"
+                    className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                    title="Remover forma de pagamento"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
                 
