@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
+import { validarValorDisponivel, validarDataFutura } from '@/lib/validators';
 import { Input } from '@/components/ui/input';
 
 interface ModalAVistaProps {
@@ -26,17 +28,11 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   useEffect(() => {
     if (isOpen && dadosIniciais) {
       if (dadosIniciais.valor) {
-        const valorFormatado = dadosIniciais.valor.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        });
-        setValor(valorFormatado);
+        setValor(formatarMoeda(dadosIniciais.valor));
       }
       
       if (dadosIniciais.data) {
-        // Converter data para formato do input (YYYY-MM-DD)
-        const dataFormatada = new Date(dadosIniciais.data).toISOString().split('T')[0];
-        setData(dataFormatada);
+        setData(formatarDataInput(dadosIniciais.data));
       }
     } else if (isOpen) {
       // Limpar campos se for nova forma
@@ -48,13 +44,21 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
-    const valorRestante = valorMaximo - valorJaAlocado;
+    const valorNumerico = parseValorMoeda(valor);
     
-    // Validação final
-    if (valorNumerico > valorRestante) {
-      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    // Validações usando funções compartilhadas
+    const validacaoValor = validarValorDisponivel(valorNumerico, valorMaximo, valorJaAlocado);
+    if (!validacaoValor.isValid) {
+      setErroValidacao(validacaoValor.message || '');
       return;
+    }
+    
+    if (data) {
+      const validacaoData = validarDataFutura(data);
+      if (!validacaoData.isValid) {
+        setErroValidacao(validacaoData.message || '');
+        return;
+      }
     }
     
     setIsLoading(true);

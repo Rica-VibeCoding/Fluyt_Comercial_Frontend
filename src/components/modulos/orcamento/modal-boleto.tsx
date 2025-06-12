@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
+import { validarValorDisponivel, validarNumeroParcelas, validarDataFutura } from '@/lib/validators';
 
 interface ParcelaBoleto {
   numero: number;

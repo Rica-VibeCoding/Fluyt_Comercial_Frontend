@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { formatarMoeda, parseValorMoeda, formatarTaxaInput, parseTaxa, formatarPercentual } from '@/lib/formatters';
+import { validarValorDisponivel, validarNumeroParcelas, validarTaxa } from '@/lib/validators';
 
 interface ModalCartaoProps {
   isOpen: boolean;

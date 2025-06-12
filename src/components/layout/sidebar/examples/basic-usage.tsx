@@ -14,7 +14,6 @@ import {
   SidebarMenu,
   SidebarFooter,
   SidebarUser,
-  ThemeSelector,
   SidebarToggle,
   menuItems
 } from '../index';
@@ -35,7 +34,6 @@ export function CustomSidebarExample() {
           <SidebarMenu items={menuItems} />
           <SidebarFooter>
             <SidebarUser />
-            <ThemeSelector />
             <SidebarToggle />
           </SidebarFooter>
         </Sidebar>
@@ -66,7 +64,6 @@ export function CustomConfigExample() {
           <SidebarMenu items={menuItems} />
           <SidebarFooter>
             <SidebarUser />
-            <ThemeSelector />
           </SidebarFooter>
         </Sidebar>
       </ThemeProvider>

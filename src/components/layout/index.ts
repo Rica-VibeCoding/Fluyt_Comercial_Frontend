@@ -16,7 +16,6 @@ export {
   SidebarFooter,
   SidebarUser,
   SidebarToggle,
-  ThemeSelector,
   ThemeProvider,
   menuItems,
   sidebarThemes,

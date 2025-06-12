@@ -1,36 +1,31 @@
 /**
  * SESSÃO ULTRA SIMPLES - RESET TOTAL
  * Uma única fonte de verdade, máxima simplicidade
+ * 
+ * ETAPA 2: Tipos movidos para @/types/orcamento (centralizados)
  */
 
-export interface ClienteSimples {
-  id: string;
-  nome: string;
-}
+import { 
+  Cliente, 
+  Ambiente, 
+  FormaPagamento,
+  SessaoOrcamento,
+  // Aliases temporários para compatibilidade
+  ClienteSimples,
+  AmbienteSimples,
+  SessaoSimples
+} from '../types/orcamento';
 
-export interface AmbienteSimples {
-  id: string;
-  nome: string;
-  valor: number;
-}
-
-export interface FormaPagamento {
-  id: string;
-  tipo: 'a-vista' | 'boleto' | 'cartao' | 'financeira';
-  valor: number;
-  valorPresente: number;
-  parcelas?: number;
-  dados: any; // dados específicos de cada modal
-  criadaEm: string;
-  travada?: boolean; // para futura funcionalidade de travamento
-}
-
-export interface SessaoSimples {
-  cliente: ClienteSimples | null;
-  ambientes: AmbienteSimples[];
-  valorTotal: number;
-  formasPagamento: FormaPagamento[];
-}
+// Re-export para compatibilidade
+export type { 
+  Cliente, 
+  Ambiente, 
+  FormaPagamento,
+  SessaoOrcamento,
+  ClienteSimples,
+  AmbienteSimples,
+  SessaoSimples 
+};
 
 class SessaoSimplesManager {
   private readonly CHAVE = 'fluyt_sessao_simples';
