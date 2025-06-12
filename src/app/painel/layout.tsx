@@ -74,9 +74,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       {/* ProgressStepper fixo */}
       {shouldShowProgressStepper && (
         <div 
-          className="fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm transition-all duration-300 md:left-64"
+          className="fixed top-0 right-0 z-50 bg-white border-b shadow-sm transition-all duration-300"
           style={{ 
-            left: `${sidebarWidth}` 
+            left: sidebarWidth 
           }}
         >
           <ProgressStepper />

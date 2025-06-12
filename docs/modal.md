@@ -269,6 +269,17 @@ className="mx-2"      // Mobile (adicionar quando necessário)
 
 ## 🔧 Implementação Técnica
 
+### Overlay Otimizado (ATUALIZADO JAN/2025)
+**IMPORTANTE**: O overlay foi otimizado para intensidade única em modais aninhados:
+```tsx
+// CONFIGURAÇÃO ATUAL (components/ui/dialog.tsx):
+// bg-black/50 (50% opacidade) - não acumula em modais sobrepostos
+// EVITA: bg-black/80 que causa escurecimento excessivo (160%) 
+
+// Resultado: Todos os modais mantêm mesma intensidade visual
+// independente da profundidade (modal sobre modal)
+```
+
 ### Imports Obrigatórios
 ```tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../ui/dialog';
@@ -398,5 +409,23 @@ export function SeuModal({ aberto, onFechar, onSalvar, isLoading }: SeuModalProp
 
 ---
 
+---
+
+## 🆕 **ATUALIZAÇÕES E MELHORIAS**
+
+### Janeiro 2025 - Overlay Otimizado
+- **Problema resolvido**: Modais aninhados causavam escurecimento excessivo (160%)
+- **Solução implementada**: Overlay único com 50% de opacidade
+- **Benefício**: UX consistente independente da profundidade dos modais
+- **Arquivo alterado**: `src/components/ui/dialog.tsx` (bg-black/80 → bg-black/50)
+
+### Padrão da Indústria
+- **Gmail, Slack, Figma**: Todos usam intensidade única de overlay
+- **50-60% opacidade**: Sweet spot para foco sem escurecimento excessivo
+- **Accessibility**: Mantém contraste adequado e conforto visual
+
+---
+
 *📅 Última atualização: Janeiro 2025*  
-*👤 Padrões baseados na implementação limpa e produtiva*
+*👤 Padrões baseados na implementação limpa e produtiva*  
+*🔧 Overlay otimizado para modais aninhados*

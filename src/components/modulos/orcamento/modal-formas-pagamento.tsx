@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { CreditCard, DollarSign, FileText, Building } from 'lucide-react';
 import { ModalAVista } from './modal-a-vista';
 import { ModalBoleto } from './modal-boleto';
+import { ModalCartao } from './modal-cartao';
+import { ModalFinanceira } from './modal-financeira';
 
 interface ModalFormasPagamentoProps {
   isOpen: boolean;
@@ -20,6 +22,8 @@ interface ModalFormasPagamentoProps {
 export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoProps) {
   const [modalAVistaAberto, setModalAVistaAberto] = useState(false);
   const [modalBoletoAberto, setModalBoletoAberto] = useState(false);
+  const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
+  const [modalFinanceiraAberto, setModalFinanceiraAberto] = useState(false);
   const formasPagamento = [
     {
       id: 'a-vista',
@@ -60,8 +64,17 @@ export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoPr
       return;
     }
     
-    // TODO: Implementar outros modais (cartão, financeira)
-    console.log('Modal para', forma, 'ainda não implementado');
+    if (forma === 'cartao') {
+      setModalCartaoAberto(true);
+      return;
+    }
+    
+    if (forma === 'financeira') {
+      setModalFinanceiraAberto(true);
+      return;
+    }
+    
+    console.log('Modal para', forma, 'não encontrado');
     onClose();
   };
 
@@ -79,28 +92,47 @@ export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoPr
     onClose();
   };
 
+  const handleSalvarCartao = (dados: { valor: number; vezes: number; taxa: number; valorPresente: number; desconto: number }) => {
+    console.log('Dados Cartão salvos:', dados);
+    // TODO: Adicionar à lista de formas de pagamento
+    setModalCartaoAberto(false);
+    onClose();
+  };
+
+  const handleSalvarFinanceira = (dados: { valor: number; vezes: number; percentual: number; parcelas: any[]; valorPresente: number }) => {
+    console.log('Dados Financeira salvos:', dados);
+    // TODO: Adicionar à lista de formas de pagamento
+    setModalFinanceiraAberto(false);
+    onClose();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">Escolha a Forma de Pagamento</DialogTitle>
+      <DialogContent className="max-w-md max-h-[85vh] flex flex-col bg-white dark:bg-slate-900">
+        <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
+          <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Escolha a Forma de Pagamento
+          </DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          {formasPagamento.map((forma) => {
-            const IconeComponent = forma.icone;
-            return (
-              <Button
-                key={forma.id}
-                variant="outline"
-                className={`h-20 flex flex-col items-center justify-center gap-2 ${forma.cor}`}
-                onClick={() => handleFormaPagamento(forma.id)}
-              >
-                <IconeComponent className="h-6 w-6" />
-                <span className="font-medium">{forma.nome}</span>
-              </Button>
-            );
-          })}
+        <div className="flex-1 overflow-hidden">
+          <div className="p-2">
+            <div className="grid grid-cols-2 gap-1">
+              {formasPagamento.map((forma) => {
+                const IconeComponent = forma.icone;
+                return (
+                  <button
+                    key={forma.id}
+                    onClick={() => handleFormaPagamento(forma.id)}
+                    className="h-16 flex flex-col items-center justify-center gap-1 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                  >
+                    <IconeComponent className="h-5 w-5" />
+                    <span className="text-xs font-medium">{forma.nome}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </DialogContent>
       
@@ -116,6 +148,20 @@ export function ModalFormasPagamento({ isOpen, onClose }: ModalFormasPagamentoPr
         isOpen={modalBoletoAberto}
         onClose={() => setModalBoletoAberto(false)}
         onSalvar={handleSalvarBoleto}
+      />
+
+      {/* Modal Cartão */}
+      <ModalCartao
+        isOpen={modalCartaoAberto}
+        onClose={() => setModalCartaoAberto(false)}
+        onSalvar={handleSalvarCartao}
+      />
+
+      {/* Modal Financeira */}
+      <ModalFinanceira
+        isOpen={modalFinanceiraAberto}
+        onClose={() => setModalFinanceiraAberto(false)}
+        onSalvar={handleSalvarFinanceira}
       />
     </Dialog>
   );

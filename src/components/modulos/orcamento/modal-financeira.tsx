@@ -4,36 +4,36 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-interface ParcelaBoleto {
+interface ParcelaFinanceira {
   numero: number;
   data: string;
   valor: number;
 }
 
-interface ModalBoletoProps {
+interface ModalFinanceiraProps {
   isOpen: boolean;
   onClose: () => void;
-  onSalvar: (dados: { valor: number; parcelas: ParcelaBoleto[] }) => void;
+  onSalvar: (dados: { valor: number; vezes: number; percentual: number; parcelas: ParcelaFinanceira[]; valorPresente: number }) => void;
 }
 
-export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
+export function ModalFinanceira({ isOpen, onClose, onSalvar }: ModalFinanceiraProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [dataPrimeira, setDataPrimeira] = useState('');
-  const [parcelas, setParcelas] = useState<ParcelaBoleto[]>([]);
+  const [percentual, setPercentual] = useState('1.8'); // Percentual padrão
+  const [parcelas, setParcelas] = useState<ParcelaFinanceira[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
   const [salvando, setSalvando] = useState(false);
 
-  // Gerar parcelas automaticamente
+  // Gerar parcelas automaticamente (mesma data de cada mês)
   useEffect(() => {
     if (numeroVezes && dataPrimeira && valor) {
       const vezes = parseInt(numeroVezes);
       const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
       const valorParcela = valorNumerico / vezes;
       
-      if (vezes > 0 && vezes <= 12 && !isNaN(valorNumerico)) {
-        const novasParcelas: ParcelaBoleto[] = [];
+      if (vezes > 0 && vezes <= 60 && !isNaN(valorNumerico)) {
+        const novasParcelas: ParcelaFinanceira[] = [];
         const dataBase = new Date(dataPrimeira);
         
         for (let i = 0; i < vezes; i++) {
@@ -48,14 +48,29 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
         }
         
         setParcelas(novasParcelas);
-        // Reset datas editadas quando gera novas parcelas
-        setDatasEditadas(new Set());
       }
     } else {
       setParcelas([]);
-      setDatasEditadas(new Set());
     }
   }, [numeroVezes, dataPrimeira, valor]);
+
+  // Função para calcular valor presente da financeira
+  const calcularValorPresente = () => {
+    const valorTotal = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
+    const vezes = parseInt(numeroVezes);
+    const taxaMensal = parseFloat(percentual.replace(',', '.')) / 100;
+    
+    const valorParcela = valorTotal / vezes;
+    let valorPresenteTotal = 0;
+    
+    // Calcula PV = FV / (1 + r)^n para cada parcela
+    for (let n = 1; n <= vezes; n++) {
+      const valorPresente = valorParcela / Math.pow(1 + taxaMensal, n);
+      valorPresenteTotal += valorPresente;
+    }
+    
+    return valorPresenteTotal;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,26 +79,32 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
 
     try {
       const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
+      const vezesNumerico = parseInt(numeroVezes);
+      const percentualNumerico = parseFloat(percentual.replace(',', '.'));
+      const valorPresente = calcularValorPresente();
       
-      // Chama onSalvar imediatamente (sem delay)
+      // Chama onSalvar imediatamente
       onSalvar({
         valor: valorNumerico,
-        parcelas: parcelas
+        vezes: vezesNumerico,
+        percentual: percentualNumerico,
+        parcelas: parcelas,
+        valorPresente: valorPresente
       });
 
-      // Aguarda 1.5 segundos para garantir feedback visual claro
+      // Aguarda 1.5 segundos para feedback visual
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Reset form
       setValor('');
       setNumeroVezes('');
       setDataPrimeira('');
+      setPercentual('1.8');
       setParcelas([]);
-      setDatasEditadas(new Set());
       setSalvando(false);
       onClose();
     } catch (error) {
-      console.error('Erro ao salvar boleto:', error);
+      console.error('Erro ao salvar financeira:', error);
       setSalvando(false);
     } finally {
       setIsLoading(false);
@@ -105,40 +126,48 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
     setValor(valorFormatado);
   };
 
-  const handleDataParcelaChange = (index: number, novaData: string) => {
-    const novasParcelas = [...parcelas];
-    novasParcelas[index].data = novaData;
-    setParcelas(novasParcelas);
+  const formatarPercentual = (value: string) => {
+    // Permite apenas números e vírgula/ponto
+    const numero = value.replace(/[^\d,.]/, '').replace('.', ',');
     
-    // Marca esta data como editada
-    setDatasEditadas(prev => new Set([...prev, index]));
+    // Limita a 2 casas decimais
+    const partes = numero.split(',');
+    if (partes[1] && partes[1].length > 2) {
+      partes[1] = partes[1].substring(0, 2);
+    }
+    
+    return partes.join(',');
+  };
+
+  const handlePercentualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const percentualFormatado = formatarPercentual(e.target.value);
+    setPercentual(percentualFormatado);
   };
 
   const getDataMinima = () => {
     return new Date().toISOString().split('T')[0];
   };
 
-  // Função para determinar a classe CSS da célula
-  const getCellClass = (index: number) => {
-    if (salvando) return "bg-green-100 dark:bg-green-900/30"; // Todas verdes ao salvar
-    if (datasEditadas.has(index)) return "bg-green-50 dark:bg-green-900/20"; // Verde claro se editada
-    return ""; // Normal
+  // Classe CSS para feedback visual durante salvamento
+  const getCellClass = () => {
+    if (salvando) return "bg-green-100 dark:bg-green-900/30 transition-colors duration-200";
+    return "";
   };
 
-  const isFormValido = valor && numeroVezes && dataPrimeira && parcelas.length > 0;
+  const isFormValido = valor && numeroVezes && dataPrimeira && percentual && parcelas.length > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col bg-white dark:bg-slate-900">
         <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
           <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Boleto
+            Financeira
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden">
           <form onSubmit={handleSubmit} className="h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className={`flex-1 overflow-y-auto p-2 ${getCellClass()}`}>
               <div className="space-y-1">
                 
                 {/* Campo Valor */}
@@ -152,12 +181,13 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
                     onChange={handleValorChange}
                     placeholder="R$ 0,00"
                     className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                    disabled={salvando}
                     required
                   />
                 </div>
 
-                {/* Grid: Número de Vezes + Data Primeira */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                {/* Grid: Número de Vezes + Data Primeira + Percentual */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
                   <div>
                     <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                       Número de Vezes *
@@ -168,8 +198,9 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
                       onChange={(e) => setNumeroVezes(e.target.value)}
                       placeholder="1"
                       min="1"
-                      max="12"
+                      max="60"
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                      disabled={salvando}
                       required
                     />
                   </div>
@@ -184,50 +215,51 @@ export function ModalBoleto({ isOpen, onClose, onSalvar }: ModalBoletoProps) {
                       onChange={(e) => setDataPrimeira(e.target.value)}
                       min={getDataMinima()}
                       className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                      disabled={salvando}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Percentual (%) *
+                    </label>
+                    <Input
+                      type="text"
+                      value={percentual}
+                      onChange={handlePercentualChange}
+                      placeholder="1,8"
+                      className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                      disabled={salvando}
                       required
                     />
                   </div>
                 </div>
 
-                {/* Minitabela de Parcelas */}
-                {parcelas.length > 0 && (
-                  <div className="mt-2">
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
-                      Datas das Parcelas
-                    </label>
-                    
-                    <div className="border border-slate-200 dark:border-slate-600 rounded text-xs">
-                      {/* Header da tabela */}
-                      <div className="grid grid-cols-3 gap-1 p-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-300">
-                        <span>Parcela</span>
-                        <span>Data</span>
-                        <span>Valor</span>
-                      </div>
-                      
-                      {/* Linhas das parcelas */}
-                      <div className={parcelas.length > 10 ? "max-h-48 overflow-y-auto" : ""}>
-                        {parcelas.map((parcela, index) => (
-                          <div key={index} className={`grid grid-cols-3 gap-1 p-1 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors duration-200 ${getCellClass(index)}`}>
-                            <span className="text-slate-600 dark:text-slate-400 self-center">
-                              {parcela.numero}x
-                            </span>
-                            <Input
-                              type="date"
-                              value={parcela.data}
-                              onChange={(e) => handleDataParcelaChange(index, e.target.value)}
-                              className="h-6 text-xs border-slate-200 focus:border-slate-300 dark:border-slate-600 dark:focus:border-slate-500"
-                              min={getDataMinima()}
-                              disabled={salvando}
-                            />
-                            <span className="text-slate-600 dark:text-slate-400 self-center text-xs">
-                              {parcela.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                            </span>
-                          </div>
-                        ))}
+                {/* Preview com Valor Presente */}
+                {valor && numeroVezes && percentual && (
+                  <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+                      <strong>Resumo:</strong>
+                    </p>
+                    <div className="text-xs space-y-0.5">
+                      <p>Valor: <strong>{valor}</strong></p>
+                      <p>Parcelas: <strong>{numeroVezes}x</strong></p>
+                      <p>Percentual: <strong>{percentual}% a.m.</strong></p>
+                      <div className="pt-1 border-t border-slate-200 dark:border-slate-600 mt-1">
+                        <p className="text-green-700 dark:text-green-400">
+                          Valor Presente: <strong>
+                            {calcularValorPresente().toLocaleString('pt-BR', { 
+                              style: 'currency', 
+                              currency: 'BRL' 
+                            })}
+                          </strong>
+                        </p>
                       </div>
                     </div>
                   </div>
                 )}
+
 
               </div>
             </div>

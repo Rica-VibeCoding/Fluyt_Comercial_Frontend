@@ -46,24 +46,15 @@ export default function OrcamentoPage() {
         
         {/* Header de Navegação */}
         <div className="bg-white border rounded-xl p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/painel">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar
-                </Button>
-              </Link>
-              
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Orçamento</h1>
-                <p className="text-sm text-gray-600">Simulador simples</p>
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <Link href="/painel">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
+            </Link>
             
-            <div className="text-right">
-              <p className="text-lg font-semibold">{cliente ? cliente.nome : 'Sem cliente'}</p>
-            </div>
+            <p className="text-lg font-semibold">{cliente ? cliente.nome : 'Sem cliente'}</p>
           </div>
         </div>
         

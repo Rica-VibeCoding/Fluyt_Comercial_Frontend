@@ -38,8 +38,8 @@ export function ProgressStepper() {
 
   return (
     <div className="bg-white border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-8 py-6">
-        <div className="flex items-center justify-between">
+      <div className="px-8 py-6">
+        <div className="flex items-center justify-center max-w-4xl mx-auto">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isCompleted = isStepCompleted(step.id);

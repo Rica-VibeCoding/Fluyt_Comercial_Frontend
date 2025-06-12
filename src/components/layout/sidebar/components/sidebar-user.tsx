@@ -18,7 +18,7 @@ export function SidebarUser() {
       "flex items-center transition-all duration-300",
       isCollapsed ? "justify-center px-0" : "px-2"
     )}>
-      <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-muted-foreground text-sm font-medium flex-shrink-0">
+      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
         {userInfo.iniciais}
       </div>
       <div className={cn(
@@ -28,7 +28,7 @@ export function SidebarUser() {
         <p className="text-sm font-medium text-foreground">
           {userInfo.nome}
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-white/80">
           {userInfo.cargo}
         </p>
       </div>
