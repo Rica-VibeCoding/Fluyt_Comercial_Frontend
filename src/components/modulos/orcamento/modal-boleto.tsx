@@ -18,9 +18,11 @@ interface ModalBoletoProps {
     valor?: number;
     parcelas?: ParcelaBoleto[];
   };
+  valorMaximo?: number;
+  valorJaAlocado?: number;
 }
 
-export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalBoletoProps) {
+export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalBoletoProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [dataPrimeira, setDataPrimeira] = useState('');
@@ -28,6 +30,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
   const [isLoading, setIsLoading] = useState(false);
   const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
   const [salvando, setSalvando] = useState(false);
+  const [erroValidacao, setErroValidacao] = useState('');
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -97,12 +100,20 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    // Validação final
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      return;
+    }
+    
     setIsLoading(true);
     setSalvando(true);
 
     try {
-      const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
-      
       // Chama onSalvar imediatamente (sem delay)
       onSalvar({
         valor: valorNumerico,
@@ -118,6 +129,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
       setDataPrimeira('');
       setParcelas([]);
       setDatasEditadas(new Set());
+      setErroValidacao('');
       setSalvando(false);
       onClose();
     } catch (error) {
@@ -141,6 +153,16 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const valorFormatado = formatarValor(e.target.value);
     setValor(valorFormatado);
+    
+    // Validar em tempo real
+    const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    } else {
+      setErroValidacao('');
+    }
   };
 
   const handleDataParcelaChange = (index: number, novaData: string) => {
@@ -163,7 +185,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
     return ""; // Normal
   };
 
-  const isFormValido = valor && numeroVezes && dataPrimeira && parcelas.length > 0;
+  const isFormValido = valor && numeroVezes && dataPrimeira && parcelas.length > 0 && !erroValidacao;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -182,16 +204,25 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais }: ModalB
                 {/* Campo Valor */}
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    Valor *
+                    Valor * {valorMaximo > 0 && (
+                      <span className="text-gray-500">
+                        (Disponível: R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                      </span>
+                    )}
                   </label>
                   <Input
                     type="text"
                     value={valor}
                     onChange={handleValorChange}
                     placeholder="R$ 0,00"
-                    className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                    className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
+                      erroValidacao ? 'border-red-500 focus:border-red-500' : ''
+                    }`}
                     required
                   />
+                  {erroValidacao && (
+                    <p className="text-xs text-red-500 mt-1">{erroValidacao}</p>
+                  )}
                 </div>
 
                 {/* Grid: Número de Vezes + Data Primeira */}

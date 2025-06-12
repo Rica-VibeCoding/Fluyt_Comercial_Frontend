@@ -203,6 +203,13 @@ class SessaoSimplesManager {
     return formas.reduce((total, forma) => total + forma.valorPresente, 0);
   }
 
+  // Obter valor restante para alocação
+  public obterValorRestante(): number {
+    const sessao = this.carregar();
+    const valorTotalFormas = this.obterValorTotalFormas();
+    return sessao.valorTotal - valorTotalFormas;
+  }
+
   // Limpar tudo
   public limpar(): SessaoSimples {
     const sessaoVazia = this.getEstadoVazio();

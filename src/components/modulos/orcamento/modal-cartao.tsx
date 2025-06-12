@@ -13,14 +13,17 @@ interface ModalCartaoProps {
     vezes?: number;
     taxa?: number;
   };
+  valorMaximo?: number;
+  valorJaAlocado?: number;
 }
 
-export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalCartaoProps) {
+export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalCartaoProps) {
   const [valor, setValor] = useState('');
   const [numeroVezes, setNumeroVezes] = useState('');
   const [taxa, setTaxa] = useState('3.5'); // Taxa padrão provisória
   const [isLoading, setIsLoading] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [erroValidacao, setErroValidacao] = useState('');
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -50,11 +53,20 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalC
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    // Validação final
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      return;
+    }
+    
     setIsLoading(true);
     setSalvando(true);
 
     try {
-      const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
       const vezesNumerico = parseInt(numeroVezes);
       const taxaNumerico = parseFloat(taxa.replace(',', '.'));
       
@@ -77,6 +89,7 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalC
       setValor('');
       setNumeroVezes('');
       setTaxa('3.5');
+      setErroValidacao('');
       setSalvando(false);
       onClose();
     } catch (error) {
@@ -100,6 +113,16 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalC
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const valorFormatado = formatarValor(e.target.value);
     setValor(valorFormatado);
+    
+    // Validar em tempo real
+    const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    } else {
+      setErroValidacao('');
+    }
   };
 
   const formatarTaxa = (value: string) => {
@@ -144,7 +167,7 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalC
     };
   };
 
-  const isFormValido = valor && numeroVezes && taxa;
+  const isFormValido = valor && numeroVezes && taxa && !erroValidacao;
 
   // Classe CSS para feedback visual durante salvamento
   const getFormClass = () => {
@@ -169,17 +192,26 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais }: ModalC
                 {/* Campo Valor */}
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    Valor *
+                    Valor * {valorMaximo > 0 && (
+                      <span className="text-gray-500">
+                        (Disponível: R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                      </span>
+                    )}
                   </label>
                   <Input
                     type="text"
                     value={valor}
                     onChange={handleValorChange}
                     placeholder="R$ 0,00"
-                    className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                    className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
+                      erroValidacao ? 'border-red-500 focus:border-red-500' : ''
+                    }`}
                     disabled={salvando}
                     required
                   />
+                  {erroValidacao && (
+                    <p className="text-xs text-red-500 mt-1">{erroValidacao}</p>
+                  )}
                 </div>
 
                 {/* Grid: Número de Vezes + Taxa */}

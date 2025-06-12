@@ -218,6 +218,25 @@ export default function OrcamentoPage() {
   const podeGerarContrato = () => {
     return !!(cliente && ambientes.length > 0 && formasPagamento.length > 0);
   };
+
+  // Função para calcular valores de validação
+  const obterValoresValidacao = () => {
+    const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+    const descontoNumero = parseFloat(desconto) || 0;
+    const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
+    const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
+    
+    // Se estamos editando, excluir o valor da forma atual do total já alocado
+    const valorJaAlocado = formaEditando ? 
+      valorTotalFormas - formaEditando.valor : 
+      valorTotalFormas;
+    
+
+    return {
+      valorMaximo: valorNegociado,
+      valorJaAlocado: valorJaAlocado
+    };
+  };
   
   // Evitar hidration mismatch - mostrar loading até carregar
   if (!isLoaded) {
@@ -351,7 +370,37 @@ export default function OrcamentoPage() {
             {/* Card Plano de Pagamento */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Plano de Pagamento</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Plano de Pagamento</h3>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Restante: </span>
+                    <span className={`font-bold ${
+                      (() => {
+                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+                        const descontoNumero = parseFloat(desconto) || 0;
+                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
+                        const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
+                        const valorRestante = valorNegociado - valorTotalFormas;
+                        return valorRestante >= 0 ? 'text-green-600' : 'text-red-500';
+                      })()
+                    }`}>
+                      {(() => {
+                        const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+                        const descontoNumero = parseFloat(desconto) || 0;
+                        const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
+                        const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
+                        const valorRestante = valorNegociado - valorTotalFormas;
+                        return `R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                      })()}
+                    </span>
+                    <span className="text-gray-500"> / {(() => {
+                      const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+                      const descontoNumero = parseFloat(desconto) || 0;
+                      const valorNegociado = valorTotal - (valorTotal * descontoNumero / 100);
+                      return `R$ ${valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    })()}</span>
+                  </div>
+                </div>
                 
                 {/* Layout em linha: Desconto + Botão Adicionar */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -414,6 +463,7 @@ export default function OrcamentoPage() {
           isOpen={modalFormasAberto}
           onClose={() => setModalFormasAberto(false)}
           onFormaPagamentoAdicionada={handleFormaPagamentoAdicionada}
+          {...obterValoresValidacao()}
         />
 
         {/* Modais específicos para edição */}
@@ -428,6 +478,7 @@ export default function OrcamentoPage() {
             valor: formaEditando.valor,
             data: formaEditando.dados?.data
           } : undefined}
+          {...obterValoresValidacao()}
         />
 
         <ModalBoleto
@@ -441,6 +492,7 @@ export default function OrcamentoPage() {
             valor: formaEditando.valor,
             parcelas: formaEditando.dados?.parcelas
           } : undefined}
+          {...obterValoresValidacao()}
         />
 
         <ModalCartao
@@ -455,6 +507,7 @@ export default function OrcamentoPage() {
             vezes: formaEditando.parcelas,
             taxa: formaEditando.dados?.taxa
           } : undefined}
+          {...obterValoresValidacao()}
         />
 
         <ModalFinanceira
@@ -470,6 +523,7 @@ export default function OrcamentoPage() {
             percentual: formaEditando.dados?.percentual,
             parcelas: formaEditando.dados?.parcelas
           } : undefined}
+          {...obterValoresValidacao()}
         />
         
       </div>

@@ -18,9 +18,11 @@ interface ModalFormasPagamentoProps {
   isOpen: boolean;
   onClose: () => void;
   onFormaPagamentoAdicionada?: (forma: { tipo: string; valor?: number; detalhes?: any }) => void;
+  valorMaximo?: number;
+  valorJaAlocado?: number;
 }
 
-export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdicionada }: ModalFormasPagamentoProps) {
+export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdicionada, valorMaximo, valorJaAlocado }: ModalFormasPagamentoProps) {
   const [modalAVistaAberto, setModalAVistaAberto] = useState(false);
   const [modalBoletoAberto, setModalBoletoAberto] = useState(false);
   const [modalCartaoAberto, setModalCartaoAberto] = useState(false);
@@ -170,6 +172,8 @@ export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdiciona
         isOpen={modalAVistaAberto}
         onClose={() => setModalAVistaAberto(false)}
         onSalvar={handleSalvarAVista}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
       />
 
       {/* Modal Boleto */}
@@ -177,6 +181,8 @@ export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdiciona
         isOpen={modalBoletoAberto}
         onClose={() => setModalBoletoAberto(false)}
         onSalvar={handleSalvarBoleto}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
       />
 
       {/* Modal Cartão */}
@@ -184,6 +190,8 @@ export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdiciona
         isOpen={modalCartaoAberto}
         onClose={() => setModalCartaoAberto(false)}
         onSalvar={handleSalvarCartao}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
       />
 
       {/* Modal Financeira */}
@@ -191,6 +199,8 @@ export function ModalFormasPagamento({ isOpen, onClose, onFormaPagamentoAdiciona
         isOpen={modalFinanceiraAberto}
         onClose={() => setModalFinanceiraAberto(false)}
         onSalvar={handleSalvarFinanceira}
+        valorMaximo={valorMaximo}
+        valorJaAlocado={valorJaAlocado}
       />
     </Dialog>
   );

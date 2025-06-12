@@ -12,12 +12,15 @@ interface ModalAVistaProps {
     valor?: number;
     data?: string;
   };
+  valorMaximo?: number;
+  valorJaAlocado?: number;
 }
 
-export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalAVistaProps) {
+export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalAVistaProps) {
   const [valor, setValor] = useState('');
   const [data, setData] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [erroValidacao, setErroValidacao] = useState('');
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -44,11 +47,19 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalA
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    // Validação final
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
-      const valorNumerico = parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.'));
-      
       onSalvar({
         valor: valorNumerico,
         data: data
@@ -57,6 +68,7 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalA
       // Reset form
       setValor('');
       setData('');
+      setErroValidacao('');
       onClose();
     } catch (error) {
       console.error('Erro ao salvar:', error);
@@ -81,6 +93,16 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalA
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const valorFormatado = formatarValor(e.target.value);
     setValor(valorFormatado);
+    
+    // Validar em tempo real
+    const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
+    const valorRestante = valorMaximo - valorJaAlocado;
+    
+    if (valorNumerico > valorRestante) {
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    } else {
+      setErroValidacao('');
+    }
   };
 
   const getDataMinima = () => {
@@ -104,16 +126,25 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalA
                 {/* Campo Valor */}
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    Valor *
+                    Valor * {valorMaximo > 0 && (
+                      <span className="text-gray-500">
+                        (Disponível: R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                      </span>
+                    )}
                   </label>
                   <Input
                     type="text"
                     value={valor}
                     onChange={handleValorChange}
                     placeholder="R$ 0,00"
-                    className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+                    className={`h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 ${
+                      erroValidacao ? 'border-red-500 focus:border-red-500' : ''
+                    }`}
                     required
                   />
+                  {erroValidacao && (
+                    <p className="text-xs text-red-500 mt-1">{erroValidacao}</p>
+                  )}
                 </div>
 
                 {/* Campo Data */}
@@ -147,7 +178,7 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais }: ModalA
                 </button>
                 <button 
                   type="submit"
-                  disabled={isLoading || !valor || !data}
+                  disabled={isLoading || !valor || !data || !!erroValidacao}
                   className="px-4 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-medium border border-slate-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
                 >
                   {isLoading ? 'Salvando...' : 'Salvar'}
