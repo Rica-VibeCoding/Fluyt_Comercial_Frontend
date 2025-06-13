@@ -336,26 +336,50 @@ export default function OrcamentoPage() {
             <Button
               onClick={navegarParaContratos}
               disabled={!(cliente && ambientes.length > 0 && formasPagamento.length > 0)}
-              className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+              className="gap-2 bg-green-600 hover:bg-green-700 text-white touch-manipulation
+                         focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2"
+              aria-label={
+                (cliente && ambientes.length > 0 && formasPagamento.length > 0) 
+                  ? "Gerar contrato com as informações configuradas"
+                  : "Configure cliente, ambientes e formas de pagamento primeiro"
+              }
+              aria-describedby="gerar-contrato-status"
             >
-              {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-              {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? 'Gerar Contrato' : 'Configure Pagamento'}
+              {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? 
+                <CheckCircle className="h-4 w-4" aria-hidden="true" /> : 
+                <FileText className="h-4 w-4" aria-hidden="true" />
+              }
+              <span className="hidden sm:inline">
+                {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? 'Gerar Contrato' : 'Configure Pagamento'}
+              </span>
+              <span className="sm:hidden">
+                {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? 'Gerar' : 'Config'}
+              </span>
             </Button>
+            
+            {/* Status para screen readers */}
+            <div id="gerar-contrato-status" className="sr-only">
+              {!cliente && "Cliente não selecionado. "}
+              {ambientes.length === 0 && "Nenhum ambiente adicionado. "}
+              {formasPagamento.length === 0 && "Nenhuma forma de pagamento configurada. "}
+              {cliente && ambientes.length > 0 && formasPagamento.length > 0 && "Pronto para gerar contrato."}
+            </div>
           </div>
         </div>
         
         {/* Layout: 1/3 esquerda + 2/3 direita - com alinhamento superior */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Coluna esquerda (1/3) - Valor Total + Ambientes */}
-          <div className="col-span-1 flex flex-col">
+          <div className="lg:col-span-1 flex flex-col order-2 lg:order-1">
             
             {/* Card Valor Total - altura dinâmica igual aos cards da direita */}
-            <div className="flex-none h-[88px] mb-6">
+            <div className="flex-none h-auto lg:h-[88px] mb-6">
               <Card className="h-full">
                 <CardContent className="p-4 h-full flex flex-col justify-between">
-                  <h3 className="font-semibold">Valor Total</h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <h3 className="font-semibold text-sm sm:text-base">Valor Total</h3>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600 mt-2 lg:mt-0"
+                     aria-label={`Valor total do orçamento: ${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}>
                     R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </CardContent>
@@ -390,10 +414,10 @@ export default function OrcamentoPage() {
           </div>
 
           {/* Coluna direita (2/3) - 3 Cards superiores + Plano de Pagamento */}
-          <div className="col-span-2 flex flex-col">
+          <div className="lg:col-span-2 flex flex-col order-1 lg:order-2">
             
             {/* 3 Cards superiores - altura fixa igual ao Valor Total */}
-            <div className="flex-none grid grid-cols-3 gap-4 h-[88px] mb-6 relative">
+            <div className="flex-none grid grid-cols-1 sm:grid-cols-3 gap-4 h-auto sm:h-[88px] mb-6 relative">
               
               {/* Animação de propagação entre cards - Temporariamente desabilitada */}
               {/* <CalculationRipple 
@@ -406,13 +430,13 @@ export default function OrcamentoPage() {
               <div className="flex">
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <h3 className="font-semibold">Valor Negociado</h3>
+                    <h3 className="font-semibold text-sm sm:text-base">Valor Negociado</h3>
                     <EditableMoneyField
                       value={valorNegociado}
                       onChange={handleValorNegociadoChange}
                       isCalculating={isCalculating && ultimaEdicao !== 'valorNegociado'}
                       tooltip="Clique para editar valor final da negociação"
-                      className="justify-start"
+                      className="justify-start mt-2 sm:mt-0"
                     />
                   </CardContent>
                 </Card>
@@ -422,13 +446,13 @@ export default function OrcamentoPage() {
               <div className="flex">
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <h3 className="font-semibold">Desconto Real</h3>
+                    <h3 className="font-semibold text-sm sm:text-base">Desconto Real</h3>
                     <EditablePercentField
                       value={descontoReal}
                       onChange={handleDescontoRealChange}
                       isCalculating={isCalculating && ultimaEdicao !== 'descontoReal'}
                       tooltip="Clique para editar desconto real desejado"
-                      className="justify-start"
+                      className="justify-start mt-2 sm:mt-0"
                       maxValue={50}
                     />
                   </CardContent>
@@ -439,15 +463,16 @@ export default function OrcamentoPage() {
               <div className="flex">
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <h3 className="font-semibold">Valor Recebido</h3>
-                    <div className="flex items-center gap-2">
-                      <p className={`text-2xl font-bold transition-colors duration-200 ${
+                    <h3 className="font-semibold text-sm sm:text-base">Valor Recebido</h3>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <p className={`text-lg sm:text-2xl font-bold transition-colors duration-200 ${
                         isCalculating ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
+                      }`}
+                      aria-label={`Valor que será recebido: ${valorPresenteTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}>
                         R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                       {isCalculating && (
-                        <div className="text-yellow-600 animate-pulse">
+                        <div className="text-yellow-600 animate-pulse" aria-label="Calculando">
                           <Calculator className="h-4 w-4" />
                         </div>
                       )}
@@ -519,9 +544,12 @@ export default function OrcamentoPage() {
                   
                   {/* Campo Desconto - 1/3 da largura */}
                   <div className="flex-shrink-0 w-full sm:w-48">
-                    <label className="block text-sm font-medium mb-2">Desconto (%)</label>
+                    <label htmlFor="desconto-input" className="block text-sm font-medium mb-2">
+                      Desconto (%)
+                    </label>
                     <div className="relative">
                       <Input
+                        id="desconto-input"
                         type="number"
                         value={desconto}
                         onChange={handleDescontoChange}
@@ -530,10 +558,15 @@ export default function OrcamentoPage() {
                         max="100"
                         min="0"
                         step="0.1"
+                        aria-describedby="desconto-help"
+                        inputMode="decimal"
                       />
                       <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
                         %
                       </span>
+                    </div>
+                    <div id="desconto-help" className="sr-only">
+                      Digite o percentual de desconto. Máximo 50%.
                     </div>
                   </div>
 
@@ -542,10 +575,12 @@ export default function OrcamentoPage() {
                     <Button
                       onClick={abrirModalFormas}
                       variant="outline"
-                      className="w-full gap-2 h-10"
+                      className="w-full gap-2 h-10 touch-manipulation"
+                      aria-label="Adicionar nova forma de pagamento"
                     >
-                      <Plus className="h-4 w-4" />
-                      Adicionar Forma de Pagamento
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Adicionar Forma de Pagamento</span>
+                      <span className="sm:hidden">Adicionar Forma</span>
                     </Button>
                   </div>
                   

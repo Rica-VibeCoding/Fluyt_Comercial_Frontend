@@ -93,9 +93,14 @@ export function EditablePercentField({
   // Handlers de teclado
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleSave();
     } else if (e.key === 'Escape') {
+      e.preventDefault();
       handleCancel();
+    } else if (e.key === 'Tab') {
+      // Permitir Tab normal para navegação
+      handleSave();
     }
   };
 
@@ -124,11 +129,18 @@ export function EditablePercentField({
               className={cn(
                 "px-3 py-2 border-2 rounded-lg bg-white text-lg font-semibold",
                 "focus:outline-none focus:ring-2 transition-all duration-200 shadow-lg",
+                "min-w-0 w-full sm:w-auto",
                 validationError 
                   ? "border-red-500 focus:ring-red-300 focus:border-red-600" 
                   : "border-blue-500 focus:ring-blue-300 focus:border-blue-600"
               )}
               placeholder={placeholder}
+              aria-label="Editar percentual"
+              aria-describedby="percent-field-help"
+              aria-invalid={!!validationError}
+              aria-errormessage={validationError ? "percent-error" : undefined}
+              autoComplete="off"
+              inputMode="decimal"
             />
             <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
               %
@@ -139,19 +151,24 @@ export function EditablePercentField({
               onClick={handleSave}
               disabled={!!validationError}
               className={cn(
-                "p-1 rounded transition-colors",
+                "p-1 rounded transition-colors focus:outline-none focus:ring-2",
                 validationError
                   ? "text-gray-400 cursor-not-allowed"
-                  : "text-green-600 hover:bg-green-50"
+                  : "text-green-600 hover:bg-green-50 focus:ring-green-300"
               )}
               title="Salvar (Enter)"
+              aria-label="Salvar alterações"
+              tabIndex={0}
             >
               <Check className="h-4 w-4" />
             </button>
             <button
               onClick={handleCancel}
-              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors
+                         focus:outline-none focus:ring-2 focus:ring-red-300"
               title="Cancelar (Esc)"
+              aria-label="Cancelar edição"
+              tabIndex={0}
             >
               <X className="h-4 w-4" />
             </button>
@@ -160,7 +177,7 @@ export function EditablePercentField({
         
         {/* Erro de validação */}
         {validationError && (
-          <span className="text-xs text-red-600 ml-3">
+          <span id="percent-error" className="text-xs text-red-600 ml-3" role="alert">
             {validationError}
           </span>
         )}
@@ -179,6 +196,7 @@ export function EditablePercentField({
     <div
       className={cn(
         "relative inline-flex items-center gap-2 group cursor-pointer transition-all duration-200",
+        "focus-within:ring-2 focus-within:ring-blue-300 focus-within:ring-offset-2",
         {
           "opacity-50 cursor-not-allowed": disabled || isCalculating,
           "hover:bg-blue-50 hover:shadow-sm rounded-lg px-2 py-1": !disabled && !isCalculating
@@ -188,7 +206,17 @@ export function EditablePercentField({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleStartEdit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleStartEdit();
+        }
+      }}
       title={disabled ? "Campo não editável" : tooltip}
+      role="button"
+      tabIndex={disabled || isCalculating ? -1 : 0}
+      aria-label={`${tooltip}. Valor atual: ${formatPercent(value)}`}
+      aria-disabled={disabled || isCalculating}
     >
       <span className={cn(
         "text-lg font-semibold transition-all duration-200",
@@ -222,6 +250,11 @@ export function EditablePercentField({
           {tooltip}
         </div>
       )}
+
+      {/* Texto de ajuda para screen readers */}
+      <div id="percent-field-help" className="sr-only">
+        Pressione Enter ou Espaço para editar. Use Enter para salvar ou Escape para cancelar. Máximo: {maxValue}%.
+      </div>
     </div>
   );
 }
