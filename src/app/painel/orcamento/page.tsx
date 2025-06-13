@@ -426,22 +426,6 @@ export default function OrcamentoPage() {
                 className="rounded-lg"
               /> */}
               
-              {/* Card Valor Negociado */}
-              <div className="flex">
-                <Card className="flex-1">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <h3 className="font-semibold text-sm sm:text-base">Valor Negociado</h3>
-                    <EditableMoneyField
-                      value={valorNegociado}
-                      onChange={handleValorNegociadoChange}
-                      isCalculating={isCalculating && ultimaEdicao !== 'valorNegociado'}
-                      tooltip="Clique para editar valor final da negociação"
-                      className="justify-start mt-2 sm:mt-0"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-
               {/* Card Desconto Real */}
               <div className="flex">
                 <Card className="flex-1">
@@ -454,6 +438,22 @@ export default function OrcamentoPage() {
                       tooltip="Clique para editar desconto real desejado"
                       className="justify-start mt-2 sm:mt-0"
                       maxValue={50}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Card Valor Negociado */}
+              <div className="flex">
+                <Card className="flex-1">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
+                    <h3 className="font-semibold text-sm sm:text-base">Valor Negociado</h3>
+                    <EditableMoneyField
+                      value={valorNegociado}
+                      onChange={handleValorNegociadoChange}
+                      isCalculating={isCalculating && ultimaEdicao !== 'valorNegociado'}
+                      tooltip="Clique para editar valor final da negociação"
+                      className="justify-start mt-2 sm:mt-0"
                     />
                   </CardContent>
                 </Card>
@@ -499,7 +499,7 @@ export default function OrcamentoPage() {
                   <div className="text-sm">
                     <span className="text-gray-600">Restante: </span>
                     <span className={`font-bold ${
-                      valorRestante >= 0 ? 'text-green-600' : 'text-red-500'
+                      valorRestante <= 0 ? 'text-green-600' : 'text-red-500'
                     }`}>
                       R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
@@ -516,22 +516,6 @@ export default function OrcamentoPage() {
                         <ul className="mt-1 space-y-1">
                           {calculoNegociacao.erros.map((erro, index) => (
                             <li key={index}>• {erro}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Indicador de Alterações Automáticas */}
-                {calculoNegociacao?.alteracoesFeitas?.length > 0 && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <div className="text-blue-600 text-sm">
-                        <strong>ℹ️ Info:</strong>
-                        <ul className="mt-1 space-y-1">
-                          {calculoNegociacao.alteracoesFeitas.map((alteracao, index) => (
-                            <li key={index}>• {alteracao}</li>
                           ))}
                         </ul>
                       </div>
@@ -575,7 +559,10 @@ export default function OrcamentoPage() {
                     <Button
                       onClick={abrirModalFormas}
                       variant="outline"
-                      className="w-full gap-2 h-10 touch-manipulation"
+                      className="w-full gap-2 h-10 touch-manipulation border-dashed border-2 
+                                 hover:border-solid hover:border-blue-300 hover:bg-blue-50 
+                                 transition-all duration-200 text-gray-600 hover:text-blue-700
+                                 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
                       aria-label="Adicionar nova forma de pagamento"
                     >
                       <Plus className="h-4 w-4" aria-hidden="true" />

@@ -216,9 +216,9 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       />
 
       {/* Grid: Número de Vezes + Data Primeira */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             Número de Vezes *
           </label>
           <Input
@@ -228,22 +228,26 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
             placeholder="1"
             min="1"
             max={limitesConfig.max.toString()}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Data da Primeira *
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Data Primeira *
           </label>
           <Input
             type="date"
             value={dataPrimeira}
             onChange={(e) => setDataPrimeira(e.target.value)}
             min={getDataMinima()}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 w-full min-w-[120px]"
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
       </div>
@@ -251,13 +255,13 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       {/* Minitabela de Parcelas */}
       {parcelas.length > 0 && (
         <div className="mt-2">
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1 block">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
             Datas das Parcelas
           </label>
           
-          <div className="border border-slate-200 dark:border-slate-600 rounded text-xs">
+          <div className="border border-slate-200 dark:border-slate-600 rounded-lg text-sm">
             {/* Header da tabela */}
-            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-300">
+            <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-600 font-medium text-slate-700 dark:text-slate-300">
               <span>Parcela</span>
               <span>Data</span>
               <span>Valor</span>
@@ -266,19 +270,20 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
             {/* Linhas das parcelas */}
             <div className={parcelas.length > 10 ? "max-h-48 overflow-y-auto" : ""}>
               {parcelas.map((parcela, index) => (
-                <div key={index} className={`grid grid-cols-3 gap-1 p-1 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors duration-200 ${getCellClass(index)}`}>
-                  <span className="text-slate-600 dark:text-slate-400 self-center">
+                <div key={index} className={`grid grid-cols-3 gap-2 p-3 border-b border-slate-100 dark:border-slate-700 last:border-b-0 transition-colors duration-200 ${getCellClass(index)}`}>
+                  <span className="text-slate-600 dark:text-slate-400 self-center font-medium">
                     {parcela.numero}x
                   </span>
                   <Input
                     type="date"
                     value={parcela.data}
                     onChange={(e) => handleDataParcelaChange(index, e.target.value)}
-                    className="h-6 text-xs border-slate-200 focus:border-slate-300 dark:border-slate-600 dark:focus:border-slate-500"
+                    className="h-8 text-sm border-slate-200 focus:border-slate-300 dark:border-slate-600 dark:focus:border-slate-500"
                     min={getDataMinima()}
                     disabled={salvando}
+                    autoComplete="off"
                   />
-                  <span className="text-slate-600 dark:text-slate-400 self-center text-xs">
+                  <span className="text-slate-600 dark:text-slate-400 self-center text-sm font-medium">
                     {parcela.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>

@@ -93,7 +93,7 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
 
       {/* Campo Data */}
       <div>
-        <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
           Data de Recebimento *
         </label>
         <Input
@@ -101,8 +101,10 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
           value={data}
           onChange={(e) => setData(e.target.value)}
           min={getDataMinima()}
-          className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+          className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 w-full min-w-[120px]"
           required
+          autoComplete="off"
+          autoFocus={false}
         />
       </div>
       

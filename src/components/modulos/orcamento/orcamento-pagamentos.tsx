@@ -40,7 +40,7 @@ export function OrcamentoPagamentos({
           <div className="text-sm">
             <span className="text-gray-600">Restante: </span>
             <span className={`font-bold ${
-              valorRestante >= 0 ? 'text-green-600' : 'text-red-500'
+              valorRestante <= 0 ? 'text-green-600' : 'text-red-500'
             }`}>
               {formatarMoeda(valorRestante)}
             </span>

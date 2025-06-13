@@ -46,9 +46,9 @@ export function AmbienteCard({ ambiente, onRemover }: AmbienteCardProps) {
 
   return (
     <Collapsible open={expandido} onOpenChange={setExpandido}>
-      <div className="border-b border-border/20">
+      <div className="border-b border-border/100">
         <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between py-1.5 px-4 hover:bg-muted/10 cursor-pointer transition-colors group">
+          <div className="flex items-center justify-between py-2.5 px-4 hover:bg-muted/10 cursor-pointer transition-colors group">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 {expandido ? (

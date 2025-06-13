@@ -178,9 +178,6 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     return calcularValorPresenteCartao(valorTotal, parcelas, taxaMensal);
   };
 
-
-
-
   return (
     <ModalPagamentoBase
       isOpen={isOpen}
@@ -204,9 +201,9 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       />
 
       {/* Grid: Número de Vezes + Taxa */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             Número de Vezes *
           </label>
           <Input
@@ -216,24 +213,31 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
             placeholder="1"
             min="1"
             max={getLimitesParcelas('cartao').max.toString()}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
             disabled={salvando}
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Taxa Financeira (%) *
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Taxa (%) *
           </label>
           <Input
-            type="text"
+            type="number"
             value={taxa}
-            onChange={handleTaxaChange}
-            placeholder={getPlaceholderTaxa('cartao')}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            onChange={(e) => setTaxa(e.target.value)}
+            placeholder="3.0"
+            min="0"
+            max="100"
+            step="0.1"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
             disabled={salvando}
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
       </div>
@@ -243,28 +247,39 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
         const { valorPresente, desconto, valorParcela } = calcularValorPresente();
         
         return (
-          <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded">
-            <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
-              <strong>Resumo:</strong>
+          <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+              Resumo da Operação
             </p>
-            <div className="text-xs space-y-0.5">
-              <p>Valor: <strong>{valor}</strong></p>
-              <p>Parcelas: <strong>{numeroVezes}x</strong></p>
-              <p>Valor por parcela: <strong>
-                {valorParcela.toLocaleString('pt-BR', { 
-                  style: 'currency', 
-                  currency: 'BRL' 
-                })}
-              </strong></p>
-              <p>Taxa: <strong>{taxa}% a.m.</strong></p>
-              <div className="pt-1 border-t border-slate-200 dark:border-slate-600 mt-1">
-                <p className="text-green-700 dark:text-green-400">
-                  Valor Presente: <strong>
-                    {valorPresente.toLocaleString('pt-BR', { 
-                      style: 'currency', 
-                      currency: 'BRL' 
-                    })}
-                  </strong>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-slate-600 dark:text-slate-400">Valor Total:</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">{valor}</p>
+              </div>
+              <div>
+                <p className="text-slate-600 dark:text-slate-400">Parcelas:</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">{numeroVezes}x</p>
+              </div>
+              <div>
+                <p className="text-slate-600 dark:text-slate-400">Valor por Parcela:</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">
+                  {valorParcela.toLocaleString('pt-BR', { 
+                    style: 'currency', 
+                    currency: 'BRL' 
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-600 dark:text-slate-400">Taxa Mensal:</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100">{taxa}%</p>
+              </div>
+              <div className="col-span-2 pt-2 border-t border-slate-200 dark:border-slate-600">
+                <p className="text-slate-600 dark:text-slate-400">Valor Presente:</p>
+                <p className="font-semibold text-green-700 dark:text-green-400 text-lg">
+                  {valorPresente.toLocaleString('pt-BR', { 
+                    style: 'currency', 
+                    currency: 'BRL' 
+                  })}
                 </p>
               </div>
             </div>

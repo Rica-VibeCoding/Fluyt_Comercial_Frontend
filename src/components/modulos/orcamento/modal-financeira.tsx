@@ -200,8 +200,6 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
     return new Date().toISOString().split('T')[0];
   };
 
-
-
   const isFormValido = valor && numeroVezes && dataPrimeira && percentual && parcelas.length > 0 && !erroValidacao;
 
   return (
@@ -227,9 +225,9 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
       />
 
       {/* Grid: Número de Vezes + Data Primeira + Percentual */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
             Número de Vezes *
           </label>
           <Input
@@ -239,61 +237,78 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
             placeholder="1"
             min="1"
             max={getLimitesParcelas('financeira').max.toString()}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
             disabled={salvando}
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Data da Primeira *
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Data Primeira *
           </label>
           <Input
             type="date"
             value={dataPrimeira}
             onChange={(e) => setDataPrimeira(e.target.value)}
             min={getDataMinima()}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500 w-full min-w-[120px]"
             disabled={salvando}
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Percentual (%) *
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Percentual *
           </label>
           <Input
-            type="text"
+            type="number"
             value={percentual}
-            onChange={handlePercentualChange}
-            placeholder={getPlaceholderTaxa('financeira')}
-            className="h-8 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+            onChange={(e) => setPercentual(e.target.value)}
+            placeholder="2.0"
+            min="0"
+            max="100"
+            step="0.1"
+            className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
             disabled={salvando}
             required
+            autoComplete="off"
+            autoFocus={false}
           />
         </div>
       </div>
 
       {/* Preview com Valor Presente */}
       {valor && numeroVezes && percentual && (
-        <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded">
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
-            <strong>Resumo:</strong>
+        <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+            Resumo da Operação
           </p>
-          <div className="text-xs space-y-0.5">
-            <p>Valor: <strong>{valor}</strong></p>
-            <p>Parcelas: <strong>{numeroVezes}x</strong></p>
-            <p>Percentual: <strong>{percentual}% a.m.</strong></p>
-            <div className="pt-1 border-t border-slate-200 dark:border-slate-600 mt-1">
-              <p className="text-green-700 dark:text-green-400">
-                Valor Presente: <strong>
-                  {calcularValorPresente().toLocaleString('pt-BR', { 
-                    style: 'currency', 
-                    currency: 'BRL' 
-                  })}
-                </strong>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-slate-600 dark:text-slate-400">Valor Total:</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">{valor}</p>
+            </div>
+            <div>
+              <p className="text-slate-600 dark:text-slate-400">Parcelas:</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">{numeroVezes}x</p>
+            </div>
+            <div>
+              <p className="text-slate-600 dark:text-slate-400">Taxa Mensal:</p>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">{percentual}%</p>
+            </div>
+            <div>
+              <p className="text-slate-600 dark:text-slate-400">Valor Presente:</p>
+              <p className="font-semibold text-green-700 dark:text-green-400">
+                {calcularValorPresente().toLocaleString('pt-BR', { 
+                  style: 'currency', 
+                  currency: 'BRL' 
+                })}
               </p>
             </div>
           </div>
