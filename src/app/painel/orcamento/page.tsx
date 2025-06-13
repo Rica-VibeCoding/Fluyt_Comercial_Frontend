@@ -9,7 +9,7 @@ import { useSessao } from '@/store/sessao-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Plus, FileText, CheckCircle, Calculator } from 'lucide-react';
+import { ArrowLeft, Plus, FileText, CheckCircle, Calculator, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { ModalFormasPagamento } from '@/components/modulos/orcamento/modal-formas-pagamento';
 import { ListaFormasPagamento } from '@/components/modulos/orcamento/lista-formas-pagamento';
@@ -526,7 +526,26 @@ export default function OrcamentoPage() {
                 {/* Layout em linha: Desconto + Botão Adicionar */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   
-                  {/* Campo Desconto - 1/3 da largura */}
+                  {/* Botão Atualizar - Temporariamente substituindo o campo desconto */}
+                  <div className="flex-shrink-0 w-full sm:w-48">
+                    <label className="block text-sm font-medium mb-2">
+                      Ações
+                    </label>
+                    <Button
+                      onClick={() => {
+                        console.log('🔄 Botão Atualizar clicado - funcionalidade a ser implementada');
+                      }}
+                      variant="outline"
+                      className="w-full h-10 gap-2 border-2 border-green-300 hover:border-green-400 hover:bg-green-50 
+                                 text-green-700 hover:text-green-800 transition-all duration-200"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Atualizar
+                    </Button>
+                  </div>
+                  
+                  {/* CAMPO DESCONTO TEMPORARIAMENTE OCULTADO - NÃO APAGAR */}
+                  {/* 
                   <div className="flex-shrink-0 w-full sm:w-48">
                     <label htmlFor="desconto-input" className="block text-sm font-medium mb-2">
                       Desconto (%)
@@ -553,6 +572,7 @@ export default function OrcamentoPage() {
                       Digite o percentual de desconto. Máximo 50%.
                     </div>
                   </div>
+                  */}
 
                   {/* Botão Adicionar - ocupa espaço restante */}
                   <div className="flex-1 flex flex-col justify-end">

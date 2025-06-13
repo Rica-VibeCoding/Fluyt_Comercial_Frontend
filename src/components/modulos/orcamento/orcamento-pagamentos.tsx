@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { ListaFormasPagamento } from './lista-formas-pagamento';
 import { FormaPagamento } from '@/lib/sessao-simples';
 import { formatarMoeda } from '@/lib/formatters';
@@ -19,6 +19,7 @@ interface OrcamentoPagamentosProps {
   onEditarForma: (forma: FormaPagamento) => void;
   onRemoverForma: (id: string) => void;
   onToggleTravamento: (id: string) => void;
+  onAtualizar?: () => void; // Opcional para funcionalidade futura
 }
 
 export function OrcamentoPagamentos({
@@ -30,7 +31,8 @@ export function OrcamentoPagamentos({
   onAdicionarForma,
   onEditarForma,
   onRemoverForma,
-  onToggleTravamento
+  onToggleTravamento,
+  onAtualizar
 }: OrcamentoPagamentosProps) {
   return (
     <Card>
@@ -48,10 +50,28 @@ export function OrcamentoPagamentos({
           </div>
         </div>
         
-        {/* Layout em linha: Desconto + Botão Adicionar */}
+        {/* Layout em linha: Atualizar + Botão Adicionar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           
-          {/* Campo Desconto - 1/3 da largura */}
+          {/* Botão Atualizar - Temporariamente substituindo o campo desconto */}
+          <div className="flex-shrink-0 w-full sm:w-48">
+            <label className="block text-sm font-medium mb-2">Ações</label>
+            <Button
+              onClick={() => {
+                console.log('🔄 Botão Atualizar clicado - funcionalidade a ser implementada');
+                onAtualizar?.();
+              }}
+              variant="outline"
+              className="w-full h-10 gap-2 border-2 border-green-300 hover:border-green-400 hover:bg-green-50 
+                         text-green-700 hover:text-green-800 transition-all duration-200"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Atualizar
+            </Button>
+          </div>
+          
+          {/* CAMPO DESCONTO TEMPORARIAMENTE OCULTADO - NÃO APAGAR */}
+          {/* 
           <div className="flex-shrink-0 w-full sm:w-48">
             <label className="block text-sm font-medium mb-2">Desconto (%)</label>
             <div className="relative">
@@ -70,6 +90,7 @@ export function OrcamentoPagamentos({
               </span>
             </div>
           </div>
+          */}
 
           {/* Botão Adicionar - ocupa espaço restante */}
           <div className="flex-1 flex flex-col justify-end">
