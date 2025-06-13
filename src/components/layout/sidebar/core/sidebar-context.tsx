@@ -30,16 +30,22 @@ export function SidebarProvider({
   const [currentTheme] = useState(defaultTheme); // Removido setter - tema fixo
   const [userInfo, setUserInfo] = useState<UserInfo | null>(defaultUser);
 
-  // Carregar apenas estado de collapse persistido
+  // Carregar estado de collapse persistido considerando responsividade
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 768; // md breakpoint
       const savedCollapsed = localStorage.getItem('fluyt-sidebar-collapsed');
       
       if (savedCollapsed) {
-        setIsCollapsed(JSON.parse(savedCollapsed));
+        // Em desktop: usar valor salvo, em mobile: sempre começar fechado
+        const shouldCollapse = isMobile ? true : JSON.parse(savedCollapsed);
+        setIsCollapsed(shouldCollapse);
+      } else {
+        // Valor padrão: desktop expandido, mobile fechado
+        setIsCollapsed(isMobile ? true : defaultCollapsed);
       }
     }
-  }, []);
+  }, [defaultCollapsed]);
 
   const toggleCollapse = () => {
     const newCollapsed = !isCollapsed;
