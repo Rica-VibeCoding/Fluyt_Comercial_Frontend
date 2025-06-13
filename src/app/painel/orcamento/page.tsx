@@ -18,6 +18,7 @@ import { ModalBoleto } from '@/components/modulos/orcamento/modal-boleto';
 import { ModalCartao } from '@/components/modulos/orcamento/modal-cartao';
 import { ModalFinanceira } from '@/components/modulos/orcamento/modal-financeira';
 import { FormaPagamento } from '@/types/orcamento';
+import { useCalculadoraNegociacao, CalculadoraNegociacao } from '@/lib/calculadora-negociacao';
 
 export default function OrcamentoPage() {
   const searchParams = useSearchParams();
@@ -37,12 +38,45 @@ export default function OrcamentoPage() {
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // ✅ CÁLCULOS SIMPLES (baseados na documentação)
+  // ✅ CÁLCULOS HÍBRIDOS (manual + calculadora para debug)
   const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
   const descontoNumero = parseFloat(desconto) || 0;
-  const valorNegociado = valorTotal * (1 - descontoNumero / 100);
+  
+  // Cálculo manual do valor negociado (garantir que funciona)
+  const valorNegociadoManual = valorTotal * (1 - descontoNumero / 100);
+  
+  // Usar calculadora para valores avançados (com fallback)
+  let calculoNegociacao;
+  try {
+    calculoNegociacao = useCalculadoraNegociacao(valorTotal, descontoNumero, formasPagamento);
+  } catch (error) {
+    console.error('❌ Erro na calculadora:', error);
+    calculoNegociacao = {
+      valorNegociado: valorNegociadoManual,
+      valorPresenteTotal: 0,
+      descontoReal: 0,
+      diferenca: 0,
+      formasPagamento: [],
+      erros: ['Erro na calculadora'],
+      alteracoesFeitas: []
+    };
+  }
+  
+  // Valores derivados (usar manual como fallback)
+  const valorNegociado = calculoNegociacao?.valorNegociado || valorNegociadoManual;
+  const valorPresenteTotal = calculoNegociacao?.valorPresenteTotal || 0;
+  const descontoReal = calculoNegociacao?.descontoReal || 0;
   const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
   const valorRestante = valorNegociado - valorTotalFormas;
+  
+  // Debug logs
+  console.log('🔍 Debug Orçamento:', {
+    valorTotal,
+    descontoNumero,
+    valorNegociadoManual,
+    valorNegociadoCalculadora: calculoNegociacao?.valorNegociado,
+    calculoNegociacao
+  });
 
   // ✅ CARREGAMENTO SIMPLES (como funcionava)
   useEffect(() => {
@@ -126,6 +160,20 @@ export default function OrcamentoPage() {
     
     // Remover usando action do store
     removerFormaPagamento(id);
+  };
+
+  // ✅ HANDLER TRAVAMENTO (novo com calculadora)
+  const handleToggleTravamento = (id: string) => {
+    console.log('🔒 Togglando travamento da forma:', id);
+    
+    // Usar calculadora para alterar travamento
+    const formasAtualizadas = CalculadoraNegociacao.toggleTravamento(formasPagamento, id);
+    
+    // Atualizar cada forma individualmente para manter compatibilidade
+    const formaAtualizada = formasAtualizadas.find(f => f.id === id);
+    if (formaAtualizada) {
+      editarFormaPagamento(id, { travada: formaAtualizada.travada });
+    }
   };
 
   // ✅ VALIDAÇÃO SIMPLES
@@ -248,7 +296,11 @@ export default function OrcamentoPage() {
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Desconto Real</h3>
-                    <p className="text-2xl text-gray-400">Calculando...</p>
+                    <p className={`text-2xl font-bold ${
+                      descontoReal > descontoNumero ? 'text-green-600' : 'text-orange-600'
+                    }`}>
+                      {descontoReal.toFixed(1)}%
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -258,7 +310,9 @@ export default function OrcamentoPage() {
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Valor Recebido</h3>
-                    <p className="text-2xl text-gray-400">Calculando...</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -280,6 +334,38 @@ export default function OrcamentoPage() {
                     <span className="text-gray-500"> / R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                   </div>
                 </div>
+                
+                {/* Indicador de Erros da Calculadora */}
+                {calculoNegociacao?.erros?.length > 0 && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <div className="text-red-600 text-sm">
+                        <strong>⚠️ Atenção:</strong>
+                        <ul className="mt-1 space-y-1">
+                          {calculoNegociacao.erros.map((erro, index) => (
+                            <li key={index}>• {erro}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Indicador de Alterações Automáticas */}
+                {calculoNegociacao?.alteracoesFeitas?.length > 0 && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <div className="text-blue-600 text-sm">
+                        <strong>ℹ️ Info:</strong>
+                        <ul className="mt-1 space-y-1">
+                          {calculoNegociacao.alteracoesFeitas.map((alteracao, index) => (
+                            <li key={index}>• {alteracao}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Layout em linha: Desconto + Botão Adicionar */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -326,6 +412,7 @@ export default function OrcamentoPage() {
                       formas={formasPagamento}
                       onEditar={handleEditarForma}
                       onRemover={handleRemoverForma}
+                      onToggleTravamento={handleToggleTravamento}
                     />
                   </div>
                 )}
