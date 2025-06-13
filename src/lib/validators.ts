@@ -3,7 +3,7 @@
  * Funções de validação reutilizáveis para o módulo de orçamento
  */
 
-import { FormaPagamento } from '@/store/sessao-store';
+import { FormaPagamento } from '@/types/orcamento';
 
 // Resultado de validação padrão
 export interface ValidationResult {

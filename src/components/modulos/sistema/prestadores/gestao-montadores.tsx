@@ -18,6 +18,7 @@ export function GestaoMontadores() {
     criarMontador,
     atualizarMontador,
     excluirMontador,
+    alternarStatus,
     buscarMontadores
   } = useMontadores();
 
@@ -308,7 +309,7 @@ export function GestaoMontadores() {
         montadores={montadoresFiltrados}
         onEdit={handleEdit}
         onDelete={excluirMontador}
-        onToggleStatus={alternarStatusMontador}
+        onToggleStatus={alternarStatus}
         loading={loading}
       />
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
@@ -8,8 +8,29 @@ import { Badge } from "../../ui/badge";
 import { ContractPDFGenerator } from "./contract-pdf-generator";
 import { contratoMock, ContratoData } from "../../../types/contrato";
 import { ArrowLeft, FileText, Edit, Signature } from "lucide-react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import { toast } from "../../../hooks/globais/use-toast";
+
+// Componente PDF dinâmico (client-side only)
+const DynamicPDFDownloadLink = ({ document, fileName, children }: any) => {
+  const [PDFComponent, setPDFComponent] = useState(null);
+
+  useEffect(() => {
+    import("@react-pdf/renderer").then(({ PDFDownloadLink }) => {
+      setPDFComponent(() => PDFDownloadLink);
+    });
+  }, []);
+
+  if (!PDFComponent) {
+    return <Button disabled>Carregando PDF...</Button>;
+  }
+
+  const Component = PDFComponent as any;
+  return (
+    <Component document={document} fileName={fileName}>
+      {children}
+    </Component>
+  );
+};
 
 const ContractViewer = () => {
   const router = useRouter();
@@ -93,7 +114,7 @@ const ContractViewer = () => {
             </div>
             <div className="flex items-center gap-3">
               
-              <PDFDownloadLink 
+              <DynamicPDFDownloadLink 
                 document={<ContractPDFGenerator contratoData={contratoData} />} 
                 fileName={`contrato-${contratoData.numero}.pdf`}
               >
@@ -102,7 +123,7 @@ const ContractViewer = () => {
                   url,
                   loading,
                   error
-                }) => (
+                }: any) => (
                   <Button 
                     variant="outline" 
                     disabled={loading || !!error} 
@@ -113,7 +134,7 @@ const ContractViewer = () => {
                     {loading ? 'Gerando PDF...' : error ? 'Erro no PDF' : 'Gerar PDF'}
                   </Button>
                 )}
-              </PDFDownloadLink>
+              </DynamicPDFDownloadLink>
               <Button 
                 onClick={handleAssinatura} 
                 disabled={contratoData.status === 'ASSINADO'}

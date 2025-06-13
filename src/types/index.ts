@@ -13,9 +13,11 @@ export type { Cliente, ClienteFormData } from './cliente';
 // Tipos de simulador/orçamento
 export type { 
   FormaPagamento, 
-  Simulacao, 
-  TravamentoConfig
-} from './simulador';
+  DadosAVista,
+  DadosBoleto,
+  DadosCartao,
+  DadosFinanceira
+} from './orcamento';
 
 // Tipos do sistema
 export type { 

@@ -28,7 +28,8 @@
       "mcp__supabase__restore_project",
       "mcp__supabase__get_project",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(timeout 15s npm run dev)"
+      "Bash(timeout 15s npm run dev)",
+      "Bash(npm view:*)"
     ],
     "deny": []
   }

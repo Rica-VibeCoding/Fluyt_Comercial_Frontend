@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useHidratarSessao } from '@/store/sessao-store';
+// import { useHidratarSessao } from '@/store/sessao-store';
 
 interface HydrationProviderProps {
   children: React.ReactNode;
@@ -9,13 +9,13 @@ interface HydrationProviderProps {
 
 export function HydrationProvider({ children }: HydrationProviderProps) {
   const [isHydrated, setIsHydrated] = useState(false);
-  const hidratarSessao = useHidratarSessao();
+  // const hidratarSessao = useHidratarSessao();
 
   useEffect(() => {
     // Hidratar o store
-    hidratarSessao();
+    // hidratarSessao();
     setIsHydrated(true);
-  }, [hidratarSessao]);
+  }, []);
 
   return (
     <>

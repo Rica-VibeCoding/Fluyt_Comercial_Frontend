@@ -88,8 +88,8 @@ export const getConfigPagamento = (tipo: 'cartao' | 'financeira' | 'boleto' | 'a
 export const getLimitesParcelas = (tipo: 'cartao' | 'financeira' | 'boleto' | 'aVista') => {
   const config = getConfigPagamento(tipo);
   return {
-    min: config.minParcelas || 1,
-    max: config.maxParcelas || config.parcelas || 1,
+    min: 'minParcelas' in config ? config.minParcelas : 1,
+    max: 'maxParcelas' in config ? config.maxParcelas : ('parcelas' in config ? config.parcelas : 1),
   };
 };
 

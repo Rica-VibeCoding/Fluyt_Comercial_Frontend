@@ -37,7 +37,7 @@ export function useClientesRealista() {
         clientesCarregados = await ClienteStore.buscarComFiltros({
           busca: filtros.busca,
           tipo_venda: filtros.tipo_venda,
-          procedencia_id: filtros.procedencia_id,
+          procedencia: filtros.procedencia_id,
           vendedor_id: filtros.vendedor_id
         });
       } else {

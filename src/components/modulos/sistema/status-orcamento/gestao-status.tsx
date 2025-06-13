@@ -7,22 +7,30 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Flag, Search, Filter } from 'lucide-react';
-import { useStatusOrcamento } from '@/hooks/modulos/sistema/use-status-orcamento';
-import { StatusTable } from './status-table';
-import type { StatusFormData } from '@/types/sistema';
+// import { useStatusOrcamento } from '@/hooks/modulos/sistema/use-status-orcamento';
+// import { StatusTable } from './status-table';
+// import type { StatusFormData } from '@/types/sistema';
 import { useForm } from 'react-hook-form';
 
+// Temporary type definition
+interface StatusFormData {
+  nome: string;
+  cor: string;
+  descricao?: string;
+  ordem: number;
+  ativo: boolean;
+}
+
 export function GestaoStatus() {
-  const {
-    statusList,
-    loading,
-    estatisticas,
-    criarStatus,
-    atualizarStatus,
-    alternarStatusStatus,
-    excluirStatus,
-    buscarStatus
-  } = useStatusOrcamento();
+  // TODO: Implementar hook use-status-orcamento
+  const statusList = [];
+  const loading = false;
+  const estatisticas = { total: 0, ativos: 0, inativos: 0 };
+  const criarStatus = async (data: StatusFormData) => false;
+  const atualizarStatus = async (id: string, data: StatusFormData) => false;
+  const alternarStatusStatus = async (id: string) => {};
+  const excluirStatus = async (id: string) => false;
+  const buscarStatus = (termo: string) => [];
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStatus, setEditingStatus] = useState<any>(null);
@@ -275,13 +283,10 @@ export function GestaoStatus() {
       </div>
 
       {/* Tabela de Status */}
-      <StatusTable
-        statusList={statusFiltrados}
-        onEdit={handleEdit}
-        onDelete={excluirStatus}
-        onToggleStatus={alternarStatusStatus}
-        loading={loading}
-      />
+      {/* TODO: Implementar StatusTable */}
+      <div className="bg-white rounded-lg border border-slate-200 p-8 text-center">
+        <p className="text-slate-500">Status Orçamento - Em desenvolvimento</p>
+      </div>
     </div>
   );
 } 

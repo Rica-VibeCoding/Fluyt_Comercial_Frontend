@@ -111,10 +111,10 @@ const exemploClientes: Cliente[] = [
 ];
 
 const exemploVendedores: Vendedor[] = [
-  { id: 'v1', nome: 'Ana Costa' },
-  { id: 'v2', nome: 'Carlos Mendes' },
-  { id: 'v3', nome: 'Pedro Santos' },
-  { id: 'v4', nome: 'Marina Silva' }
+  { id: 'v1', nome: 'Ana Costa', perfil: 'VENDEDOR' },
+  { id: 'v2', nome: 'Carlos Mendes', perfil: 'VENDEDOR' },
+  { id: 'v3', nome: 'Pedro Santos', perfil: 'GERENTE' },
+  { id: 'v4', nome: 'Marina Silva', perfil: 'VENDEDOR' }
 ];
 
 export function useClientes() {
@@ -147,8 +147,8 @@ export function useClientes() {
     }
 
     // Filtro procedência
-    if (filtros.procedencia) {
-      result = result.filter(cliente => cliente.procedencia === filtros.procedencia);
+    if (filtros.procedencia_id) {
+      result = result.filter(cliente => cliente.procedencia === filtros.procedencia_id);
     }
 
     // Filtro vendedor

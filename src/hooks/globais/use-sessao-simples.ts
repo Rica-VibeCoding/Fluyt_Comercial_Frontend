@@ -10,7 +10,7 @@ export function useSessaoSimples() {
   const [sessao, setSessao] = useState<SessaoSimples>(() => {
     // Evitar erro SSR - retornar estado vazio no servidor
     if (typeof window === 'undefined') {
-      return { cliente: null, ambientes: [], valorTotal: 0 };
+      return { cliente: null, ambientes: [], valorTotal: 0, formasPagamento: [] };
     }
     return sessaoSimples.carregar();
   });

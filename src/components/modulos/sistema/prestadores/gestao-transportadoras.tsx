@@ -17,7 +17,7 @@ export function GestaoTransportadoras() {
     estatisticas,
     criarTransportadora,
     atualizarTransportadora,
-    alternarStatusTransportadora,
+    alternarStatus,
     excluirTransportadora,
     buscarTransportadoras
   } = useTransportadoras();
@@ -28,12 +28,10 @@ export function GestaoTransportadoras() {
 
   const form = useForm<TransportadoraFormData>({
     defaultValues: {
-      nome: '',
-      cnpj: '',
+      nomeEmpresa: '',
+      valorFixo: 0,
       telefone: '',
-      email: '',
-      endereco: '',
-      custoKm: 0
+      email: ''
     }
   });
 
@@ -56,12 +54,10 @@ export function GestaoTransportadoras() {
   const handleEdit = (transportadora: any) => {
     setEditingTransportadora(transportadora);
     form.reset({
-      nome: transportadora.nome,
-      cnpj: transportadora.cnpj,
+      nomeEmpresa: transportadora.nomeEmpresa,
+      valorFixo: transportadora.valorFixo,
       telefone: transportadora.telefone,
-      email: transportadora.email,
-      endereco: transportadora.endereco,
-      custoKm: transportadora.custoKm
+      email: transportadora.email
     });
     setIsDialogOpen(true);
   };
@@ -69,12 +65,10 @@ export function GestaoTransportadoras() {
   const handleNewTransportadora = () => {
     setEditingTransportadora(null);
     form.reset({
-      nome: '',
-      cnpj: '',
+      nomeEmpresa: '',
+      valorFixo: 0,
       telefone: '',
-      email: '',
-      endereco: '',
-      custoKm: 0
+      email: ''
     });
     setIsDialogOpen(true);
   };
@@ -83,12 +77,10 @@ export function GestaoTransportadoras() {
     setIsDialogOpen(false);
     setEditingTransportadora(null);
     form.reset({
-      nome: '',
-      cnpj: '',
+      nomeEmpresa: '',
+      valorFixo: 0,
       telefone: '',
-      email: '',
-      endereco: '',
-      custoKm: 0
+      email: ''
     });
   };
 
@@ -153,7 +145,7 @@ export function GestaoTransportadoras() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                         <FormField
                           control={form.control}
-                          name="nome"
+                          name="nomeEmpresa"
                           render={({ field }) => (
                             <FormItem className="md:col-span-2">
                               <FormLabel className="text-xs font-medium text-slate-700">Nome da Transportadora *</FormLabel>
@@ -171,19 +163,17 @@ export function GestaoTransportadoras() {
 
                         <FormField
                           control={form.control}
-                          name="cnpj"
+                          name="valorFixo"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs font-medium text-slate-700">CNPJ *</FormLabel>
+                              <FormLabel className="text-xs font-medium text-slate-700">Valor Fixo *</FormLabel>
                               <FormControl>
                                 <Input 
-                                  placeholder="00.000.000/0000-00"
+                                  placeholder="0,00"
+                                  type="number"
                                   className="h-8 text-sm border-slate-300 focus:border-slate-400"
                                   {...field}
-                                  onChange={(e) => {
-                                    const formatted = formatarCNPJ(e.target.value);
-                                    field.onChange(formatted);
-                                  }}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -232,45 +222,6 @@ export function GestaoTransportadoras() {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="endereco"
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2">
-                              <FormLabel className="text-xs font-medium text-slate-700">Endereço</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Endereço completo da transportadora" 
-                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="custoKm"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-medium text-slate-700">Custo por KM (R$)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  placeholder="2.50" 
-                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
                     </div>
                   </div>
@@ -311,7 +262,7 @@ export function GestaoTransportadoras() {
         transportadoras={transportadorasFiltradas}
         onEdit={handleEdit}
         onDelete={excluirTransportadora}
-        onToggleStatus={alternarStatusTransportadora}
+        onToggleStatus={alternarStatus}
         loading={loading}
       />
     </div>

@@ -28,6 +28,12 @@ interface ModalBoletoProps {
 
 export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalBoletoProps) {
   // Hook centralizado com toda a lógica comum dos modais de pagamento
+  // Transformar dadosIniciais para compatibilidade com o hook
+  const dadosIniciaisHook = dadosIniciais ? {
+    valor: dadosIniciais.valor,
+    parcelas: dadosIniciais.parcelas?.length || 1
+  } : undefined;
+
   const {
     valor,
     setValor,
@@ -45,7 +51,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     tipo: 'boleto',
     valorMaximo,
     valorJaAlocado,
-    dadosIniciais
+    dadosIniciais: dadosIniciaisHook
   });
 
   // Estados específicos apenas para boleto (data e parcelas)

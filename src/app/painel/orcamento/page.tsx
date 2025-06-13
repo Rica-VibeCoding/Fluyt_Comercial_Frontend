@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useOrcamento } from '@/hooks/data/use-orcamento';
 import { useFormasPagamento } from '@/hooks/data/use-formas-pagamento';
@@ -21,7 +21,7 @@ import { FormaPagamento } from '@/types/orcamento';
 import { useCalculadoraNegociacao, CalculadoraNegociacao } from '@/lib/calculadora-negociacao';
 import { EditableMoneyField, EditablePercentField } from '@/components/ui';
 
-export default function OrcamentoPage() {
+function OrcamentoPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -683,5 +683,13 @@ export default function OrcamentoPage() {
         
       </div>
     </div>
+  );
+}
+
+export default function OrcamentoPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Carregando orçamento...</div>}>
+      <OrcamentoPageContent />
+    </Suspense>
   );
 }
