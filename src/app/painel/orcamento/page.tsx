@@ -23,33 +23,28 @@ export default function OrcamentoPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Hook original que carrega cliente + ambientes 
-  const { cliente: clienteOriginal, ambientes: ambientesOriginais, carregarClienteDaURL } = useSessaoSimples();
+  // ✅ SISTEMA SIMPLIFICADO: Usar apenas useSessaoSimples (funcionava)
+  const { cliente, ambientes, carregarClienteDaURL } = useSessaoSimples();
   
-  // Hooks Zustand
-  const {
-    cliente, ambientes, valorTotal, valorNegociado, valorRestante, descontoPercentual,
-    definirCliente, definirAmbientes, definirDesconto, podeGerarContrato
-  } = useOrcamento();
-  
+  // ✅ FORMAS DE PAGAMENTO: Sistema local (UI state)
   const {
     formasPagamento, modalFormasAberto, modalAVistaAberto, modalBoletoAberto,
     modalCartaoAberto, modalFinanceiraAberto, formaEditando,
     adicionarFormaPagamento, editarFormaPagamento, removerFormaPagamento,
     abrirModalFormas, fecharModalFormas, abrirModalEdicao, fecharModalEdicao
   } = useFormasPagamento();
-  
-  const sessaoStore = useSessao();
+  // ✅ ESTADOS LOCAIS SIMPLES
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   
-  // Sincronizar desconto com store
-  useEffect(() => {
-    if (desconto !== descontoPercentual.toString()) {
-      setDesconto(descontoPercentual.toString());
-    }
-  }, [descontoPercentual]);
+  // ✅ CÁLCULOS SIMPLES (baseados na documentação)
+  const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
+  const descontoNumero = parseFloat(desconto) || 0;
+  const valorNegociado = valorTotal * (1 - descontoNumero / 100);
+  const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
+  const valorRestante = valorNegociado - valorTotalFormas;
 
+  // ✅ CARREGAMENTO SIMPLES (como funcionava)
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
     const clienteNome = searchParams.get('clienteNome');
@@ -64,84 +59,25 @@ export default function OrcamentoPage() {
     setIsLoaded(true);
   }, [searchParams, carregarClienteDaURL]);
   
-  // Sincronizar dados do sessaoSimples para o store Zustand
-  useEffect(() => {
-    if (clienteOriginal && (!cliente || cliente.id !== clienteOriginal.id)) {
-      console.log('🔄 Sincronizando cliente: sessaoSimples → Zustand');
-      definirCliente(clienteOriginal);
-    }
-  }, [clienteOriginal, cliente, definirCliente]);
-
-  useEffect(() => {
-    if (ambientesOriginais.length > 0 && ambientesOriginais.length !== ambientes.length) {
-      console.log('🔄 Sincronizando ambientes: sessaoSimples → Zustand');
-      definirAmbientes(ambientesOriginais);
-    }
-  }, [ambientesOriginais, ambientes, definirAmbientes]);
-  
-  // Função para sincronizar dados para o sistema legado (sessaoStore)
-  const sincronizarParaZustand = () => {
-    if (!cliente || ambientes.length === 0) return false;
-    
-    console.log('🔄 Sincronizando dados: orcamentoStore → sessaoStore');
-    
-    // 1. Definir cliente no Zustand legado
-    sessaoStore.definirCliente({
-      id: cliente.id,
-      nome: cliente.nome,
-      cpf_cnpj: '', // Será preenchido futuramente
-      telefone: '', // Será preenchido futuramente
-      tipo_venda: 'NORMAL' as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-    
-    // 2. Converter e definir ambientes no Zustand legado
-    const ambientesConvertidos = ambientes.map(amb => ({
-      id: amb.id,
-      nome: amb.nome,
-      acabamentos: [], // Será preenchido futuramente
-      valorTotal: amb.valor,
-      clienteId: cliente.id
-    }));
-    
-    sessaoStore.definirAmbientes(ambientesConvertidos);
-    
-    // 3. Definir orçamento se tiver formas de pagamento
-    if (formasPagamento.length > 0) {
-      const descontoNumero = parseFloat(desconto) || 0;
-      sessaoStore.definirOrcamento(valorNegociado, formasPagamento.length, descontoNumero);
-    }
-    
-    return true;
-  };
-  
-  // Função para navegar para contratos
+  // ✅ NAVEGAÇÃO SIMPLES 
   const navegarParaContratos = () => {
-    if (clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0 && sincronizarParaZustand()) {
-      console.log('✅ Dados sincronizados - navegando para contratos');
-      router.push(`/painel/contratos?clienteId=${clienteOriginal?.id}&clienteNome=${encodeURIComponent(clienteOriginal?.nome || '')}`);
+    if (cliente && ambientes.length > 0 && formasPagamento.length > 0) {
+      console.log('✅ Navegando para contratos');
+      router.push(`/painel/contratos?clienteId=${cliente?.id}&clienteNome=${encodeURIComponent(cliente?.nome || '')}`);
     }
   };
   
-  // Handlers para formas de pagamento
+  // ✅ HANDLERS SIMPLES (como funcionavam)
   const handleFormaPagamentoAdicionada = (forma: { tipo: string; valor?: number; detalhes?: any }) => {
     console.log('📥 Forma de pagamento adicionada:', forma);
     
-    // Converter dados para interface FormaPagamento com mapeamento correto de tipos
     const tipoMapeado = (() => {
       switch (forma.tipo) {
-        case 'À Vista':
-          return 'a-vista';
-        case 'Boleto':
-          return 'boleto';
-        case 'Cartão':
-          return 'cartao';
-        case 'Financeira':
-          return 'financeira';
-        default:
-          console.warn('Tipo não reconhecido:', forma.tipo);
-          return 'a-vista'; // fallback
+        case 'À Vista': return 'a-vista';
+        case 'Boleto': return 'boleto';
+        case 'Cartão': return 'cartao';
+        case 'Financeira': return 'financeira';
+        default: return 'a-vista';
       }
     })() as 'a-vista' | 'boleto' | 'cartao' | 'financeira';
     
@@ -153,7 +89,6 @@ export default function OrcamentoPage() {
       dados: forma.detalhes
     };
     
-    // Adicionar no store Zustand
     adicionarFormaPagamento(novaForma);
     fecharModalFormas();
   };
@@ -193,20 +128,17 @@ export default function OrcamentoPage() {
     removerFormaPagamento(id);
   };
 
-  // Valores para validação usando store
+  // ✅ VALIDAÇÃO SIMPLES
   const obterValoresValidacao = () => ({
     valorMaximo: valorNegociado,
     valorJaAlocado: formaEditando ? 
-      (valorTotal - valorRestante - formaEditando.valor) : 
-      (valorTotal - valorRestante)
+      (valorTotalFormas - formaEditando.valor) : 
+      valorTotalFormas
   });
   
-  // Handler para mudança de desconto
+  // ✅ HANDLER DESCONTO SIMPLES  
   const handleDescontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const valor = e.target.value;
-    setDesconto(valor);
-    const percentual = parseFloat(valor) || 0;
-    definirDesconto(percentual);
+    setDesconto(e.target.value);
   };
   
   // Evitar hidration mismatch - mostrar loading até carregar
@@ -233,17 +165,17 @@ export default function OrcamentoPage() {
                 </Button>
               </Link>
               
-              <p className="text-lg font-semibold">{clienteOriginal ? clienteOriginal.nome : 'Sem cliente'}</p>
+              <p className="text-lg font-semibold">{cliente ? cliente.nome : 'Sem cliente'}</p>
             </div>
             
             {/* Botão Gerar Contrato */}
             <Button
               onClick={navegarParaContratos}
-              disabled={!(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0)}
+              disabled={!(cliente && ambientes.length > 0 && formasPagamento.length > 0)}
               className="gap-2 bg-green-600 hover:bg-green-700 text-white"
             >
-              {(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0) ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-              {(clienteOriginal && ambientesOriginais.length > 0 && formasPagamento.length > 0) ? 'Gerar Contrato' : 'Configure Pagamento'}
+              {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? <CheckCircle className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+              {(cliente && ambientes.length > 0 && formasPagamento.length > 0) ? 'Gerar Contrato' : 'Configure Pagamento'}
             </Button>
           </div>
         </div>
@@ -260,7 +192,7 @@ export default function OrcamentoPage() {
                 <CardContent className="p-4 h-full flex flex-col justify-between">
                   <h3 className="font-semibold">Valor Total</h3>
                   <p className="text-2xl font-bold text-green-600">
-                    R$ {ambientesOriginais.reduce((total, ambiente) => total + ambiente.valor, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </CardContent>
               </Card>
@@ -277,7 +209,7 @@ export default function OrcamentoPage() {
                 </div>
                 
                 <div className="space-y-1">
-                  {ambientesOriginais.length > 0 ? ambientesOriginais.map((ambiente) => (
+                  {ambientes.length > 0 ? ambientes.map((ambiente) => (
                     <div key={ambiente.id} className="flex justify-between py-1 border-b">
                       <span className="font-medium">{ambiente.nome}</span>
                       <span className="text-green-600">
