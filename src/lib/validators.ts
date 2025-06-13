@@ -29,7 +29,7 @@ export const validarValorDisponivel = (
   if (valor > valorRestante) {
     return {
       isValid: false,
-      message: `Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      message: `Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     };
   }
   
@@ -47,7 +47,7 @@ export const validarSomaFormas = (
     const excesso = somaFormas - valorNegociado;
     return {
       isValid: false,
-      message: `Soma das formas excede o valor negociado em R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      message: `Soma das formas excede o valor negociado em R$ ${excesso.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     };
   }
   

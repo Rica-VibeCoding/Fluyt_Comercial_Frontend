@@ -7,7 +7,8 @@
 export const formatarMoeda = (valor: number): string => {
   return valor.toLocaleString('pt-BR', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'BRL',
+    maximumFractionDigits: 2
   });
 };
 
@@ -17,7 +18,8 @@ export const formatarValorInput = (value: string): string => {
   const valorNumerico = parseInt(numero) / 100;
   return valorNumerico.toLocaleString('pt-BR', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'BRL',
+    maximumFractionDigits: 2
   });
 };
 

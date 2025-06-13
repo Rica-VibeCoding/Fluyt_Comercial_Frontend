@@ -48,7 +48,7 @@ export function CampoValor({
       {/* Informação de valor disponível - mais compacta */}
       {mostrarDisponivel && (
         <div className="mt-1 text-xs text-slate-500">
-          Disponível: <span className="font-medium">R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          Disponível: <span className="font-medium">R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
         </div>
       )}
       

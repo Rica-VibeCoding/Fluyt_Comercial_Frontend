@@ -119,7 +119,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     
     // Validação final
     if (valorNumerico > valorRestante) {
-      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       return;
     }
     
@@ -172,7 +172,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     const valorRestante = valorMaximo - valorJaAlocado;
     
     if (valorNumerico > valorRestante) {
-      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     } else {
       setErroValidacao('');
     }

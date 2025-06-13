@@ -380,7 +380,7 @@ function OrcamentoPageContent() {
                   <h3 className="font-semibold text-sm sm:text-base">Valor Total</h3>
                   <p className="text-lg sm:text-2xl font-bold text-green-600 mt-2 lg:mt-0"
                      aria-label={`Valor total do orçamento: ${valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}>
-                    R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </CardContent>
               </Card>
@@ -401,7 +401,7 @@ function OrcamentoPageContent() {
                     <div key={ambiente.id} className="flex justify-between py-1 border-b">
                       <span className="font-medium">{ambiente.nome}</span>
                       <span className="text-green-600">
-                        R$ {ambiente.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {ambiente.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   )) : (
@@ -469,7 +469,7 @@ function OrcamentoPageContent() {
                         isCalculating ? 'text-yellow-600' : 'text-green-600'
                       }`}
                       aria-label={`Valor que será recebido: ${valorPresenteTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`}>
-                        R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                       {isCalculating && (
                         <div className="text-yellow-600 animate-pulse" aria-label="Calculando">
@@ -501,9 +501,9 @@ function OrcamentoPageContent() {
                     <span className={`font-bold ${
                       valorRestante <= 0 ? 'text-green-600' : 'text-red-500'
                     }`}>
-                      R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
-                    <span className="text-gray-500"> / R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-gray-500"> / R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 </div>
                 

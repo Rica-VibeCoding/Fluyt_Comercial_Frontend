@@ -211,7 +211,7 @@ export const validarValorDisponivel = (
   if (valor > valorRestante) {
     return {
       valido: false,
-      erro: `Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      erro: `Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     };
   }
   

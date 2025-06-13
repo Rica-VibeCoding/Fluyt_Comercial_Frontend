@@ -17,7 +17,7 @@ interface SidebarHeaderProps {
 }
 
 export function SidebarHeader({ 
-  title = "D-Art",
+  title = "Sua Empresa",
   subtitle = "Fluyt",
   showToggle = true,
   className 
