@@ -13,6 +13,9 @@ export interface Ambiente {
   acabamentos: Acabamento[];
   valorTotal: number;
   clienteId?: string;
+  criadoEm?: string;
+  importadoEm?: string;
+  origem?: 'manual' | 'xml';
 }
 
 export interface AmbienteFormData {

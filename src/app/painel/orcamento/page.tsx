@@ -9,7 +9,7 @@ import { useSessao } from '@/store/sessao-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Plus, FileText, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, FileText, CheckCircle, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import { ModalFormasPagamento } from '@/components/modulos/orcamento/modal-formas-pagamento';
 import { ListaFormasPagamento } from '@/components/modulos/orcamento/lista-formas-pagamento';
@@ -19,6 +19,7 @@ import { ModalCartao } from '@/components/modulos/orcamento/modal-cartao';
 import { ModalFinanceira } from '@/components/modulos/orcamento/modal-financeira';
 import { FormaPagamento } from '@/types/orcamento';
 import { useCalculadoraNegociacao, CalculadoraNegociacao } from '@/lib/calculadora-negociacao';
+import { EditableMoneyField, EditablePercentField } from '@/components/ui';
 
 export default function OrcamentoPage() {
   const searchParams = useSearchParams();
@@ -38,6 +39,10 @@ export default function OrcamentoPage() {
   const [desconto, setDesconto] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   
+  // 🆕 ESTADOS PARA EDIÇÃO BIDIRECIONAL
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [ultimaEdicao, setUltimaEdicao] = useState<'desconto' | 'valorNegociado' | 'descontoReal' | null>(null);
+  
   // ✅ CÁLCULOS HÍBRIDOS (manual + calculadora para debug)
   const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
   const descontoNumero = parseFloat(desconto) || 0;
@@ -45,22 +50,8 @@ export default function OrcamentoPage() {
   // Cálculo manual do valor negociado (garantir que funciona)
   const valorNegociadoManual = valorTotal * (1 - descontoNumero / 100);
   
-  // Usar calculadora para valores avançados (com fallback)
-  let calculoNegociacao;
-  try {
-    calculoNegociacao = useCalculadoraNegociacao(valorTotal, descontoNumero, formasPagamento);
-  } catch (error) {
-    console.error('❌ Erro na calculadora:', error);
-    calculoNegociacao = {
-      valorNegociado: valorNegociadoManual,
-      valorPresenteTotal: 0,
-      descontoReal: 0,
-      diferenca: 0,
-      formasPagamento: [],
-      erros: ['Erro na calculadora'],
-      alteracoesFeitas: []
-    };
-  }
+  // Usar calculadora para valores avançados (sempre chamar hook)
+  const calculoNegociacao = useCalculadoraNegociacao(valorTotal, descontoNumero, formasPagamento);
   
   // Valores derivados (usar manual como fallback)
   const valorNegociado = calculoNegociacao?.valorNegociado || valorNegociadoManual;
@@ -187,6 +178,104 @@ export default function OrcamentoPage() {
   // ✅ HANDLER DESCONTO SIMPLES  
   const handleDescontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDesconto(e.target.value);
+    setUltimaEdicao('desconto');
+  };
+
+  // 🆕 HANDLERS BIDIRECIONAIS
+  const handleValorNegociadoChange = (novoValor: number) => {
+    if (isCalculating || ultimaEdicao === 'valorNegociado') return;
+    
+    setIsCalculating(true);
+    setUltimaEdicao('valorNegociado');
+    
+    // Debounce para evitar cálculos excessivos
+    setTimeout(() => {
+      try {
+        // Calcular novo desconto % baseado no valor negociado
+        const novoDescontoPercentual = ((valorTotal - novoValor) / valorTotal) * 100;
+        const novoDescontoLimitado = Math.max(0, Math.min(50, novoDescontoPercentual));
+        
+        // Atualizar desconto
+        setDesconto(novoDescontoLimitado.toFixed(1));
+        
+        console.log('💰 Valor Negociado alterado:', {
+          novoValor,
+          novoDescontoPercentual: novoDescontoLimitado,
+          valorTotal
+        });
+        
+      } catch (error) {
+        console.error('❌ Erro ao calcular desconto:', error);
+      } finally {
+        setIsCalculating(false);
+        // Reset após um tempo para permitir nova edição
+        setTimeout(() => setUltimaEdicao(null), 500);
+      }
+    }, 300);
+  };
+
+  const handleDescontoRealChange = (novoDescontoReal: number) => {
+    if (isCalculating || ultimaEdicao === 'descontoReal') return;
+    
+    setIsCalculating(true);
+    setUltimaEdicao('descontoReal');
+    
+    // Debounce para evitar cálculos excessivos
+    setTimeout(() => {
+      try {
+        // Calcular valor presente desejado
+        const valorPresenteDesejado = valorTotal * (1 - novoDescontoReal / 100);
+        
+        // Algoritmo iterativo para encontrar valor negociado que resulte no valor presente desejado
+        let valorNegociadoCalculado = valorPresenteDesejado;
+        let tentativas = 0;
+        const maxTentativas = 10;
+        
+        while (tentativas < maxTentativas) {
+          // Simular cálculo completo com valor atual
+          const estadoSimulado = {
+            valorTotal,
+            descontoPercentual: ((valorTotal - valorNegociadoCalculado) / valorTotal) * 100,
+            formasPagamento
+          };
+          
+          const resultadoSimulado = CalculadoraNegociacao.calcular(estadoSimulado);
+          const valorPresenteSimulado = resultadoSimulado.valorPresenteTotal;
+          
+          // Se chegou próximo do desejado, parar
+          const diferenca = Math.abs(valorPresenteSimulado - valorPresenteDesejado);
+          if (diferenca < 10) break; // Tolerância de R$ 10
+          
+          // Ajustar valor negociado
+          const fatorCorrecao = valorPresenteDesejado / (valorPresenteSimulado || 1);
+          valorNegociadoCalculado *= fatorCorrecao;
+          
+          tentativas++;
+        }
+        
+        // Calcular desconto % correspondente
+        const novoDescontoPercentual = CalculadoraNegociacao.calcularDescontoPercentual(valorTotal, valorNegociadoCalculado);
+        const novoDescontoLimitado = Math.max(0, Math.min(50, novoDescontoPercentual));
+        
+        // Atualizar desconto
+        setDesconto(novoDescontoLimitado.toFixed(1));
+        
+        console.log('📊 Desconto Real alterado:', {
+          novoDescontoReal,
+          valorPresenteDesejado,
+          valorNegociadoCalculado,
+          novoDescontoPercentual: novoDescontoLimitado,
+          tentativas
+        });
+        
+      } catch (error) {
+        console.error('❌ Erro ao calcular valor negociado:', error);
+      } finally {
+        setIsCalculating(false);
+        // Reset após um tempo para permitir nova edição
+        setTimeout(() => setUltimaEdicao(null), 500);
+      }
+    }, 300);
   };
   
   // Evitar hidration mismatch - mostrar loading até carregar
@@ -284,9 +373,13 @@ export default function OrcamentoPage() {
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Valor Negociado</h3>
-                    <p className="text-2xl font-bold text-blue-600">
-                      R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
+                    <EditableMoneyField
+                      value={valorNegociado}
+                      onChange={handleValorNegociadoChange}
+                      isCalculating={isCalculating && ultimaEdicao !== 'valorNegociado'}
+                      tooltip="Clique para editar valor final da negociação"
+                      className="justify-start"
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -296,11 +389,14 @@ export default function OrcamentoPage() {
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Desconto Real</h3>
-                    <p className={`text-2xl font-bold ${
-                      descontoReal > descontoNumero ? 'text-green-600' : 'text-orange-600'
-                    }`}>
-                      {descontoReal.toFixed(1)}%
-                    </p>
+                    <EditablePercentField
+                      value={descontoReal}
+                      onChange={handleDescontoRealChange}
+                      isCalculating={isCalculating && ultimaEdicao !== 'descontoReal'}
+                      tooltip="Clique para editar desconto real desejado"
+                      className="justify-start"
+                      maxValue={50}
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -310,9 +406,18 @@ export default function OrcamentoPage() {
                 <Card className="flex-1">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <h3 className="font-semibold">Valor Recebido</h3>
-                    <p className="text-2xl font-bold text-green-600">
-                      R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-2xl font-bold transition-colors duration-200 ${
+                        isCalculating ? 'text-yellow-600' : 'text-green-600'
+                      }`}>
+                        R$ {valorPresenteTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </p>
+                      {isCalculating && (
+                        <div className="text-yellow-600 animate-pulse">
+                          <Calculator className="h-4 w-4" />
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

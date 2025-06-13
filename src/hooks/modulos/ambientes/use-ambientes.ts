@@ -19,6 +19,8 @@ export const useAmbientes = (clienteId?: string) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const adicionarAmbiente = (data: AmbienteFormData) => {
+    const agora = new Date().toISOString();
+    
     const novoAmbiente: Ambiente = {
       id: Date.now().toString(),
       nome: data.nome,
@@ -28,7 +30,10 @@ export const useAmbientes = (clienteId?: string) => {
         valor: 0 // Valor padrão pois agora o valor é único por ambiente
       })),
       valorTotal: data.valorTotal,
-      clienteId: clienteId
+      clienteId: clienteId,
+      // Timestamps para ambiente criado manualmente
+      criadoEm: agora,
+      origem: 'manual'
     };
 
     setAmbientes(prev => [...prev, novoAmbiente]);
@@ -46,6 +51,7 @@ export const useAmbientes = (clienteId?: string) => {
     // Função provisória que cria um ambiente fictício
     setTimeout(() => {
       const nomeAleatorio = nomesFicticios[Math.floor(Math.random() * nomesFicticios.length)];
+      const agora = new Date().toISOString();
       
       const ambienteFicticio: Ambiente = {
         id: 'xml-' + Date.now(),
@@ -77,7 +83,11 @@ export const useAmbientes = (clienteId?: string) => {
           }
         ],
         valorTotal: 3000 + Math.floor(Math.random() * 2000), // Valor entre 3000 e 5000
-        clienteId: clienteId
+        clienteId: clienteId,
+        // Timestamps para ambiente importado via XML
+        importadoEm: agora,
+        criadoEm: agora, // Mesmo timestamp para ambos neste caso
+        origem: 'xml'
       };
 
       setAmbientes(prev => [...prev, ambienteFicticio]);
