@@ -43,6 +43,12 @@ export default function OrcamentoPage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [ultimaEdicao, setUltimaEdicao] = useState<'desconto' | 'valorNegociado' | 'descontoReal' | null>(null);
   
+  // 🆕 ESTADOS PARA FEEDBACK VISUAL
+  const [lastOperation, setLastOperation] = useState<string>('');
+  const [showRipple, setShowRipple] = useState(false);
+  const [rippleDirection, setRippleDirection] = useState<'left-to-right' | 'right-to-left' | 'center-out'>('left-to-right');
+  const [recentlyChangedFields, setRecentlyChangedFields] = useState<Set<string>>(new Set());
+  
   // ✅ CÁLCULOS HÍBRIDOS (manual + calculadora para debug)
   const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
   const descontoNumero = parseFloat(desconto) || 0;
@@ -187,6 +193,9 @@ export default function OrcamentoPage() {
     
     setIsCalculating(true);
     setUltimaEdicao('valorNegociado');
+    setLastOperation('Calculando desconto percentual...');
+    setRippleDirection('left-to-right');
+    setShowRipple(true);
     
     // Debounce para evitar cálculos excessivos
     setTimeout(() => {
@@ -197,6 +206,11 @@ export default function OrcamentoPage() {
         
         // Atualizar desconto
         setDesconto(novoDescontoLimitado.toFixed(1));
+        setLastOperation('Desconto atualizado automaticamente');
+        
+        // Marcar campos alterados
+        setRecentlyChangedFields(new Set(['desconto', 'descontoReal']));
+        setTimeout(() => setRecentlyChangedFields(new Set()), 2000);
         
         console.log('💰 Valor Negociado alterado:', {
           novoValor,
@@ -206,8 +220,10 @@ export default function OrcamentoPage() {
         
       } catch (error) {
         console.error('❌ Erro ao calcular desconto:', error);
+        setLastOperation('Erro no cálculo');
       } finally {
         setIsCalculating(false);
+        setShowRipple(false);
         // Reset após um tempo para permitir nova edição
         setTimeout(() => setUltimaEdicao(null), 500);
       }
@@ -219,12 +235,16 @@ export default function OrcamentoPage() {
     
     setIsCalculating(true);
     setUltimaEdicao('descontoReal');
+    setLastOperation('Calculando valor negociado ideal...');
+    setRippleDirection('right-to-left');
+    setShowRipple(true);
     
     // Debounce para evitar cálculos excessivos
     setTimeout(() => {
       try {
         // Calcular valor presente desejado
         const valorPresenteDesejado = valorTotal * (1 - novoDescontoReal / 100);
+        setLastOperation('Otimizando distribuição...');
         
         // Algoritmo iterativo para encontrar valor negociado que resulte no valor presente desejado
         let valorNegociadoCalculado = valorPresenteDesejado;
@@ -259,6 +279,11 @@ export default function OrcamentoPage() {
         
         // Atualizar desconto
         setDesconto(novoDescontoLimitado.toFixed(1));
+        setLastOperation(`Convergência alcançada em ${tentativas} iterações`);
+        
+        // Marcar campos alterados
+        setRecentlyChangedFields(new Set(['desconto', 'valorNegociado']));
+        setTimeout(() => setRecentlyChangedFields(new Set()), 2000);
         
         console.log('📊 Desconto Real alterado:', {
           novoDescontoReal,
@@ -270,8 +295,10 @@ export default function OrcamentoPage() {
         
       } catch (error) {
         console.error('❌ Erro ao calcular valor negociado:', error);
+        setLastOperation('Erro na otimização');
       } finally {
         setIsCalculating(false);
+        setShowRipple(false);
         // Reset após um tempo para permitir nova edição
         setTimeout(() => setUltimaEdicao(null), 500);
       }
@@ -366,7 +393,14 @@ export default function OrcamentoPage() {
           <div className="col-span-2 flex flex-col">
             
             {/* 3 Cards superiores - altura fixa igual ao Valor Total */}
-            <div className="flex-none grid grid-cols-3 gap-4 h-[88px] mb-6">
+            <div className="flex-none grid grid-cols-3 gap-4 h-[88px] mb-6 relative">
+              
+              {/* Animação de propagação entre cards - Temporariamente desabilitada */}
+              {/* <CalculationRipple 
+                isActive={showRipple}
+                direction={rippleDirection}
+                className="rounded-lg"
+              /> */}
               
               {/* Card Valor Negociado */}
               <div className="flex">
@@ -423,6 +457,14 @@ export default function OrcamentoPage() {
               </div>
               
             </div>
+
+            {/* Status de Cálculo - Temporariamente desabilitado */}
+            {/* <CalculationStatus
+              isCalculating={isCalculating}
+              hasErrors={calculoNegociacao?.erros?.length > 0}
+              lastOperation={lastOperation}
+              className="mb-4"
+            /> */}
 
             {/* Card Plano de Pagamento */}
             <Card>

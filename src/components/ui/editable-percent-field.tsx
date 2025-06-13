@@ -13,6 +13,7 @@ interface EditablePercentFieldProps {
   tooltip?: string;
   className?: string;
   maxValue?: number;
+  wasRecentlyChanged?: boolean;
 }
 
 export function EditablePercentField({
@@ -23,7 +24,8 @@ export function EditablePercentField({
   placeholder = "0%",
   tooltip = "Clique para editar",
   className,
-  maxValue = 50
+  maxValue = 50,
+  wasRecentlyChanged = false
 }: EditablePercentFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -189,11 +191,12 @@ export function EditablePercentField({
       title={disabled ? "Campo não editável" : tooltip}
     >
       <span className={cn(
-        "text-lg font-semibold transition-colors duration-200",
+        "text-lg font-semibold transition-all duration-200",
         {
-          "text-blue-600": !disabled && !isCalculating,
+          "text-blue-600": !disabled && !isCalculating && !wasRecentlyChanged,
           "text-gray-500": disabled,
-          "text-yellow-600": isCalculating
+          "text-yellow-600": isCalculating,
+          "text-green-600 animate-pulse": wasRecentlyChanged && !isCalculating
         }
       )}>
         {formatPercent(value)}

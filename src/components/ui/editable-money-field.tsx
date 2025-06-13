@@ -12,6 +12,7 @@ interface EditableMoneyFieldProps {
   placeholder?: string;
   tooltip?: string;
   className?: string;
+  wasRecentlyChanged?: boolean;
 }
 
 export function EditableMoneyField({
@@ -21,7 +22,8 @@ export function EditableMoneyField({
   disabled = false,
   placeholder = "R$ 0,00",
   tooltip = "Clique para editar",
-  className
+  className,
+  wasRecentlyChanged = false
 }: EditableMoneyFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -132,11 +134,12 @@ export function EditableMoneyField({
       title={disabled ? "Campo não editável" : tooltip}
     >
       <span className={cn(
-        "text-lg font-semibold transition-colors duration-200",
+        "text-lg font-semibold transition-all duration-200",
         {
-          "text-blue-600": !disabled && !isCalculating,
+          "text-blue-600": !disabled && !isCalculating && !wasRecentlyChanged,
           "text-gray-500": disabled,
-          "text-yellow-600": isCalculating
+          "text-yellow-600": isCalculating,
+          "text-green-600 animate-pulse": wasRecentlyChanged && !isCalculating
         }
       )}>
         {formatMoney(value)}

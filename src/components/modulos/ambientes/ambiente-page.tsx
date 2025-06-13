@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useClienteSelecionadoRealista } from '../../../hooks/globais/use-cliente-selecionado-realista';
 import { useSessao } from '../../../store/sessao-store';
 import { Button } from '../../ui/button';
+import { Badge } from '../../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
-import { Download, Plus, Upload, User, Home, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Download, Plus, Upload, User, Home, ArrowLeft, ArrowRight, Trash2 } from 'lucide-react';
 import { useAmbientes } from '../../../hooks/modulos/ambientes/use-ambientes';
 import { useClientesRealista } from '../../../hooks/modulos/clientes/use-clientes-realista';
 import { useSessaoSimples } from '../../../hooks/globais/use-sessao-simples';
@@ -159,70 +160,40 @@ export function AmbientePage() {
         </Card>
 
         {/* Resumo compacto */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="shadow-md border-0 bg-white">
-            <CardHeader className="pb-3 px-4 pt-4">
-              <CardTitle className="text-sm text-muted-foreground">Total de Ambientes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-0 px-4 pb-4">
-              <div className="text-2xl font-bold">{ambientes.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md border-0 bg-white">
-            <CardHeader className="pb-3 px-4 pt-4">
-              <CardTitle className="text-sm text-muted-foreground">Valor Total Geral</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-0 px-4 pb-4">
-              <div className="text-2xl font-bold text-primary tabular-nums">
-                {valorTotalGeral.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL'
-                })}
+        {/* Header com informações consolidadas */}
+        <div className="bg-white border rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Total:</span>
+                <span className="font-semibold">{ambientes.length} ambientes</span>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md border-0 bg-white">
-            <CardHeader className="pb-3 px-4 pt-4">
-              <CardTitle className="text-sm text-muted-foreground">Ações</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-0 px-4 pb-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full h-8" 
-                disabled={ambientes.length === 0}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar PDF
-              </Button>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Valor:</span>
+                <span className="font-bold text-primary tabular-nums">
+                  {valorTotalGeral.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Lista de Ambientes */}
         {clienteId && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Ambientes Cadastrados</h2>
-              <span className="text-xs text-muted-foreground">
-                Clique para expandir e ver detalhes
-              </span>
             </div>
             
             {ambientes.length === 0 ? (
-              <Card className="shadow-md border-0 bg-white">
-                <CardHeader className="pb-3 px-4 pt-4">
-                  <CardTitle className="text-lg font-medium text-muted-foreground">Nenhum ambiente cadastrado</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 pt-0 px-4 pb-4">
-                  <div className="text-center text-muted-foreground">
-                    <Home className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Comece importando um XML ou criando um ambiente manualmente</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-white border rounded-lg p-8 text-center">
+                <Home className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <p className="text-muted-foreground">Nenhum ambiente cadastrado</p>
+                <p className="text-sm text-muted-foreground">Comece importando um XML ou criando um ambiente manualmente</p>
+              </div>
             ) : (
               <div className="bg-background border border-border/40 rounded-lg overflow-hidden shadow-sm">
                 {ambientes.map((ambiente) => (
