@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { formatarTaxaInput, formatarPercentual } from '@/lib/formatters';
 import { calcularValorPresenteCartao } from '@/lib/calculators';
 import { getPlaceholderTaxa, getLimitesParcelas } from '@/lib/pagamento-config';
+import { isRedistribuicaoAutomaticaAtiva } from '@/lib/validators';
 import { useModalPagamento } from '@/hooks/modulos/orcamento';
 import { ModalPagamentoBase } from './ModalPagamentoBase';
 import { CampoValor } from './CampoValor';
@@ -84,7 +85,8 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     const valorRestante = valorMaximo - valorJaAlocado;
     
     // Validação final
-    if (valorNumerico > valorRestante) {
+    // 🆕 FASE 1: Só validar limite se redistribuição automática estiver desabilitada
+    if (!isRedistribuicaoAutomaticaAtiva() && valorNumerico > valorRestante) {
       setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
       return;
     }
@@ -144,7 +146,8 @@ export function ModalCartao({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
     const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
     const valorRestante = valorMaximo - valorJaAlocado;
     
-    if (valorNumerico > valorRestante) {
+    // 🆕 FASE 1: Só validar limite se redistribuição automática estiver desabilitada
+    if (!isRedistribuicaoAutomaticaAtiva() && valorNumerico > valorRestante) {
       setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     } else {
       setErroValidacao('');

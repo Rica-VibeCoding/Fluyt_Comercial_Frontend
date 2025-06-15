@@ -15,7 +15,8 @@ export interface ValidationResult {
 export const validarValorDisponivel = (
   valor: number,
   valorMaximo: number,
-  valorJaAlocado: number
+  valorJaAlocado: number,
+  redistribuicaoAtiva?: boolean // 🆕 FASE 1: Permitir bypass quando redistribuição ativa
 ): ValidationResult => {
   const valorRestante = valorMaximo - valorJaAlocado;
   
@@ -26,6 +27,12 @@ export const validarValorDisponivel = (
     };
   }
   
+  // 🆕 PULAR validação de limite quando redistribuição automática está ativa
+  if (redistribuicaoAtiva) {
+    console.log('🔄 Validação de limite ignorada - redistribuição automática ativa');
+    return { isValid: true };
+  }
+  
   if (valor > valorRestante) {
     return {
       isValid: false,
@@ -34,6 +41,19 @@ export const validarValorDisponivel = (
   }
   
   return { isValid: true };
+};
+
+// 🆕 FASE 1: Função auxiliar para verificar se redistribuição automática está ativa
+// AGORA: Sistema é manual por padrão (via botão "Atualizar")
+export const isRedistribuicaoAutomaticaAtiva = (): boolean => {
+  try {
+    const sessionData = localStorage.getItem('fluyt_sessao_simples');
+    const session = sessionData ? JSON.parse(sessionData) : {};
+    // Default: redistribuição é MANUAL (false) - só ativa via botão
+    return session.redistribuicaoAutomatica === true;
+  } catch {
+    return false; // Default: manual via botão "Atualizar"
+  }
 };
 
 // Validar se a soma das formas não excede o valor negociado

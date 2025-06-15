@@ -59,6 +59,11 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   const [parcelas, setParcelas] = useState<ParcelaBoleto[]>([]);
   const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
 
+  // Debug: Monitorar estado salvando e valor
+  useEffect(() => {
+    console.log('Modal Boleto - Estado salvando:', salvando, 'Valor:', valor);
+  }, [salvando, valor]);
+
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
     if (isOpen && dadosIniciais) {
@@ -164,7 +169,9 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   };
 
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🎯 handleValorChange chamado com:', e.target.value);
     const valorFormatado = formatarValor(e.target.value);
+    console.log('🎯 Valor formatado:', valorFormatado);
     setValor(valorFormatado);
     
     // Validar em tempo real
@@ -212,14 +219,25 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       isFormValido={isFormValido}
     >
       {/* Campo Valor usando componente reutilizável */}
-      <CampoValor
-        valor={valor}
-        onChange={handleValorChange}
-        valorMaximo={valorMaximo}
-        valorJaAlocado={valorJaAlocado}
-        erroValidacao={erroValidacao}
-        disabled={salvando}
-      />
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Valor * (DEBUG)
+        </label>
+        <Input
+          type="text"
+          value={valor}
+          onChange={handleValorChange}
+          placeholder="R$ 0,00"
+          className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
+          disabled={false}
+          required
+          autoComplete="off"
+          autoFocus={false}
+        />
+        <div className="text-xs text-blue-600 mt-1">
+          Debug: salvando={salvando.toString()}, isLoading={isLoading.toString()}, valor="{valor}"
+        </div>
+      </div>
 
       {/* Grid: Número de Vezes + Data Primeira */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

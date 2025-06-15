@@ -21,6 +21,8 @@ import { OrcamentoPagamentos } from '@/components/modulos/orcamento/orcamento-pa
 import { FormaPagamento } from '@/types/orcamento';
 import { useCalculadoraNegociacao, CalculadoraNegociacao } from '@/lib/calculadora-negociacao';
 import { EditableMoneyField, EditablePercentField } from '@/components/ui';
+import { useRedistribuicaoAutomatica } from '@/hooks/use-redistribuicao-automatica';
+import { CalculationStatus } from '@/components/ui/calculation-status';
 
 function OrcamentoPageContent() {
   const searchParams = useSearchParams();
@@ -38,30 +40,109 @@ function OrcamentoPageContent() {
   } = useFormasPagamento();
   // ✅ ESTADOS LOCAIS SIMPLES
   const [desconto, setDesconto] = useState('');
+  const [valorNegociadoManualReal, setValorNegociadoManualReal] = useState<number | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   
   // 🆕 ESTADOS PARA EDIÇÃO BIDIRECIONAL
   const [isCalculating, setIsCalculating] = useState(false);
   const [ultimaEdicao, setUltimaEdicao] = useState<'desconto' | 'valorNegociado' | 'descontoReal' | null>(null);
   
-  // 🆕 ESTADOS PARA FEEDBACK VISUAL
+  // 🆕 ESTADOS PARA FEEDBACK VISUAL SIMPLES
   const [lastOperation, setLastOperation] = useState<string>('');
-  const [showRipple, setShowRipple] = useState(false);
-  const [rippleDirection, setRippleDirection] = useState<'left-to-right' | 'right-to-left' | 'center-out'>('left-to-right');
-  const [recentlyChangedFields, setRecentlyChangedFields] = useState<Set<string>>(new Set());
   
   // ✅ CÁLCULOS HÍBRIDOS (manual + calculadora para debug)
   const valorTotal = ambientes.reduce((total, ambiente) => total + ambiente.valor, 0);
   const descontoNumero = parseFloat(desconto) || 0;
   
-  // Cálculo manual do valor negociado (garantir que funciona)
-  const valorNegociadoManual = valorTotal * (1 - descontoNumero / 100);
+  // 🎯 VALOR NEGOCIADO VERDADEIRAMENTE MANUAL
+  // Se usuário editou diretamente E não há formas de pagamento, usar valor manual
+  // Senão, calcular baseado no desconto
+  const valorNegociadoManual = (() => {
+    if (valorNegociadoManualReal !== null && formasPagamento.length === 0) {
+      console.log('💰 Usando valor manual editado pelo usuário:', valorNegociadoManualReal);
+      return valorNegociadoManualReal;
+    }
+    const calculado = valorTotal * (1 - descontoNumero / 100);
+    console.log('🧮 Usando valor calculado:', calculado, 'baseado em desconto:', descontoNumero);
+    return calculado;
+  })();
   
   // Usar calculadora para valores avançados (sempre chamar hook)
   const calculoNegociacao = useCalculadoraNegociacao(valorTotal, descontoNumero, formasPagamento);
   
+  // 🆕 FASE 1: REDISTRIBUIÇÃO AUTOMÁTICA (MODO SEGURO)
+  const redistribuicaoAutomatica = useRedistribuicaoAutomatica({
+    valorTotal,
+    descontoPercentual: descontoNumero,
+    formasPagamento,
+    onFormasChange: (novasFormas) => {
+      // Atualizar formas através do hook existente (preserva compatibilidade)
+      console.log('🔄 Redistribuição automática atualizando formas:', novasFormas.length);
+      
+      // Aplicar mudanças usando o sistema existente
+      novasFormas.forEach(forma => {
+        editarFormaPagamento(forma.id, { 
+          valor: forma.valor,
+          valorPresente: forma.valorPresente 
+        });
+      });
+    },
+    enabled: false // Redistribuição manual via botão "Atualizar"
+  });
+  
+  // 🔄 FUNÇÃO ATUALIZAR: Redistribui valores de todas as formas
+  const handleAtualizar = () => {
+    console.log('🔄 Botão Atualizar clicado - redistribuindo pagamentos');
+    
+    if (formasPagamento.length === 0) {
+      console.log('⚠️ Nenhuma forma de pagamento para redistribuir');
+      return;
+    }
+    
+    // Recalcular usando calculadora existente
+    try {
+      const resultado = CalculadoraNegociacao.calcular({
+        valorTotal,
+        descontoPercentual: descontoNumero,
+        formasPagamento
+      });
+      
+      console.log('✅ Redistribuição completa aplicada:', resultado.formasPagamento.length, 'formas');
+      
+      // Aplicar resultado usando hook existente
+      resultado.formasPagamento.forEach(forma => {
+        editarFormaPagamento(forma.id, {
+          valor: forma.valor,
+          valorPresente: forma.valorPresente
+        });
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro na redistribuição:', error);
+    }
+  };
+  
   // Valores derivados (usar manual como fallback)
-  const valorNegociado = calculoNegociacao?.valorNegociado || valorNegociadoManual;
+  const valorNegociadoBruto = calculoNegociacao?.valorNegociado || valorNegociadoManual;
+  
+  // 🎯 ARREDONDAMENTO INTELIGENTE PARA DISPLAY
+  // Não arredondar se valor foi editado manualmente
+  const valorNegociado = (() => {
+    // 🎯 PRIORIDADE MÁXIMA: Se foi editado manualmente, usar EXATAMENTE o valor manual
+    if (valorNegociadoManualReal !== null && formasPagamento.length === 0) {
+      console.log('🎯 Forçando valor manual na interface:', valorNegociadoManualReal);
+      return valorNegociadoManualReal; // Usar valor EXATO que usuário digitou
+    }
+    
+    // Senão, aplicar arredondamento inteligente
+    const diferenca = Math.abs(valorNegociadoBruto - Math.round(valorNegociadoBruto));
+    if (diferenca < 50 && diferenca > 0) {
+      console.log('🎯 Valor display arredondado:', valorNegociadoBruto.toFixed(2), '→', Math.round(valorNegociadoBruto));
+      return Math.round(valorNegociadoBruto);
+    }
+    return valorNegociadoBruto;
+  })();
+  
   const valorPresenteTotal = calculoNegociacao?.valorPresenteTotal || 0;
   
   // CORREÇÃO: Quando não há formas de pagamento, desconto real = desconto percentual
@@ -107,6 +188,12 @@ function OrcamentoPageContent() {
   const handleFormaPagamentoAdicionada = (forma: { tipo: string; valor?: number; detalhes?: any }) => {
     console.log('📥 Forma de pagamento adicionada:', forma);
     
+    // 🎯 RESETAR valor manual quando adiciona primeira forma de pagamento
+    if (formasPagamento.length === 0 && valorNegociadoManualReal !== null) {
+      console.log('🔄 Resetando valor manual - voltando para cálculo automático');
+      setValorNegociadoManualReal(null);
+    }
+    
     const tipoMapeado = (() => {
       switch (forma.tipo) {
         case 'À Vista': return 'a-vista';
@@ -150,7 +237,7 @@ function OrcamentoPageContent() {
       dados: dadosNovos
     };
     
-    // Atualizar usando action do store
+    // Salvar dados normalmente (redistribuição manual via botão "Atualizar")
     editarFormaPagamento(formaEditando.id, dadosAtualizados);
     
     // Fechar modal de edição
@@ -162,6 +249,12 @@ function OrcamentoPageContent() {
     
     // Remover usando action do store
     removerFormaPagamento(id);
+    
+    // 🎯 Se foi a última forma removida, permitir edição manual novamente
+    if (formasPagamento.length === 1) { // Vai ficar 0 após remoção
+      console.log('🔄 Última forma removida - permitindo edição manual novamente');
+      // Não resetar o valorNegociadoManualReal aqui - deixar que usuário edite
+    }
   };
 
   // ✅ HANDLER TRAVAMENTO (novo com calculadora)
@@ -246,7 +339,7 @@ function OrcamentoPageContent() {
         // Permitir mesmo assim, mas avisar
       }
       
-      // Atualizar forma com novo valor total e dados
+      // Salvar dados normalmente (redistribuição manual via botão "Atualizar")
       editarFormaPagamento(formaId, {
         valor: novoValorTotal,
         valorPresente: novoValorTotal, // Para boleto, valor presente = valor nominal
@@ -295,17 +388,42 @@ function OrcamentoPageContent() {
   const handleDescontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDesconto(e.target.value);
     setUltimaEdicao('desconto');
+    
+    // 🎯 RESETAR valor manual quando edita desconto (volta para cálculo automático)
+    if (valorNegociadoManualReal !== null) {
+      console.log('🔄 Resetando valor manual - usuário editou desconto');
+      setValorNegociadoManualReal(null);
+    }
   };
 
   // 🆕 HANDLERS BIDIRECIONAIS
   const handleValorNegociadoChange = (novoValor: number) => {
     if (isCalculating || ultimaEdicao === 'valorNegociado') return;
     
+    // 🎯 COMPORTAMENTO SIMPLES SEM FORMAS DE PAGAMENTO
+    if (formasPagamento.length === 0) {
+      console.log('💰 Valor negociado editado manualmente (sem formas):', novoValor);
+      console.log('📊 Estado atual:', {
+        valorTotal,
+        valorNegociadoManualRealAntes: valorNegociadoManualReal,
+        formasPagamentoLength: formasPagamento.length
+      });
+      
+      setValorNegociadoManualReal(novoValor);
+      
+      // Calcular desconto correspondente (apenas para exibição)
+      const novoDescontoPercentual = ((valorTotal - novoValor) / valorTotal) * 100;
+      const novoDescontoLimitado = Math.max(0, Math.min(50, novoDescontoPercentual));
+      setDesconto(novoDescontoLimitado.toFixed(1));
+      
+      console.log('✅ Valor manual salvo:', novoValor, 'Desconto calculado:', novoDescontoLimitado);
+      return; // Não fazer nenhum cálculo complexo
+    }
+    
+    // 🧮 COMPORTAMENTO COMPLEXO COM FORMAS DE PAGAMENTO
     setIsCalculating(true);
     setUltimaEdicao('valorNegociado');
     setLastOperation('Calculando desconto percentual...');
-    setRippleDirection('left-to-right');
-    setShowRipple(true);
     
     // Debounce para evitar cálculos excessivos
     setTimeout(() => {
@@ -318,9 +436,7 @@ function OrcamentoPageContent() {
         setDesconto(novoDescontoLimitado.toFixed(1));
         setLastOperation('Desconto atualizado automaticamente');
         
-        // Marcar campos alterados
-        setRecentlyChangedFields(new Set(['desconto', 'descontoReal']));
-        setTimeout(() => setRecentlyChangedFields(new Set()), 2000);
+        // Campos atualizados via cálculo reverso
         
         console.log('💰 Valor Negociado alterado:', {
           novoValor,
@@ -333,7 +449,6 @@ function OrcamentoPageContent() {
         setLastOperation('Erro no cálculo');
       } finally {
         setIsCalculating(false);
-        setShowRipple(false);
         // Reset após um tempo para permitir nova edição
         setTimeout(() => setUltimaEdicao(null), 500);
       }
@@ -346,8 +461,6 @@ function OrcamentoPageContent() {
     setIsCalculating(true);
     setUltimaEdicao('descontoReal');
     setLastOperation('Calculando valor negociado ideal...');
-    setRippleDirection('right-to-left');
-    setShowRipple(true);
     
     // Debounce para evitar cálculos excessivos
     setTimeout(() => {
@@ -358,12 +471,11 @@ function OrcamentoPageContent() {
           const novoDescontoPercentual = Math.max(0, Math.min(50, novoDescontoReal));
           
           setDesconto(novoDescontoPercentual.toString());
-          setRecentlyChangedFields(new Set(['desconto', 'valorNegociado', 'descontoReal']));
+          // Desconto real aplicado
           
           setLastOperation('Desconto aplicado');
           setIsCalculating(false);
-          setShowRipple(false);
-          setTimeout(() => setUltimaEdicao(null), 500);
+            setTimeout(() => setUltimaEdicao(null), 500);
           return;
         }
         
@@ -399,8 +511,18 @@ function OrcamentoPageContent() {
           tentativas++;
         }
         
+        // 🎯 ARREDONDAMENTO INTELIGENTE PARA VENDAS
+        // Se diferença for pequena (< R$ 50), arredondar para valor mais limpo
+        const diferencaValorNegociado = Math.abs(valorNegociadoCalculado - Math.round(valorNegociadoCalculado));
+        
+        let valorFinal = valorNegociadoCalculado;
+        if (diferencaValorNegociado < 50) {
+          valorFinal = Math.round(valorNegociadoCalculado);
+          console.log('🎯 Valor arredondado para vendas:', valorNegociadoCalculado.toFixed(2), '→', valorFinal);
+        }
+        
         // Calcular desconto % correspondente
-        const novoDescontoPercentual = CalculadoraNegociacao.calcularDescontoPercentual(valorTotal, valorNegociadoCalculado);
+        const novoDescontoPercentual = CalculadoraNegociacao.calcularDescontoPercentual(valorTotal, valorFinal);
         const novoDescontoLimitado = Math.max(0, Math.min(50, novoDescontoPercentual));
         
         // Atualizar desconto
@@ -408,15 +530,16 @@ function OrcamentoPageContent() {
         setLastOperation(`Convergência alcançada em ${tentativas} iterações`);
         
         // Marcar campos alterados
-        setRecentlyChangedFields(new Set(['desconto', 'valorNegociado']));
-        setTimeout(() => setRecentlyChangedFields(new Set()), 2000);
+        // Valores recalculados com base no desconto real
         
         console.log('📊 Desconto Real alterado:', {
           novoDescontoReal,
           valorPresenteDesejado,
           valorNegociadoCalculado,
+          valorFinal,
           novoDescontoPercentual: novoDescontoLimitado,
-          tentativas
+          tentativas,
+          arredondado: valorFinal !== valorNegociadoCalculado
         });
         
       } catch (error) {
@@ -424,7 +547,6 @@ function OrcamentoPageContent() {
         setLastOperation('Erro na otimização');
       } finally {
         setIsCalculating(false);
-        setShowRipple(false);
         // Reset após um tempo para permitir nova edição
         setTimeout(() => setUltimaEdicao(null), 500);
       }
@@ -545,12 +667,6 @@ function OrcamentoPageContent() {
             {/* 3 Cards superiores - altura fixa igual ao Valor Total */}
             <div className="flex-none grid grid-cols-1 sm:grid-cols-3 gap-4 h-auto sm:h-[88px] mb-6 relative">
               
-              {/* Animação de propagação entre cards - Temporariamente desabilitada */}
-              {/* <CalculationRipple 
-                isActive={showRipple}
-                direction={rippleDirection}
-                className="rounded-lg"
-              /> */}
               
               {/* Card Desconto Real */}
               <div className="flex">
@@ -617,6 +733,18 @@ function OrcamentoPageContent() {
               className="mb-4"
             /> */}
 
+            {/* 🆕 FASE 1: Status da redistribuição automática */}
+            <CalculationStatus
+              isCalculating={redistribuicaoAutomatica.isCalculating || isCalculating}
+              hasErrors={false}
+              lastOperation={
+                redistribuicaoAutomatica.isCalculating 
+                  ? "Redistribuindo automaticamente..." 
+                  : lastOperation
+              }
+              className="mb-4"
+            />
+
             {/* Componente Unificado de Pagamentos */}
             <OrcamentoPagamentos
               formasPagamento={formasPagamento}
@@ -629,6 +757,7 @@ function OrcamentoPageContent() {
               onRemoverForma={handleRemoverForma}
               onToggleTravamento={handleToggleTravamento}
               onParcelaChange={handleParcelaChange}
+              onAtualizar={handleAtualizar}
             />
             
           </div>

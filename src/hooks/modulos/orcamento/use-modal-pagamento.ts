@@ -159,8 +159,20 @@ export const useModalPagamento = ({
     const vezesNum = getNumeroVezesNumerico();
     const taxaNum = getTaxaNumerica();
     
-    // Validar valor
-    const validacaoValor = validarValorDisponivel(valorNum, valorMaximo, valorJaAlocado);
+    // 🆕 FASE 1: Verificar se redistribuição automática está ativa
+    // AGORA: Sistema é manual por padrão (via botão "Atualizar")
+    const redistribuicaoAtiva = (() => {
+      try {
+        const sessionData = localStorage.getItem('fluyt_sessao_simples');
+        const session = sessionData ? JSON.parse(sessionData) : {};
+        return session.redistribuicaoAutomatica === true;
+      } catch {
+        return false; // Default: manual via botão "Atualizar"
+      }
+    })();
+    
+    // Validar valor (com bypass para redistribuição automática)
+    const validacaoValor = validarValorDisponivel(valorNum, valorMaximo, valorJaAlocado, redistribuicaoAtiva);
     if (!validacaoValor.isValid) {
       setErroValidacao(validacaoValor.message || '');
       return false;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { formatarMoeda, parseValorMoeda, formatarPercentual, obterDataAtualInput, converterDataParaInput } from '@/lib/formatters';
-import { validarValorDisponivel, validarNumeroParcelas } from '@/lib/validators';
+import { validarValorDisponivel, validarNumeroParcelas, isRedistribuicaoAutomaticaAtiva } from '@/lib/validators';
 import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
 import { calcularValorPresenteFinanceira, gerarCronogramaParcelas } from '@/lib/calculators';
 import { ModalPagamentoBase } from './ModalPagamentoBase';
@@ -111,7 +111,8 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
     const valorRestante = valorMaximo - valorJaAlocado;
     
     // Validação final
-    if (valorNumerico > valorRestante) {
+    // 🆕 FASE 1: Só validar limite se redistribuição automática estiver desabilitada
+    if (!isRedistribuicaoAutomaticaAtiva() && valorNumerico > valorRestante) {
       setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
       return;
     }
@@ -171,7 +172,8 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
     const valorNumerico = parseFloat(valorFormatado.replace(/[^\d,]/g, '').replace(',', '.'));
     const valorRestante = valorMaximo - valorJaAlocado;
     
-    if (valorNumerico > valorRestante) {
+    // 🆕 FASE 1: Só validar limite se redistribuição automática estiver desabilitada
+    if (!isRedistribuicaoAutomaticaAtiva() && valorNumerico > valorRestante) {
       setErroValidacao(`Valor excede o disponível: R$ ${valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     } else {
       setErroValidacao('');

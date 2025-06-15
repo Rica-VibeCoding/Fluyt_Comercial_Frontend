@@ -112,7 +112,11 @@ export function ListaFormasPagamento({
         return (
           <Card 
             key={forma.id}
-            className={`${config.bg} ${config.border} border transition-all duration-200 hover:shadow-sm`}
+            className={`${config.bg} ${config.border} border transition-all duration-200 hover:shadow-sm ${
+              forma.travada 
+                ? 'ring-2 ring-orange-200 dark:ring-orange-800 bg-orange-50/50 dark:bg-orange-950/10' 
+                : ''
+            }`}
           >
             <CardContent className="p-3">
               <div className="flex items-center justify-between gap-3">
@@ -133,6 +137,13 @@ export function ListaFormasPagamento({
                       <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {dadosResumidos.valor}
                       </span>
+                      
+                      {/* Badge TRAVADO */}
+                      {forma.travada && (
+                        <span className="px-1.5 py-0.5 text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded border border-orange-200 dark:border-orange-800">
+                          TRAVADO
+                        </span>
+                      )}
                     </div>
                     {/* Linha 2: Detalhes específicos */}
                     <p className="text-xs text-slate-600 dark:text-slate-400 truncate leading-relaxed">
@@ -144,22 +155,22 @@ export function ListaFormasPagamento({
                 {/* Seção direita: Cadeado + Ações */}
                 <div className="flex items-center gap-1 flex-shrink-0">
                   
-                  {/* Ícone de Cadeado/Travamento */}
+                  {/* Ícone de Cadeado/Travamento - CORRIGIDO */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onToggleTravamento?.(forma.id)}
-                    className={`h-7 w-7 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                    className={`h-7 w-7 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
                       forma.travada 
-                        ? 'text-red-600 dark:text-red-400' 
-                        : 'text-green-600 dark:text-green-400'
+                        ? 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20' 
+                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
-                    title={forma.travada ? 'Destravado (clique para travar)' : 'Travado (clique para destravar)'}
+                    title={forma.travada ? 'TRAVADO - Valor fixo (clique para destravar)' : 'LIVRE - Valor ajustável (clique para travar)'}
                   >
                     {forma.travada ? (
-                      <Unlock className="h-3 w-3" />
-                    ) : (
                       <Lock className="h-3 w-3" />
+                    ) : (
+                      <Unlock className="h-3 w-3" />
                     )}
                   </Button>
 
