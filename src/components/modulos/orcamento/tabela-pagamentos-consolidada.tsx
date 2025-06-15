@@ -2,11 +2,9 @@
 
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { formatarMoeda } from '@/lib/formatters';
 import { FormaPagamento } from '@/lib/sessao-simples';
-import { DollarSign, FileText, CreditCard, Building, ChevronUp, ChevronDown, ChevronsUpDown, Search, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { CelulaEditavel } from './celula-editavel';
 
 // Reutilizando as cores já definidas no sistema
@@ -210,9 +208,6 @@ export function TabelaPagamentosConsolidada({
     direcao: 'asc' | 'desc';
   }>({ campo: 'data', direcao: 'asc' });
   
-  // Estado para filtro
-  const [filtro, setFiltro] = useState<string>('');
-  
   // Consolidar dados com mudanças locais aplicadas
   const parcelasConsolidadas = useMemo(() => {
     const parcelasBase = consolidarPagamentos(formasPagamento);
@@ -223,24 +218,9 @@ export function TabelaPagamentosConsolidada({
       ...parcelasEditadas[parcela.id]
     }));
     
-    // Aplicar filtro
-    let parcelasFiltradas = parcelasComEdicoes;
-    if (filtro.trim()) {
-      const filtroLower = filtro.toLowerCase().trim();
-      parcelasFiltradas = parcelasComEdicoes.filter(parcela => {
-        const nomeForma = CORES_FORMAS[parcela.tipo].nome.toLowerCase();
-        const valorFormatado = formatarMoeda(parcela.valor).toLowerCase();
-        const dataFormatada = formatarDataExibicao(parcela.data).toLowerCase();
-        
-        return nomeForma.includes(filtroLower) || 
-               valorFormatado.includes(filtroLower) || 
-               dataFormatada.includes(filtroLower);
-      });
-    }
-    
     // Aplicar ordenação
     if (ordenacao.campo) {
-      parcelasFiltradas.sort((a, b) => {
+      parcelasComEdicoes.sort((a, b) => {
         let valorA: any, valorB: any;
         
         switch (ordenacao.campo) {
@@ -266,8 +246,8 @@ export function TabelaPagamentosConsolidada({
       });
     }
     
-    return parcelasFiltradas;
-  }, [formasPagamento, parcelasEditadas, ordenacao, filtro]);
+    return parcelasComEdicoes;
+  }, [formasPagamento, parcelasEditadas, ordenacao]);
   
   // Calcular total da tabela
   const totalTabela = useMemo(() => 
@@ -360,40 +340,8 @@ export function TabelaPagamentosConsolidada({
             </div>
           </div>
           
-          {/* Barra de filtro */}
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                type="text"
-                placeholder="Filtrar por forma, valor ou data..."
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-                className="pl-10 pr-10 h-9 text-sm"
-                aria-label="Filtrar parcelas"
-              />
-              {filtro && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setFiltro('')}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-slate-100"
-                  aria-label="Limpar filtro"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-            {filtro && (
-              <span className="text-xs text-slate-500">
-                {parcelasConsolidadas.length} de {consolidarPagamentos(formasPagamento).length} parcelas
-              </span>
-            )}
-          </div>
-        </div>
-        
-        {/* Tabela propriamente dita */}
-                  <div className="overflow-x-auto" role="region" aria-label="Tabela de cronograma de pagamentos">
+          {/* Tabela propriamente dita */}
+          <div className="overflow-x-auto" role="region" aria-label="Tabela de cronograma de pagamentos">
             <table 
               className="w-full" 
               role="table"
@@ -404,97 +352,98 @@ export function TabelaPagamentosConsolidada({
                 Tabela consolidada mostrando todas as parcelas de pagamento organizadas por data. 
                 Valores de boleto podem ser editados clicando nas células.
               </caption>
-                              <thead>
-                  <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                    <th 
-                      className="px-3 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                      scope="col"
-                      aria-sort={ordenacao.campo === 'forma' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
-                      onClick={() => handleOrdenacao('forma')}
-                      onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('forma')}
-                      tabIndex={0}
-                      role="button"
-                      aria-label="Ordenar por forma de pagamento"
-                    >
-                      <div className="flex items-center gap-1">
-                        Forma de Pagamento
-                        {ordenacao.campo === 'forma' ? (
-                          ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                        ) : (
-                          <ChevronsUpDown className="h-3 w-3 opacity-50" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-3 py-3 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"
-                      scope="col"
-                      aria-sort="none"
-                    >
-                      Parcela
-                    </th>
-                    <th 
-                      className="px-3 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                      scope="col"
-                      aria-sort={ordenacao.campo === 'data' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
-                      onClick={() => handleOrdenacao('data')}
-                      onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('data')}
-                      tabIndex={0}
-                      role="button"
-                      aria-label="Ordenar por data de vencimento"
-                    >
-                      <div className="flex items-center gap-1">
-                        Data
-                        {ordenacao.campo === 'data' ? (
-                          ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                        ) : (
-                          <ChevronsUpDown className="h-3 w-3 opacity-50" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-3 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                      scope="col"
-                      aria-sort={ordenacao.campo === 'valor' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
-                      onClick={() => handleOrdenacao('valor')}
-                      onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('valor')}
-                      tabIndex={0}
-                      role="button"
-                      aria-label="Ordenar por valor"
-                    >
-                      <div className="flex items-center gap-1 justify-end">
-                        Valor
-                        {ordenacao.campo === 'valor' ? (
-                          ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                        ) : (
-                          <ChevronsUpDown className="h-3 w-3 opacity-50" />
-                        )}
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-            <tbody>
-              {parcelasConsolidadas.map(item => (
-                <LinhaTabela 
-                  key={item.id} 
-                  item={item} 
-                  onItemChange={handleItemChange(item.id, item.formaId, item.numeroParcela)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Rodapé com resumo */}
-        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">
-              {parcelasConsolidadas.length} parcela(s)
-            </span>
-            <span className={`font-semibold ${
-              totalDiverge ? 'text-red-600' : 'text-slate-700 dark:text-slate-300'
-            }`}>
-              Total: {formatarMoeda(totalTabela)}
-            </span>
+              <thead>
+                <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                  <th 
+                    className="px-3 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    scope="col"
+                    aria-sort={ordenacao.campo === 'forma' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
+                    onClick={() => handleOrdenacao('forma')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('forma')}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Ordenar por forma de pagamento"
+                  >
+                    <div className="flex items-center gap-1">
+                      Forma de Pagamento
+                      {ordenacao.campo === 'forma' ? (
+                        ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                      ) : (
+                        <ChevronsUpDown className="h-3 w-3 opacity-50" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="px-3 py-3 text-center text-sm font-semibold text-slate-700 dark:text-slate-300"
+                    scope="col"
+                    aria-sort="none"
+                  >
+                    Parcela
+                  </th>
+                  <th 
+                    className="px-3 py-3 text-left text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    scope="col"
+                    aria-sort={ordenacao.campo === 'data' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
+                    onClick={() => handleOrdenacao('data')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('data')}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Ordenar por data de vencimento"
+                  >
+                    <div className="flex items-center gap-1">
+                      Data
+                      {ordenacao.campo === 'data' ? (
+                        ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                      ) : (
+                        <ChevronsUpDown className="h-3 w-3 opacity-50" />
+                      )}
+                    </div>
+                  </th>
+                  <th 
+                    className="px-3 py-3 text-right text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    scope="col"
+                    aria-sort={ordenacao.campo === 'valor' ? ordenacao.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}
+                    onClick={() => handleOrdenacao('valor')}
+                    onKeyDown={(e) => e.key === 'Enter' && handleOrdenacao('valor')}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Ordenar por valor"
+                  >
+                    <div className="flex items-center gap-1 justify-end">
+                      Valor
+                      {ordenacao.campo === 'valor' ? (
+                        ordenacao.direcao === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                      ) : (
+                        <ChevronsUpDown className="h-3 w-3 opacity-50" />
+                      )}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {parcelasConsolidadas.map(item => (
+                  <LinhaTabela 
+                    key={item.id} 
+                    item={item} 
+                    onItemChange={handleItemChange(item.id, item.formaId, item.numeroParcela)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Rodapé com resumo */}
+          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-600">
+                {parcelasConsolidadas.length} parcela(s)
+              </span>
+              <span className={`font-semibold ${
+                totalDiverge ? 'text-red-600' : 'text-slate-700 dark:text-slate-300'
+              }`}>
+                Total: {formatarMoeda(totalTabela)}
+              </span>
+            </div>
           </div>
         </div>
       </CardContent>
