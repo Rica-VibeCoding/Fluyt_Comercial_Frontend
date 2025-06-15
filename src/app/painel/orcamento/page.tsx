@@ -62,7 +62,11 @@ function OrcamentoPageContent() {
   // Valores derivados (usar manual como fallback)
   const valorNegociado = calculoNegociacao?.valorNegociado || valorNegociadoManual;
   const valorPresenteTotal = calculoNegociacao?.valorPresenteTotal || 0;
-  const descontoReal = calculoNegociacao?.descontoReal || 0;
+  
+  // CORREÇÃO: Quando não há formas de pagamento, desconto real = desconto percentual
+  const descontoReal = formasPagamento.length === 0 
+    ? descontoNumero  // Sem deflação, desconto real = desconto %
+    : (calculoNegociacao?.descontoReal || 0);
   const valorTotalFormas = formasPagamento.reduce((total, forma) => total + forma.valor, 0);
   const valorRestante = valorNegociado - valorTotalFormas;
   
@@ -242,6 +246,22 @@ function OrcamentoPageContent() {
     // Debounce para evitar cálculos excessivos
     setTimeout(() => {
       try {
+        // CASO 1: SEM formas de pagamento (início da negociação)
+        // Desconto Real = Desconto Percentual (sem deflação)
+        if (formasPagamento.length === 0) {
+          const novoDescontoPercentual = Math.max(0, Math.min(50, novoDescontoReal));
+          
+          setDesconto(novoDescontoPercentual.toString());
+          setRecentlyChangedFields(new Set(['desconto', 'valorNegociado', 'descontoReal']));
+          
+          setLastOperation('Desconto aplicado');
+          setIsCalculating(false);
+          setShowRipple(false);
+          setTimeout(() => setUltimaEdicao(null), 500);
+          return;
+        }
+        
+        // CASO 2: COM formas de pagamento (negociação avançada)
         // Calcular valor presente desejado
         const valorPresenteDesejado = valorTotal * (1 - novoDescontoReal / 100);
         setLastOperation('Otimizando distribuição...');

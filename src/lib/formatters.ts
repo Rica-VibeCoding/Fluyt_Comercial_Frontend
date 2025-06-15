@@ -46,10 +46,52 @@ export const formatarData = (data: string | Date): string => {
   return dataObj.toLocaleDateString('pt-BR');
 };
 
-// Formatar data para input (YYYY-MM-DD)
+// Formatar data para input (YYYY-MM-DD) - SEM problemas de fuso horário
 export const formatarDataInput = (data: string | Date): string => {
-  const dataObj = typeof data === 'string' ? new Date(data) : data;
-  return dataObj.toISOString().split('T')[0];
+  if (typeof data === 'string') {
+    return converterDataParaInput(data);
+  }
+  
+  // Para objetos Date, usar método seguro
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+};
+
+// Obter data atual no formato YYYY-MM-DD SEM problemas de fuso horário
+export const obterDataAtualInput = (): string => {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+};
+
+// Converter data string para formato input SEM problemas de fuso horário
+export const converterDataParaInput = (dataString: string): string => {
+  if (!dataString) return '';
+  
+  // Se já está no formato correto YYYY-MM-DD, retorna como está
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
+    return dataString;
+  }
+  
+  // Se é uma string de data ISO, extrai apenas a parte da data
+  if (dataString.includes('T')) {
+    return dataString.split('T')[0];
+  }
+  
+  // Para outros formatos, tenta converter preservando a data local
+  try {
+    const data = new Date(dataString + 'T00:00:00'); // Força hora local
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  } catch {
+    return '';
+  }
 };
 
 // Converter valor formatado para número

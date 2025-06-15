@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { formatarDataInput } from '@/lib/formatters';
+import { formatarDataInput, obterDataAtualInput, converterDataParaInput } from '@/lib/formatters';
 import { gerarCronogramaParcelas } from '@/lib/calculators';
 import { useModalPagamento } from '@/hooks/modulos/orcamento';
 import { ModalPagamentoBase } from './ModalPagamentoBase';
@@ -76,7 +76,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
         // Definir data da primeira parcela
         const primeiraParcela = dadosIniciais.parcelas[0];
         if (primeiraParcela.data) {
-          const dataFormatada = new Date(primeiraParcela.data).toISOString().split('T')[0];
+          const dataFormatada = converterDataParaInput(primeiraParcela.data);
           setDataPrimeira(dataFormatada);
         }
         
@@ -188,7 +188,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   };
 
   const getDataMinima = () => {
-    return new Date().toISOString().split('T')[0];
+    return obterDataAtualInput();
   };
 
   // Função para determinar a classe CSS da célula

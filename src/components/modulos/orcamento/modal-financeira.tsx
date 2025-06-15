@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { formatarMoeda, parseValorMoeda, formatarPercentual } from '@/lib/formatters';
+import { formatarMoeda, parseValorMoeda, formatarPercentual, obterDataAtualInput, converterDataParaInput } from '@/lib/formatters';
 import { validarValorDisponivel, validarNumeroParcelas } from '@/lib/validators';
 import { PAGAMENTO_CONFIG, getTaxaPadrao, getLimitesParcelas, getPlaceholderTaxa } from '@/lib/pagamento-config';
 import { calcularValorPresenteFinanceira, gerarCronogramaParcelas } from '@/lib/calculators';
@@ -62,7 +62,7 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
         // Definir data da primeira parcela
         const primeiraParcela = dadosIniciais.parcelas[0];
         if (primeiraParcela.data) {
-          const dataFormatada = new Date(primeiraParcela.data).toISOString().split('T')[0];
+          const dataFormatada = converterDataParaInput(primeiraParcela.data);
           setDataPrimeira(dataFormatada);
         }
         
@@ -197,7 +197,7 @@ export function ModalFinanceira({ isOpen, onClose, onSalvar, dadosIniciais, valo
   };
 
   const getDataMinima = () => {
-    return new Date().toISOString().split('T')[0];
+    return obterDataAtualInput();
   };
 
   const isFormValido = valor && numeroVezes && dataPrimeira && percentual && parcelas.length > 0 && !erroValidacao;

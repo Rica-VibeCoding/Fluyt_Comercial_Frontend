@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { formatarMoeda, parseValorMoeda, formatarDataInput } from '@/lib/formatters';
+import { formatarMoeda, parseValorMoeda, formatarDataInput, obterDataAtualInput } from '@/lib/formatters';
 import { validarValorDisponivel, validarDataFutura, validarNumeroParcelas, validarTaxa } from '@/lib/validators';
 import { getTaxaPadrao, getLimitesParcelas } from '@/lib/pagamento-config';
 
@@ -125,7 +125,8 @@ export const useModalPagamento = ({
   const limparCampos = useCallback(() => {
     setValor('');
     setNumeroVezes(tipo === 'a-vista' ? '1' : '');
-    setData('');
+    // Para À Vista, inicializar com data atual. Outros tipos ficam vazios.
+    setData(tipo === 'a-vista' ? obterDataAtualInput() : '');
     if (tipo === 'cartao' || tipo === 'financeira') {
       setTaxa(taxaPadraoConfig.toString().replace('.', ','));
     } else {

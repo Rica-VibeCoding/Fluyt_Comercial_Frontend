@@ -156,13 +156,24 @@ export const validarNumeroParcelas = (
   return { isValid: true };
 };
 
-// Validar se uma data está no futuro
+// Validar se uma data está no futuro - SEM problemas de fuso horário
 export const validarDataFutura = (data: string): ValidationResult => {
-  const dataEscolhida = new Date(data);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0); // Zerar horas para comparar apenas datas
+  if (!data) {
+    return {
+      isValid: false,
+      message: 'Data é obrigatória'
+    };
+  }
   
-  if (dataEscolhida < hoje) {
+  // Obter data atual no formato YYYY-MM-DD de forma segura
+  const hoje = new Date();
+  const anoHoje = hoje.getFullYear();
+  const mesHoje = String(hoje.getMonth() + 1).padStart(2, '0');
+  const diaHoje = String(hoje.getDate()).padStart(2, '0');
+  const dataHojeString = `${anoHoje}-${mesHoje}-${diaHoje}`;
+  
+  // Comparar strings de data diretamente (YYYY-MM-DD)
+  if (data < dataHojeString) {
     return {
       isValid: false,
       message: 'Data deve ser hoje ou no futuro'

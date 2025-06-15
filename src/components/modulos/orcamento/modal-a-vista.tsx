@@ -6,6 +6,7 @@ import { formatarValorInput } from '@/lib/formatters';
 import { useModalPagamento } from '@/hooks/modulos/orcamento';
 import { ModalPagamentoBase } from './ModalPagamentoBase';
 import { CampoValor } from './CampoValor';
+import { obterDataAtualInput } from '@/lib/formatters';
 
 interface ModalAVistaProps {
   isOpen: boolean;
@@ -67,7 +68,7 @@ export function ModalAVista({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   };
 
   const getDataMinima = () => {
-    return new Date().toISOString().split('T')[0];
+    return obterDataAtualInput();
   };
 
   return (

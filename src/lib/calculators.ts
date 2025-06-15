@@ -177,7 +177,7 @@ export const calcularValorPresenteBoleto = (
   return valorPresenteTotal;
 };
 
-// Gerar cronograma de parcelas com datas
+// Gerar cronograma de parcelas com datas - SEM problemas de fuso horário
 export const gerarCronogramaParcelas = (
   valorTotal: number,
   numeroParcelas: number,
@@ -186,14 +186,26 @@ export const gerarCronogramaParcelas = (
   const valorParcela = valorTotal / numeroParcelas;
   const parcelas = [];
   
+  // Parse da data inicial de forma segura
+  const [ano, mes, dia] = dataInicial.split('-').map(Number);
+  
   for (let i = 0; i < numeroParcelas; i++) {
-    const data = new Date(dataInicial);
-    data.setMonth(data.getMonth() + i);
+    // Calcula ano e mês da parcela
+    const mesAtual = mes + i;
+    const anoFinal = ano + Math.floor((mesAtual - 1) / 12);
+    const mesFinal = ((mesAtual - 1) % 12) + 1;
+    
+    // Ajusta o dia se necessário (ex: 31 de janeiro para 28/29 de fevereiro)
+    const ultimoDiaDoMes = new Date(anoFinal, mesFinal, 0).getDate();
+    const diaFinal = Math.min(dia, ultimoDiaDoMes);
+    
+    // Formata data final YYYY-MM-DD sem usar toISOString()
+    const dataFinal = `${anoFinal}-${String(mesFinal).padStart(2, '0')}-${String(diaFinal).padStart(2, '0')}`;
     
     parcelas.push({
       numero: i + 1,
       valor: valorParcela,
-      data: data.toISOString().split('T')[0]
+      data: dataFinal
     });
   }
   
