@@ -23,3 +23,7 @@ export { ModalFinanceira } from './modal-financeira';
 // Componentes base reutilizáveis
 export { ModalPagamentoBase } from './ModalPagamentoBase';
 export { CampoValor } from './CampoValor';
+
+// Tabela consolidada
+export { TabelaPagamentosConsolidada } from './tabela-pagamentos-consolidada';
+export { CelulaEditavel } from './celula-editavel';

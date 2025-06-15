@@ -17,6 +17,7 @@ import { ModalAVista } from '@/components/modulos/orcamento/modal-a-vista';
 import { ModalBoleto } from '@/components/modulos/orcamento/modal-boleto';
 import { ModalCartao } from '@/components/modulos/orcamento/modal-cartao';
 import { ModalFinanceira } from '@/components/modulos/orcamento/modal-financeira';
+import { OrcamentoPagamentos } from '@/components/modulos/orcamento/orcamento-pagamentos';
 import { FormaPagamento } from '@/types/orcamento';
 import { useCalculadoraNegociacao, CalculadoraNegociacao } from '@/lib/calculadora-negociacao';
 import { EditableMoneyField, EditablePercentField } from '@/components/ui';
@@ -174,6 +175,111 @@ function OrcamentoPageContent() {
     const formaAtualizada = formasAtualizadas.find(f => f.id === id);
     if (formaAtualizada) {
       editarFormaPagamento(id, { travada: formaAtualizada.travada });
+    }
+  };
+
+  // 🆕 HANDLER PARA MUDANÇAS NAS PARCELAS DA TABELA
+  const handleParcelaChange = (formaId: string, numeroParcela: number, campo: 'valor' | 'data', novoValor: number | string) => {
+    console.log('📝 Mudança na parcela:', { formaId, numeroParcela, campo, novoValor });
+    
+    const forma = formasPagamento.find(f => f.id === formaId);
+    if (!forma) {
+      console.error('❌ Forma não encontrada:', formaId);
+      return;
+    }
+
+    // Apenas boleto é editável, mas vamos validar
+    if (forma.tipo !== 'boleto') {
+      console.warn('⚠️ Tentativa de editar forma não editável:', forma.tipo);
+      return;
+    }
+
+    // Clonar dados atuais
+    const dadosAtualizados = { ...forma.dados };
+    
+    // Garantir que existe array de parcelas
+    if (!dadosAtualizados.parcelas || !Array.isArray(dadosAtualizados.parcelas)) {
+      console.log('🔧 Criando array de parcelas para forma:', formaId);
+      // Gerar parcelas baseado no valor atual
+      const numParcelas = forma.parcelas || 1;
+      const valorParcela = forma.valor / numParcelas;
+      dadosAtualizados.parcelas = Array.from({ length: numParcelas }, (_, i) => ({
+        numero: i + 1,
+        data: new Date().toISOString().split('T')[0],
+        valor: valorParcela
+      }));
+    }
+
+    // Encontrar e atualizar a parcela específica
+    const parcelaIndex = dadosAtualizados.parcelas.findIndex((p: any) => p.numero === numeroParcela);
+    if (parcelaIndex === -1) {
+      console.error('❌ Parcela não encontrada:', numeroParcela);
+      return;
+    }
+
+    // Atualizar o campo específico com validações
+    if (campo === 'valor') {
+      let novoValorParcela = Number(novoValor);
+      
+      // Validar valor mínimo
+      if (novoValorParcela < 0) {
+        console.warn('⚠️ Valor não pode ser negativo');
+        return;
+      }
+      
+      // Garantir máximo 2 casas decimais (dupla validação)
+      novoValorParcela = Math.round(novoValorParcela * 100) / 100;
+      console.log('💰 Valor final com 2 casas decimais:', novoValorParcela);
+      
+      dadosAtualizados.parcelas[parcelaIndex].valor = novoValorParcela;
+      
+      // Recalcular valor total da forma
+      const novoValorTotal = dadosAtualizados.parcelas.reduce((sum: number, p: any) => sum + p.valor, 0);
+      
+      // Validar se não excede valor negociado
+      const valorOutrasFormas = formasPagamento
+        .filter(f => f.id !== formaId)
+        .reduce((sum, f) => sum + f.valor, 0);
+      
+      if (novoValorTotal + valorOutrasFormas > valorNegociado) {
+        console.warn('⚠️ Valor total excederia o valor negociado');
+        // Permitir mesmo assim, mas avisar
+      }
+      
+      // Atualizar forma com novo valor total e dados
+      editarFormaPagamento(formaId, {
+        valor: novoValorTotal,
+        valorPresente: novoValorTotal, // Para boleto, valor presente = valor nominal
+        dados: dadosAtualizados
+      });
+      
+      console.log('✅ Valor da parcela atualizado. Novo total:', novoValorTotal);
+      
+    } else if (campo === 'data') {
+      const novaData = String(novoValor);
+      
+      // Validar formato de data (básico)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(novaData)) {
+        console.warn('⚠️ Formato de data inválido');
+        return;
+      }
+      
+      // Validar se data não é no passado
+      const hoje = new Date();
+      const dataInformada = new Date(novaData);
+      if (dataInformada < hoje) {
+        console.warn('⚠️ Data não pode ser no passado');
+        // Permitir mesmo assim para flexibilidade
+      }
+      
+      dadosAtualizados.parcelas[parcelaIndex].data = novaData;
+      
+      // Atualizar apenas os dados (valor total não muda)
+      editarFormaPagamento(formaId, {
+        dados: dadosAtualizados
+      });
+      
+      console.log('✅ Data da parcela atualizada:', novaData);
     }
   };
 
@@ -511,123 +617,19 @@ function OrcamentoPageContent() {
               className="mb-4"
             /> */}
 
-            {/* Card Plano de Pagamento */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Plano de Pagamento</h3>
-                  <div className="text-sm">
-                    <span className="text-gray-600">Restante: </span>
-                    <span className={`font-bold ${
-                      valorRestante <= 0 ? 'text-green-600' : 'text-red-500'
-                    }`}>
-                      R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
-                    <span className="text-gray-500"> / R$ {valorNegociado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                </div>
-                
-                {/* Indicador de Erros da Calculadora */}
-                {calculoNegociacao?.erros?.length > 0 && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <div className="text-red-600 text-sm">
-                        <strong>⚠️ Atenção:</strong>
-                        <ul className="mt-1 space-y-1">
-                          {calculoNegociacao.erros.map((erro, index) => (
-                            <li key={index}>• {erro}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Layout em linha: Desconto + Botão Adicionar */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  
-                  {/* Botão Atualizar - Temporariamente substituindo o campo desconto */}
-                  <div className="flex-shrink-0 w-full sm:w-48">
-                    <label className="block text-sm font-medium mb-2">
-                      Ações
-                    </label>
-                    <Button
-                      onClick={() => {
-                        console.log('🔄 Botão Atualizar clicado - funcionalidade a ser implementada');
-                      }}
-                      variant="outline"
-                      className="w-full h-10 gap-2 border-2 border-green-300 hover:border-green-400 hover:bg-green-50 
-                                 text-green-700 hover:text-green-800 transition-all duration-200"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Atualizar
-                    </Button>
-                  </div>
-                  
-                  {/* CAMPO DESCONTO TEMPORARIAMENTE OCULTADO - NÃO APAGAR */}
-                  {/* 
-                  <div className="flex-shrink-0 w-full sm:w-48">
-                    <label htmlFor="desconto-input" className="block text-sm font-medium mb-2">
-                      Desconto (%)
-                    </label>
-                    <div className="relative">
-                      <Input
-                        id="desconto-input"
-                        type="number"
-                        value={desconto}
-                        onChange={handleDescontoChange}
-                        placeholder="0"
-                        className="pr-8"
-                        max="100"
-                        min="0"
-                        step="0.1"
-                        aria-describedby="desconto-help"
-                        inputMode="decimal"
-                      />
-                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                        %
-                      </span>
-                    </div>
-                    <div id="desconto-help" className="sr-only">
-                      Digite o percentual de desconto. Máximo 50%.
-                    </div>
-                  </div>
-                  */}
-
-                  {/* Botão Adicionar - ocupa espaço restante */}
-                  <div className="flex-1 flex flex-col justify-end">
-                    <Button
-                      onClick={abrirModalFormas}
-                      variant="outline"
-                      className="w-full gap-2 h-10 touch-manipulation border-dashed border-2 
-                                 hover:border-solid hover:border-blue-300 hover:bg-blue-50 
-                                 transition-all duration-200 text-gray-600 hover:text-blue-700
-                                 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
-                      aria-label="Adicionar nova forma de pagamento"
-                    >
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Adicionar Forma de Pagamento</span>
-                      <span className="sm:hidden">Adicionar Forma</span>
-                    </Button>
-                  </div>
-                  
-                </div>
-                
-                {/* Seção: Formas de Pagamento Configuradas */}
-                {formasPagamento.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-3">Formas de Pagamento Configuradas:</h4>
-                    <ListaFormasPagamento
-                      formas={formasPagamento}
-                      onEditar={handleEditarForma}
-                      onRemover={handleRemoverForma}
-                      onToggleTravamento={handleToggleTravamento}
-                    />
-                  </div>
-                )}
-                
-              </CardContent>
-            </Card>
+            {/* Componente Unificado de Pagamentos */}
+            <OrcamentoPagamentos
+              formasPagamento={formasPagamento}
+              valorNegociado={valorNegociado}
+              valorRestante={valorRestante}
+              descontoPercentual={descontoNumero}
+              onDescontoChange={handleDescontoChange}
+              onAdicionarForma={abrirModalFormas}
+              onEditarForma={handleEditarForma}
+              onRemoverForma={handleRemoverForma}
+              onToggleTravamento={handleToggleTravamento}
+              onParcelaChange={handleParcelaChange}
+            />
             
           </div>
           
