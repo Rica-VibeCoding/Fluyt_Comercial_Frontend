@@ -13,7 +13,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '../ui/tooltip';
 import { Toaster } from '../ui/toaster';
@@ -44,8 +44,23 @@ interface ClientProvidersProps {
  * Separado para evitar hooks no componente principal
  */
 function PersistenceManager({ children }: { children: React.ReactNode }) {
-  // Ativar persistência automática em todo o painel
-  usePersistenciaBasica();
+  const [isClient, setIsClient] = useState(false);
+  
+  // Hook sempre chamado (nunca condicional)
+  const persistencia = usePersistenciaBasica();
+  
+  // Detectar quando estamos no cliente
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Persistência só funciona no cliente, mas hook sempre é chamado
+  useEffect(() => {
+    if (!isClient) return;
+    
+    // A lógica de persistência já está encapsulada no hook
+    // O hook internamente já faz as verificações de SSR
+  }, [isClient, persistencia]);
   
   return <>{children}</>;
 }
@@ -66,8 +81,8 @@ export function ClientProviders({ children }: ClientProvidersProps) {
               <Toaster />
               <SonnerToaster />
               
-              {/* Debug de persistência - REATIVADO com correções de loop */}
-              {process.env.NODE_ENV === 'development' && (
+              {/* Debug de persistência - TEMPORARIAMENTE DESABILITADO para hidratação */}
+              {false && process.env.NODE_ENV === 'development' && (
                 <DebugPersistenciaCompacto />
               )}
             </PersistenceManager>
