@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-06-16T00:00:00Z",
+  "validador": "Agente S\u00eanior",
+  "estrutura": {
+    "valida": true
+  },
+  "configuracoes": {
+    "validas": true
+  },
+  "modulos": {
+    "validos": true
+  },
+  "status_geral": "pronto"
+}

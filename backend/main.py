@@ -201,8 +201,11 @@ prefix = f"/api/{settings.api_version}"
 
 try:
     # Módulo de Autenticação (sem autenticação obrigatória)
+    from modules.auth.routes import router as auth_router
+    app.include_router(auth_router, prefix=f"{prefix}", tags=["🔐 Autenticação"])
+    
     from modules.equipe.controller import router as equipe_router
-    app.include_router(equipe_router, prefix=f"{prefix}/auth", tags=["🔐 Autenticação"])
+    app.include_router(equipe_router, prefix=f"{prefix}/equipe", tags=["👥 Equipe"])
 
     # Módulos principais (requerem autenticação)
     from modules.clientes.controller import router as clientes_router

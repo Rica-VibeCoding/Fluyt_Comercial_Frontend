@@ -6,6 +6,10 @@ import os
 from core.config import get_settings
 from core.database import get_supabase_client
 import sys
+from dotenv import load_dotenv
+
+# Carregar .env primeiro
+load_dotenv()
 
 def verificar_configuracoes_criticas():
     """Verifica configurações que podem bloquear conectividade"""
@@ -103,11 +107,11 @@ echo "🎯 Iniciando servidor FastAPI..."
 python main.py
 '''
     
-    with open('/mnt/c/Users/ricar/Projetos/Fluyt_Comercial_Frontend/backend/startup.sh', 'w') as f:
+    with open('/mnt/c/Users/ricar/Projetos/Fluyt_Comercial/backend/startup.sh', 'w') as f:
         f.write(script_content)
     
     # Tornar executável
-    os.chmod('/mnt/c/Users/ricar/Projetos/Fluyt_Comercial_Frontend/backend/startup.sh', 0o755)
+    os.chmod('/mnt/c/Users/ricar/Projetos/Fluyt_Comercial/backend/startup.sh', 0o755)
     print("✅ Script startup.sh criado")
 
 def diagnostico_completo():

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-06-16T04:18:41.454574",
+  "operations": [
+    {
+      "operation": "check_existing_auth_user",
+      "success": false,
+      "timestamp": "2025-06-16T04:18:41.747337",
+      "data": null,
+      "error": "HTTP 401: {\"message\":\"Invalid API key\",\"hint\":\"Double check your Supabase `anon` or `service_role` API key.\"}"
+    },
+    {
+      "operation": "create_auth_user",
+      "success": false,
+      "timestamp": "2025-06-16T04:18:41.890841",
+      "data": null,
+      "error": "HTTP 401: {\"message\":\"Invalid API key\",\"hint\":\"Double check your Supabase `anon` or `service_role` API key.\"}"
+    }
+  ],
+  "user_data": {},
+  "errors": [],
+  "success": false
+}

@@ -1,0 +1,63 @@
+{
+  "dashboard_url": "https://app.supabase.com",
+  "project_url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Access Supabase Dashboard",
+      "url": "https://app.supabase.com",
+      "action": "Log in to your Supabase account",
+      "expected": "Dashboard showing your projects"
+    },
+    {
+      "step": 2,
+      "title": "Open Project",
+      "url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde",
+      "action": "Click on project 'Fluyt' (momwbpxqnvgehotfmvde)",
+      "expected": "Project dashboard loads"
+    },
+    {
+      "step": 3,
+      "title": "Navigate to Authentication",
+      "url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde/auth/users",
+      "action": "Go to Authentication > Users in sidebar",
+      "expected": "User management interface"
+    },
+    {
+      "step": 4,
+      "title": "Create New User",
+      "action": "Click 'Add user' or 'Create user' button",
+      "form_data": {
+        "email": "ricardo.nilton@hotmail.com",
+        "password": "1478953",
+        "auto_confirm": true,
+        "email_confirm": true
+      },
+      "expected": "User created with UUID generated"
+    },
+    {
+      "step": 5,
+      "title": "Note User ID",
+      "action": "Copy the generated User ID from the user list",
+      "expected": "UUID like: 12345678-1234-1234-1234-123456789abc"
+    },
+    {
+      "step": 6,
+      "title": "Create Database Record",
+      "url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde/editor",
+      "action": "Go to Database > SQL Editor",
+      "sql": "\nINSERT INTO usuarios (user_id, email, nome, perfil, ativo, created_at)\nVALUES ('[USER_ID_FROM_STEP_5]', 'ricardo.nilton@hotmail.com', 'Ricardo Nilton', 'SUPER_ADMIN', true, NOW())\nON CONFLICT (email) DO UPDATE SET\n    user_id = EXCLUDED.user_id,\n    nome = EXCLUDED.nome,\n    perfil = EXCLUDED.perfil,\n    updated_at = NOW();\n",
+      "expected": "Record inserted successfully"
+    },
+    {
+      "step": 7,
+      "title": "Verify Creation",
+      "action": "Test authentication and database consistency",
+      "verification": [
+        "User appears in Authentication > Users",
+        "Record exists in usuarios table with matching user_id",
+        "Login test with email/password succeeds"
+      ]
+    }
+  ]
+}

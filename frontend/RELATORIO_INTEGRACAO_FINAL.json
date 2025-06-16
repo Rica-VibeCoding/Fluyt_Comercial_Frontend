@@ -1,0 +1,63 @@
+{
+  "timestamp": "2025-06-16T04:56:47.153Z",
+  "tester": "Agente Sênior",
+  "tests": {
+    "backend_health": {
+      "success": false,
+      "error": "fetch failed",
+      "responseTime": 29,
+      "timestamp": "2025-06-16T04:56:47.143Z"
+    },
+    "endpoints": [
+      {
+        "endpoint": "/health",
+        "success": false,
+        "error": "fetch failed",
+        "timestamp": "2025-06-16T04:56:47.144Z"
+      },
+      {
+        "endpoint": "/api/v1/docs",
+        "success": false,
+        "error": "fetch failed",
+        "timestamp": "2025-06-16T04:56:47.145Z"
+      },
+      {
+        "endpoint": "/api/v1/clientes",
+        "success": false,
+        "error": "fetch failed",
+        "timestamp": "2025-06-16T04:56:47.146Z"
+      },
+      {
+        "endpoint": "/api/v1/ambientes",
+        "success": false,
+        "error": "fetch failed",
+        "timestamp": "2025-06-16T04:56:47.147Z"
+      }
+    ],
+    "frontend_files": [
+      {
+        "file": "src/lib/api-client.ts",
+        "exists": true
+      },
+      {
+        "file": "src/lib/health-check.ts",
+        "exists": true
+      },
+      {
+        "file": "src/lib/config.ts",
+        "exists": true
+      },
+      {
+        "file": "src/app/page.tsx",
+        "exists": true
+      }
+    ]
+  },
+  "summary": {
+    "backend_reachable": false,
+    "endpoints_tested": 4,
+    "endpoints_working": 0,
+    "frontend_files_ok": 4,
+    "integration_status": "frontend_ready"
+  }
+}

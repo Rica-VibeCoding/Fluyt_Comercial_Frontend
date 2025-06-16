@@ -33,7 +33,7 @@ class Logger {
 
   constructor() {
     this.config = {
-      enabled: process.env.NODE_ENV === 'development',
+      enabled: typeof process !== 'undefined' && process.env.NODE_ENV === 'development',
       level: 'debug',
       categories: new Set<LogCategory>(['error', 'warn'] as LogCategory[]), // Sempre mostrar erros e warnings
       showTimestamp: true,
@@ -219,7 +219,7 @@ export const contractLogger = {
 };
 
 // Helper para exposição global em desenvolvimento
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
   (window as any).flytLogger = {
     logger,
     enableCategory: (category: LogCategory) => logger.enableCategory(category),

@@ -34,7 +34,7 @@ export const FRONTEND_CONFIG = {
   // Features flags para integração gradual
   FEATURES: {
     USE_REAL_API: process.env.NEXT_PUBLIC_USE_REAL_API === 'true',
-    ENABLE_LOGS: process.env.NODE_ENV === 'development',
+    ENABLE_LOGS: typeof process !== 'undefined' && process.env.NODE_ENV === 'development',
     MOCK_FALLBACK: true, // Fallback para mocks se API falhar
   },
   
@@ -86,7 +86,8 @@ export function verificarConfiguracoes(): {
  * Log helper para desenvolvimento
  */
 export function logConfig(message: string, data?: any) {
-  if (FRONTEND_CONFIG.FEATURES.ENABLE_LOGS) {
+  // Verificação segura para ambiente browser
+  if (typeof window !== 'undefined' && FRONTEND_CONFIG.FEATURES.ENABLE_LOGS) {
     console.log(`🔧 [CONFIG] ${message}`, data);
   }
 }
@@ -114,12 +115,17 @@ export const DEBUG_CONFIG = {
  */
 export async function verificarBackendDisponivel(): Promise<boolean> {
   try {
+    // Criar AbortController para timeout manual
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.HEALTH}`, {
       method: 'GET',
       headers: API_CONFIG.DEFAULT_HEADERS,
-      signal: AbortSignal.timeout(5000) // 5 segundos timeout
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
     return response.ok;
   } catch {
     return false;
