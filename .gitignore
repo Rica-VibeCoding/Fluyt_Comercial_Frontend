@@ -32,3 +32,19 @@ out/
 
 # Migração - arquivos temporários
 src/migracao/
+
+# Python - backend
+__pycache__/
+*.pyc
+venv/
+backend/venv/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Bun (se usou)
+bun.lockb
+
+# Claude AI (Claude folders)
+.claude/
