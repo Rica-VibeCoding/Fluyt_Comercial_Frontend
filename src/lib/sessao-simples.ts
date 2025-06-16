@@ -33,6 +33,7 @@ class SessaoSimplesManager {
   // Carregar sessão
   public carregar(): SessaoSimples {
     if (typeof window === 'undefined') {
+      console.log('🔒 [SSR] Retornando estado vazio (servidor)');
       return this.getEstadoVazio();
     }
     
@@ -44,14 +45,23 @@ class SessaoSimplesManager {
         if (!sessao.formasPagamento) {
           sessao.formasPagamento = [];
         }
-        console.log('📥 Sessão carregada:', sessao);
+        console.log('📥 [LOAD] Sessão carregada do localStorage:', {
+          cliente: sessao.cliente?.nome || 'null',
+          ambientes: sessao.ambientes.length,
+          valorTotal: sessao.valorTotal,
+          formas: sessao.formasPagamento.length
+        });
         return sessao;
+      } else {
+        console.log('📭 [LOAD] Nenhuma sessão encontrada no localStorage');
       }
     } catch (error) {
-      console.warn('Erro ao carregar sessão:', error);
+      console.warn('❌ [LOAD] Erro ao carregar sessão:', error);
     }
     
-    return this.getEstadoVazio();
+    const estadoVazio = this.getEstadoVazio();
+    console.log('🆕 [LOAD] Retornando estado vazio');
+    return estadoVazio;
   }
   
   // Salvar sessão

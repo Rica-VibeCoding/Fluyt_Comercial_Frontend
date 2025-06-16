@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { useContractDataManager } from "./shared/contract-data-manager";
-import { useSessao } from "@/store/sessao-store";
+import { useSessaoSimples } from "@/hooks/globais/use-sessao-simples";
 
 // Seções modulares
 import { HeaderSection } from "./summary-sections/header-section";
@@ -18,40 +18,31 @@ import { DebugPersistenciaCompacto } from "../../shared/debug-persistencia";
 const ContractSummary = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sessao = useSessao();
+  const { cliente, ambientes, carregarClienteDaURL } = useSessaoSimples();
   const { contratoData, updateField, updateStatus, isLoading } = useContractDataManager();
 
-  // Carregar dados da URL se necessário
+  // ✅ PADRÃO QUE FUNCIONA: Igual ambiente-page.tsx
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
     const clienteNome = searchParams.get('clienteNome');
     
-    console.log('🔍 ContractSummary - Parâmetros URL:', { clienteId, clienteNome });
+    console.log('🔍 ContractSummary - Parâmetros URL:', { clienteId, clienteNome, temCliente: !!cliente });
     
-    // Se tem dados na URL mas não tem cliente na sessão Zustand, forçar carregamento
-    if (clienteId && clienteNome && !sessao.cliente) {
-      console.log('📥 Carregando cliente da URL na sessão Zustand...');
-      sessao.definirCliente({
-        id: clienteId,
-        nome: decodeURIComponent(clienteNome),
-        cpf_cnpj: '',
-        telefone: '',
-        tipo_venda: 'NORMAL' as const,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
+    // Carregar dados sempre que necessário (sem condições complexas)
+    if (clienteId && clienteNome) {
+      console.log('📥 Carregando cliente da URL na sessaoSimples...');
+      carregarClienteDaURL(clienteId, decodeURIComponent(clienteNome));
     }
-  }, [searchParams, sessao]);
+  }, [searchParams, carregarClienteDaURL]);
 
   // Debug da sessão
   useEffect(() => {
     console.log('🔄 ContractSummary - Estado da sessão:', {
-      cliente: sessao.cliente?.nome || 'null',
-      ambientes: sessao.ambientes.length,
-      orcamentoConfigurado: sessao.orcamentoConfigurado,
-      podeGerarContrato: sessao.podeGerarContrato()
+      cliente: cliente?.nome || 'null',
+      ambientes: ambientes.length,
+      temDadosSuficientes: !!(cliente && ambientes.length > 0)
     });
-  }, [sessao.cliente, sessao.ambientes, sessao.orcamentoConfigurado]);
+  }, [cliente, ambientes]);
 
   // Loading state
   if (isLoading) {

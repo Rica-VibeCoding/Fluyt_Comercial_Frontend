@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useOrcamento } from '@/hooks/data/use-orcamento';
 import { useFormasPagamento } from '@/hooks/data/use-formas-pagamento';
 import { useSessaoSimples } from '@/hooks/globais/use-sessao-simples';
-import { useSessao } from '@/store/sessao-store';
+// import { useSessao } from '@/store/sessao-store'; // REMOVIDO - conflito com sessaoSimples
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -161,26 +161,70 @@ function OrcamentoPageContent() {
     calculoNegociacao
   });
 
-  // ✅ CARREGAMENTO SIMPLES (como funcionava)
+  // ✅ CARREGAMENTO ULTRA ROBUSTO (anti-race conditions para dev/prod)
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
     const clienteNome = searchParams.get('clienteNome');
     
-    console.log('🔍 Parâmetros da URL:', { clienteId, clienteNome });
+    console.log('🔍 [PAGE LOAD] Parâmetros da URL:', { clienteId, clienteNome });
     
-    if (clienteId && clienteNome) {
-      console.log('📥 Carregando cliente da URL...');
-      carregarClienteDaURL(clienteId, decodeURIComponent(clienteNome));
-    }
+    // Carregamento assíncrono para evitar race conditions
+    const carregarDados = async () => {
+      if (clienteId && clienteNome) {
+        console.log('📥 [PAGE LOAD] Carregando cliente da URL...');
+        
+        // 🔒 DESENVOLVIMENTO vs PRODUÇÃO: Timeout diferente
+        // Em desenvolvimento, React Strict Mode pode precisar de mais tempo
+        const isDev = process.env.NODE_ENV === 'development';
+        const timeoutInicializacao = isDev ? 200 : 50; // Mais tempo para dev
+        
+        console.log(`⏱️ [PAGE LOAD] Modo: ${isDev ? 'DEV' : 'PROD'}, timeout: ${timeoutInicializacao}ms`);
+        
+        // Aguardar inicialização completa do hook
+        await new Promise(resolve => setTimeout(resolve, timeoutInicializacao));
+        
+        carregarClienteDaURL(clienteId, decodeURIComponent(clienteNome));
+        
+        // Aguardar sincronização antes de marcar como carregado
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      setIsLoaded(true);
+      console.log('✅ [PAGE LOAD] Carregamento concluído');
+    };
     
-    setIsLoaded(true);
+    carregarDados();
   }, [searchParams, carregarClienteDaURL]);
   
-  // ✅ NAVEGAÇÃO SIMPLES 
-  const navegarParaContratos = () => {
+  // ✅ NAVEGAÇÃO OTIMIZADA (com verificação de estado)
+  const navegarParaContratos = async () => {
+    // Aguardar sincronização completa
+    if (!isLoaded) {
+      console.log('⏳ Aguardando carregamento completo...');
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    console.log('🚨 DEBUG: Tentativa de navegação para contratos', {
+      isLoaded,
+      temCliente: !!cliente,
+      clienteNome: cliente?.nome,
+      clienteId: cliente?.id,
+      quantidadeAmbientes: ambientes.length,
+      quantidadeFormasPagamento: formasPagamento.length,
+      podeNavegar: !!(cliente && ambientes.length > 0 && formasPagamento.length > 0)
+    });
+    
     if (cliente && ambientes.length > 0 && formasPagamento.length > 0) {
       console.log('✅ Navegando para contratos');
-      router.push(`/painel/contratos?clienteId=${cliente?.id}&clienteNome=${encodeURIComponent(cliente?.nome || '')}`);
+      const url = `/painel/contratos?clienteId=${cliente?.id}&clienteNome=${encodeURIComponent(cliente?.nome || '')}`;
+      console.log('🔗 URL de navegação:', url);
+      
+      // Garantir que a navegação aconteça no próximo tick
+      setTimeout(() => {
+        router.push(url);
+      }, 50);
+    } else {
+      console.log('❌ Navegação bloqueada - requisitos não atendidos');
     }
   };
   

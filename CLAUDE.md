@@ -415,6 +415,57 @@ npx shadcn-ui@latest add [component-name]
 - Estado visible em Debug card do simulador
 - localStorage key: `fluyt_sessao_simples`
 
+## 📖 DOCUMENTAÇÃO ESPECIALIZADA
+
+### 💰 **Sistema de Orçamentos**
+**Documento Principal:** `docs/SISTEMA_ORCAMENTO_COMPLETO.md`
+
+### 🔄 **Fluxo Orçamento → Contrato**  
+**Documento Principal:** `docs/orcamento_contrato.md`
+
+Sistema de transmissão de dados entre módulos com:
+- **Análise completa** do fluxo atual e problemas identificados
+- **Mapeamento detalhado** de dados fonte vs destino  
+- **5 bugs críticos** identificados e documentados
+- **Soluções técnicas** propostas em 3 fases
+- **20 tasks específicas** para implementação
+- **Critérios de teste** e métricas de sucesso
+
+**Problemas Críticos Identificados:**
+- ❌ Mismatch de tipos de Cliente (dados incompletos)
+- ❌ Inconsistência entre `useSessaoSimples` vs `useSessao`  
+- ❌ Formas de pagamento perdidas na transferência
+- ❌ Valores calculados avançados não preservados
+- ❌ Mapeamento incorreto de propriedades inexistentes
+
+**Meta:** Última refatoração antes da integração com backend
+
+Sistema de cálculo financeiro inteligente com:
+- **Edição bidirecional** entre campos interdependentes  
+- **Cálculo de valor presente** com deflação por forma de pagamento
+- **Sistema de travamento** Lock/Unlock para formas estratégicas
+- **Redistribuição automática** proporcional e por prioridade
+- **Validações de negócio** para cenários impossíveis
+- **Interface editável** para Valor Negociado e Desconto Real
+
+**Componentes Principais:**
+- `ModalPagamentoBase.tsx` - Layout padrão para modais
+- `CampoValor.tsx` - Campo monetário padronizado
+- `use-modal-pagamento.ts` - Hook para modal À Vista
+- `calculadora-negociacao.ts` - Motor de cálculos
+- `lib/calculators.ts` - Funções matemáticas centralizadas
+
+**Casos de Uso:**
+- Cliente pede desconto → Sistema mostra impacto real instantâneo
+- Fixar valor à vista → Negociar resto automaticamente
+- Comparar cenários → Decisão baseada em valor presente
+
+**Problemas Resolvidos:**
+- ✅ Campo valor travado no modal boleto (conflito de hooks)
+- ✅ Lógica lock/unlock invertida (feedback visual)
+- ✅ Duplicação de código eliminada (~280 linhas)
+- ✅ Validações inconsistentes padronizadas
+
 ## Contexto de Negócio
 Sistema para **gestão comercial completa** com foco em:
 - Fluxo Cliente → Ambiente → Orçamento → Contrato

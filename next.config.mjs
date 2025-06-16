@@ -26,52 +26,35 @@ const nextConfig = {
       ],
     });
 
-    // Otimizações para chunks estáveis
+    // 🔧 CONFIGURAÇÕES SIMPLIFICADAS PARA DESENVOLVIMENTO
+    // Remover configurações complexas que causam race conditions
     if (dev) {
-      // Configuração de chunks mais estável para desenvolvimento
+      console.log('🔧 Aplicando configurações simplificadas para desenvolvimento');
+      
+      // ✅ CACHE SIMPLIFICADO: Usar apenas memory cache para evitar stale closures
+      config.cache = {
+        type: 'memory', // Mudança crítica: memory ao invés de filesystem
+      };
+      
+      // ✅ SPLIT CHUNKS MÍNIMO: Apenas essencial para evitar problemas de timing
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
-          minSize: 20000,
-          maxSize: 244000,
+          chunks: 'async', // Menos agressivo que 'all'
           cacheGroups: {
-            default: false,
-            vendors: false,
-            // Chunk específico para React
-            react: {
-              name: 'react',
-              chunks: 'all',
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              priority: 20,
-              enforce: true,
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
             },
-            // Chunk para UI components
-            ui: {
-              name: 'ui',
-              chunks: 'all',
-              test: /[\\/]src[\\/]components[\\/]ui[\\/]/,
-              priority: 15,
-              enforce: true,
-            },
-            // Chunk para vendor libs
             vendor: {
-              name: 'vendor',
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: -10,
               chunks: 'all',
-              test: /[\\/]node_modules[\\/](?!react|react-dom)/,
-              priority: 10,
             },
           },
         },
-      };
-      
-      // Cache mais robusto
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [__filename],
-        },
-        version: '1.0.0',
       };
     }
     

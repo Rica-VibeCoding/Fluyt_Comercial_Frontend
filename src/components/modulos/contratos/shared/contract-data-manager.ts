@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useSessao } from '../../../../store/sessao-store';
+import { useSessaoSimples } from '../../../../hooks/globais/use-sessao-simples';
 import { contratoMock, ContratoData } from '../../../../types/contrato';
+// ✅ CORREÇÃO FASE 1: Importar tipos e hook para cliente completo
+import { useClienteCompleto } from '../../../../hooks/use-cliente-completo';
+import { formatarEnderecoCliente, CLIENTE_FALLBACKS } from '../../../../types/cliente-completo';
 
 // Hook para gerenciamento de dados do contrato
 export function useContractDataManager() {
@@ -9,78 +12,78 @@ export function useContractDataManager() {
   const { 
     cliente, 
     ambientes, 
-    valorTotalAmbientes, 
-    descontoReal,
-    carregarSessaoCliente 
-  } = useSessao();
+    valorTotal,
+    carregarClienteDaURL 
+  } = useSessaoSimples();
+  
+  // ✅ CORREÇÃO FASE 1: Usar hook para dados completos do cliente
+  const { clienteCompleto, carregando: carregandoCliente, temDadosCompletos } = useClienteCompleto(cliente);
   
   const [contratoData, setContratoData] = useState<ContratoData>(contratoMock);
-  const [tentouRecuperar, setTentouRecuperar] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Tentar recuperar sessão automaticamente se cliente foi perdido
+  // ✅ PADRÃO QUE FUNCIONA: Carregar dados da URL (igual ambiente-page.tsx)
   useEffect(() => {
     const clienteId = searchParams.get('clienteId');
+    const clienteNome = searchParams.get('clienteNome');
     
-    if (!cliente && clienteId && !tentouRecuperar) {
-      console.log('🔄 ContractDataManager - Tentando recuperar sessão perdida para cliente:', clienteId);
-      setTentouRecuperar(true);
-      carregarSessaoCliente(clienteId);
+    console.log('🔍 ContractDataManager - Verificando URL:', { clienteId, clienteNome, temCliente: !!cliente });
+    
+    if (clienteId && clienteNome && !cliente) {
+      console.log('📥 Carregando cliente da URL...');
+      setIsLoading(true);
+      carregarClienteDaURL(clienteId, decodeURIComponent(clienteNome));
     }
-  }, [cliente, searchParams, carregarSessaoCliente, tentouRecuperar]);
+  }, [searchParams, cliente, carregarClienteDaURL]);
 
-  // Controle de loading
+  // ✅ CONTROLE DE LOADING BASEADO EM DADOS REAIS
   useEffect(() => {
-    // Simular loading mínimo para evitar flicker
-    const timer = setTimeout(() => {
+    if (cliente) {
       setIsLoading(false);
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [cliente]);
 
-  // Sincronizar dados da sessão com o contrato (com debounce)
+  // ✅ SINCRONIZAÇÃO DIRETA SEM DELAY (igual padrão que funciona)
   useEffect(() => {
-    // Evitar re-renders durante loading inicial
-    if (isLoading) return;
+    console.log('🔍 ContractDataManager - Sincronizando dados da sessão:', {
+      temCliente: !!cliente,
+      clienteNome: cliente?.nome || 'null',
+      quantidadeAmbientes: ambientes.length,
+      valorTotal,
+      clienteCompleto: !!clienteCompleto
+    });
 
-    const timer = setTimeout(() => {
-      console.log('🔍 ContractDataManager - Sincronizando dados da sessão:', {
-        temCliente: !!cliente,
-        clienteNome: cliente?.nome || 'null',
-        quantidadeAmbientes: ambientes.length,
-        valorTotalAmbientes,
-        descontoReal
-      });
-
-      if (cliente && ambientes.length > 0) {
-      // Usar desconto real da sessão ou valor padrão do mock
-      const descontoParaUsar = descontoReal > 0 ? descontoReal / 100 : contratoMock.desconto;
+    // ✅ CORREÇÃO FASE 1: Usar clienteCompleto ao invés de cliente básico
+    if (clienteCompleto && ambientes.length > 0) {
+      // Usar desconto padrão do mock (10%) por enquanto
+      const descontoParaUsar = contratoMock.desconto;
       
-      console.log('💰 ContractDataManager - Calculando desconto:', {
-        descontoRealSessao: descontoReal,
+      console.log('💰 ContractDataManager - Atualizando contrato:', {
         descontoUsado: descontoParaUsar,
-        origem: descontoReal > 0 ? 'SESSÃO' : 'MOCK (10%)',
-        percentualFinal: (descontoParaUsar * 100).toFixed(1) + '%'
+        origem: 'MOCK (10%)',
+        percentualFinal: (descontoParaUsar * 100).toFixed(1) + '%',
+        clienteCompleto: !!clienteCompleto,
+        temDadosCompletos
       });
       
       setContratoData(prev => ({
         ...prev,
         cliente: {
-          nome: cliente.nome,
-          cpf: cliente.cpf_cnpj || '',
-          endereco: `${cliente.logradouro}, ${cliente.numero} - ${cliente.bairro}, ${cliente.cidade}/${cliente.uf}`,
-          telefone: cliente.telefone,
-          email: cliente.email
+          nome: clienteCompleto.nome,
+          cpf: clienteCompleto.cpf_cnpj || CLIENTE_FALLBACKS.cpf_cnpj,
+          endereco: formatarEnderecoCliente(clienteCompleto),
+          telefone: clienteCompleto.telefone || CLIENTE_FALLBACKS.telefone,
+          email: clienteCompleto.email || CLIENTE_FALLBACKS.email
         },
-        valor_total: valorTotalAmbientes,
+        valor_total: valorTotal,
         desconto: descontoParaUsar,
-        valor_final: valorTotalAmbientes * (1 - descontoParaUsar),
+        valor_final: valorTotal * (1 - descontoParaUsar),
+        // ✅ CORREÇÃO FASE 1: Corrigir mapeamento de ambientes (valorTotal → valor)
         ambientes: ambientes.map(ambiente => ({
           nome: ambiente.nome,
           categoria: 'Ambiente',
-          descricao: `Ambiente com ${ambiente.acabamentos.length} acabamentos`,
-          valor: ambiente.valorTotal
+          descricao: `Ambiente personalizado`, // Removido acesso a .acabamentos inexistente
+          valor: ambiente.valorTotal || ambiente.valor || 0 // Fallback para ambas as propriedades
         }))
       }));
     } else {
@@ -88,15 +91,11 @@ export function useContractDataManager() {
       console.log('⚠️ ContractDataManager - Dados insuficientes:', {
         temCliente: !!cliente,
         quantidadeAmbientes: ambientes.length,
-        valorTotal: valorTotalAmbientes,
-        clienteIdURL: searchParams.get('clienteId'),
-        tentouRecuperar
+        valorTotal,
+        clienteIdURL: searchParams.get('clienteId')
       });
     }
-    }, 100); // debounce de 100ms
-
-    return () => clearTimeout(timer);
-  }, [cliente, ambientes, valorTotalAmbientes, descontoReal, searchParams, tentouRecuperar, isLoading]);
+  }, [clienteCompleto, ambientes, valorTotal]);
 
   // Função para atualizar campos do contrato
   const updateField = useCallback((path: string, value: string | number) => {
@@ -129,7 +128,6 @@ export function useContractDataManager() {
     setContratoData,
     updateField,
     updateStatus,
-    tentouRecuperar,
     isLoading
   };
 }

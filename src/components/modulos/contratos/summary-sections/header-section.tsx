@@ -3,7 +3,7 @@ import { Button } from "../../../ui/button";
 import { Badge } from "../../../ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ClienteSelectorUniversal } from "../../../shared/cliente-selector-universal";
-import { useSessao } from "../../../../store/sessao-store";
+import { useSessaoSimples } from "../../../../hooks/globais/use-sessao-simples";
 import { ContratoData } from "../../../../types/contrato";
 
 interface HeaderSectionProps {
@@ -14,15 +14,19 @@ interface HeaderSectionProps {
 
 export function HeaderSection({ onFinalizarContrato, contratoData, updateStatus }: HeaderSectionProps) {
   const router = useRouter();
-  const { podeGerarContrato, cliente, ambientes, orcamentoConfigurado, formasPagamento } = useSessao();
+  const { cliente, ambientes } = useSessaoSimples();
+  
+  // Função simples para verificar se pode gerar contrato
+  const podeGerarContrato = () => {
+    return !!(cliente && ambientes.length > 0);
+  };
   
   // Debug temporário
   console.log('🔍 HeaderSection Debug:', {
-    podeGerarContrato: podeGerarContrato(),
+    temCliente: !!cliente,
     cliente: cliente?.nome || 'null',
     ambientes: ambientes.length,
-    orcamentoConfigurado,
-    formasPagamento
+    podeGerar: podeGerarContrato()
   });
 
   const handleFinalizarClick = () => {

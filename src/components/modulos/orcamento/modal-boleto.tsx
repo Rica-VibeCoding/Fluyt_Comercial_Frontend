@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { formatarDataInput, obterDataAtualInput, converterDataParaInput } from '@/lib/formatters';
 import { gerarCronogramaParcelas } from '@/lib/calculators';
-import { useModalPagamento } from '@/hooks/modulos/orcamento';
 import { ModalPagamentoBase } from './ModalPagamentoBase';
 import { CampoValor } from './CampoValor';
 
@@ -27,42 +26,21 @@ interface ModalBoletoProps {
 }
 
 export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMaximo = 0, valorJaAlocado = 0 }: ModalBoletoProps) {
-  // Hook centralizado com toda a lógica comum dos modais de pagamento
-  // Transformar dadosIniciais para compatibilidade com o hook
-  const dadosIniciaisHook = dadosIniciais ? {
-    valor: dadosIniciais.valor,
-    parcelas: dadosIniciais.parcelas?.length || 1
-  } : undefined;
-
-  const {
-    valor,
-    setValor,
-    numeroVezes,
-    setNumeroVezes,
-    isLoading,
-    setIsLoading,
-    salvando,
-    setSalvando,
-    erroValidacao,
-    setErroValidacao,
-    limitesConfig
-  } = useModalPagamento({
-    isOpen,
-    tipo: 'boleto',
-    valorMaximo,
-    valorJaAlocado,
-    dadosIniciais: dadosIniciaisHook
-  });
+  // ✅ USAR ESTADOS PRÓPRIOS (como modal financeira que funciona)
+  const [valor, setValor] = useState('');
+  const [numeroVezes, setNumeroVezes] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [erroValidacao, setErroValidacao] = useState('');
+  
+  // Configuração de limites sem usar hook
+  const limitesConfig = { min: 1, max: 12 };
 
   // Estados específicos apenas para boleto (data e parcelas)
   const [dataPrimeira, setDataPrimeira] = useState('');
   const [parcelas, setParcelas] = useState<ParcelaBoleto[]>([]);
   const [datasEditadas, setDatasEditadas] = useState<Set<number>>(new Set());
 
-  // Debug: Monitorar estado salvando e valor
-  useEffect(() => {
-    console.log('Modal Boleto - Estado salvando:', salvando, 'Valor:', valor);
-  }, [salvando, valor]);
 
   // Carregar dados iniciais quando modal abrir para edição
   useEffect(() => {
@@ -169,9 +147,7 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
   };
 
   const handleValorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('🎯 handleValorChange chamado com:', e.target.value);
     const valorFormatado = formatarValor(e.target.value);
-    console.log('🎯 Valor formatado:', valorFormatado);
     setValor(valorFormatado);
     
     // Validar em tempo real
@@ -218,10 +194,10 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
       onSubmit={handleSubmit}
       isFormValido={isFormValido}
     >
-      {/* Campo Valor usando componente reutilizável */}
+      {/* Campo Valor - SISTEMA PRÓPRIO (como modal financeira) */}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-          Valor * (DEBUG)
+          Valor *
         </label>
         <Input
           type="text"
@@ -229,14 +205,21 @@ export function ModalBoleto({ isOpen, onClose, onSalvar, dadosIniciais, valorMax
           onChange={handleValorChange}
           placeholder="R$ 0,00"
           className="h-9 text-sm border-slate-300 focus:border-slate-400 dark:border-slate-600 dark:focus:border-slate-500"
-          disabled={false}
+          disabled={salvando}
           required
           autoComplete="off"
           autoFocus={false}
         />
-        <div className="text-xs text-blue-600 mt-1">
-          Debug: salvando={salvando.toString()}, isLoading={isLoading.toString()}, valor="{valor}"
-        </div>
+        {valorMaximo > 0 && (
+          <div className="mt-1 text-xs text-slate-500">
+            Disponível: <span className="font-medium">R$ {(valorMaximo - valorJaAlocado).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          </div>
+        )}
+        {erroValidacao && (
+          <div className="mt-1 text-xs text-red-600">
+            {erroValidacao}
+          </div>
+        )}
       </div>
 
       {/* Grid: Número de Vezes + Data Primeira */}

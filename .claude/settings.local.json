@@ -29,7 +29,11 @@
       "mcp__supabase__get_project",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(timeout 15s npm run dev)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(git add:*)",
+      "Bash(npm run clear-cache:deep:*)",
+      "Bash(python:*)",
+      "Bash(pip3 install:*)"
     ],
     "deny": []
   }
