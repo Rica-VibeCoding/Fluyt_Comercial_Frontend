@@ -1,15 +1,35 @@
 /**
- * ✅ HOOK SIMPLES: Formas de pagamento locais (UI state)
+ * ✅ HOOK SIMPLES: Formas de pagamento integradas com sessaoSimples
  * 
- * Sistema funcionou na documentação novo_orcamento.md
+ * CORREÇÃO: Conectar com sessaoSimples para persistir dados entre páginas
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FormaPagamento } from '@/types/orcamento';
+import { sessaoSimples } from '@/lib/sessao-simples';
 
 export const useFormasPagamento = () => {
-  // ✅ Estados locais para formas de pagamento (UI state)
-  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([]);
+  // ✅ Carregar formas de pagamento da sessão simples
+  const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>(() => {
+    if (typeof window === 'undefined') return [];
+    return sessaoSimples.obterFormasPagamento();
+  });
+
+  // ✅ Sincronizar com sessaoSimples quando mudanças externas ocorrerem
+  useEffect(() => {
+    const handleSessionChange = () => {
+      console.log('📡 Sessão mudou - atualizando formas de pagamento');
+      const novasFormas = sessaoSimples.obterFormasPagamento();
+      setFormasPagamento(novasFormas);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('sessaoSimples-changed', handleSessionChange);
+      return () => {
+        window.removeEventListener('sessaoSimples-changed', handleSessionChange);
+      };
+    }
+  }, []);
   
   // Estados dos modais (UI state)
   const [modalFormasAberto, setModalFormasAberto] = useState(false);
@@ -19,27 +39,24 @@ export const useFormasPagamento = () => {
   const [modalFinanceiraAberto, setModalFinanceiraAberto] = useState(false);
   const [formaEditando, setFormaEditando] = useState<FormaPagamento | null>(null);
   
-  // ✅ Ações para formas de pagamento
-  const adicionarFormaPagamento = (forma: Omit<FormaPagamento, 'id' | 'criadaEm'>) => {
-    const novaForma: FormaPagamento = {
-      ...forma,
-      id: Date.now().toString(),
-      criadaEm: new Date().toISOString()
-    };
-    setFormasPagamento(prev => [...prev, novaForma]);
-  };
+  // ✅ Ações para formas de pagamento (conectadas com sessaoSimples)
+  const adicionarFormaPagamento = useCallback((forma: Omit<FormaPagamento, 'id' | 'criadaEm'>) => {
+    console.log('➕ Adicionando forma de pagamento:', forma);
+    const novaSessao = sessaoSimples.adicionarFormaPagamento(forma);
+    setFormasPagamento(novaSessao.formasPagamento);
+  }, []);
   
-  const editarFormaPagamento = (id: string, dadosAtualizados: Partial<FormaPagamento>) => {
-    setFormasPagamento(prev => 
-      prev.map(forma => 
-        forma.id === id ? { ...forma, ...dadosAtualizados } : forma
-      )
-    );
-  };
+  const editarFormaPagamento = useCallback((id: string, dadosAtualizados: Partial<FormaPagamento>) => {
+    console.log('✏️ Editando forma de pagamento:', id, dadosAtualizados);
+    const novaSessao = sessaoSimples.editarFormaPagamento(id, dadosAtualizados);
+    setFormasPagamento(novaSessao.formasPagamento);
+  }, []);
   
-  const removerFormaPagamento = (id: string) => {
-    setFormasPagamento(prev => prev.filter(forma => forma.id !== id));
-  };
+  const removerFormaPagamento = useCallback((id: string) => {
+    console.log('🗑️ Removendo forma de pagamento:', id);
+    const novaSessao = sessaoSimples.removerFormaPagamento(id);
+    setFormasPagamento(novaSessao.formasPagamento);
+  }, []);
   
   // ✅ Ações dos modais
   const abrirModalFormas = () => setModalFormasAberto(true);

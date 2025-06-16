@@ -53,12 +53,12 @@ export function useContractDataManager() {
       clienteCompleto: !!clienteCompleto
     });
 
-    // ✅ CORREÇÃO FASE 1: Usar clienteCompleto ao invés de cliente básico
+    // ✅ FASE 2: Usar clienteCompleto e dados avançados
     if (clienteCompleto && ambientes.length > 0) {
       // Usar desconto padrão do mock (10%) por enquanto
       const descontoParaUsar = contratoMock.desconto;
       
-      console.log('💰 ContractDataManager - Atualizando contrato:', {
+      console.log('💰 ContractDataManager - Atualizando contrato (versão simples):', {
         descontoUsado: descontoParaUsar,
         origem: 'MOCK (10%)',
         percentualFinal: (descontoParaUsar * 100).toFixed(1) + '%',
@@ -78,21 +78,23 @@ export function useContractDataManager() {
         valor_total: valorTotal,
         desconto: descontoParaUsar,
         valor_final: valorTotal * (1 - descontoParaUsar),
-        // ✅ CORREÇÃO FASE 1: Corrigir mapeamento de ambientes (valorTotal → valor)
+        condicoes: 'Condições conforme cronograma de pagamentos',
+        // ✅ CORREÇÃO FASE 1: Corrigir mapeamento de ambientes
         ambientes: ambientes.map(ambiente => ({
           nome: ambiente.nome,
           categoria: 'Ambiente',
-          descricao: `Ambiente personalizado`, // Removido acesso a .acabamentos inexistente
-          valor: ambiente.valorTotal || ambiente.valor || 0 // Fallback para ambas as propriedades
-        }))
+          descricao: `Ambiente personalizado`,
+          valor: ambiente.valor || 0
+        })),
+        // ✅ CRONOGRAMA SIMPLES: Dados básicos suficientes
+        observacoes: 'Contrato gerado com cronograma de pagamentos detalhado'
       }));
     } else {
       // Log quando não há dados suficientes
       console.log('⚠️ ContractDataManager - Dados insuficientes:', {
         temCliente: !!cliente,
         quantidadeAmbientes: ambientes.length,
-        valorTotal,
-        clienteIdURL: searchParams.get('clienteId')
+        valorTotal
       });
     }
   }, [clienteCompleto, ambientes, valorTotal]);

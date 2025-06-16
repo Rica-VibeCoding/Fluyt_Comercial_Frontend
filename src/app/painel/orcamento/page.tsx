@@ -232,6 +232,17 @@ function OrcamentoPageContent() {
   const handleFormaPagamentoAdicionada = (forma: { tipo: string; valor?: number; detalhes?: any }) => {
     console.log('📥 Forma de pagamento adicionada:', forma);
     
+    // DEBUG: Verificar se foi salvo na sessão após adicionar
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        const dados = localStorage.getItem('fluyt_sessao_simples');
+        if (dados) {
+          const sessao = JSON.parse(dados);
+          console.log('🔍 Verificação pós-adição - formas na sessão:', sessao.formasPagamento?.length || 0);
+        }
+      }
+    }, 100);
+    
     // 🎯 RESETAR valor manual quando adiciona primeira forma de pagamento
     if (formasPagamento.length === 0 && valorNegociadoManualReal !== null) {
       console.log('🔄 Resetando valor manual - voltando para cálculo automático');

@@ -115,6 +115,7 @@ export function useSessaoSimples() {
     cliente: sessao.cliente,
     ambientes: sessao.ambientes,
     valorTotal: sessao.valorTotal,
+    formasPagamento: sessao.formasPagamento || [], // ✅ FASE 2: Adicionar formasPagamento
     
     // Validações
     temCliente: !!sessao.cliente,

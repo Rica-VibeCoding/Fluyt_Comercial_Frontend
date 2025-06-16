@@ -21,6 +21,32 @@ export interface Loja {
   email: string;
 }
 
+// ✅ FASE 2: Interfaces expandidas para dados avançados
+export interface FormaPagamentoContrato {
+  tipo: 'a-vista' | 'boleto' | 'cartao' | 'financeira';
+  valor: number;
+  valorPresente: number;
+  parcelas?: number;
+  dados: any; // dados específicos editáveis
+  descricao: string; // descrição formatada para exibição
+}
+
+export interface CronogramaItem {
+  numero: number;
+  tipo: string;
+  valor: number;
+  valorPresente: number;
+  data: string;
+  observacoes?: string;
+}
+
+export interface DadosFinanceiros {
+  valorNegociado: number;
+  valorPresenteTotal: number;
+  descontoReal: number;
+  taxaDesconto: number;
+}
+
 export interface ContratoData {
   numero: string;
   cliente: Cliente;
@@ -35,6 +61,11 @@ export interface ContratoData {
   loja: Loja;
   data_criacao: string;
   status: 'RASCUNHO' | 'PRONTO' | 'ENVIADO' | 'ASSINADO';
+  
+  // ✅ FASE 2: Dados avançados preservados
+  formasPagamento?: FormaPagamentoContrato[];
+  cronogramaPagamentos?: CronogramaItem[];
+  dadosFinanceiros?: DadosFinanceiros;
 }
 
 export const contratoMock: ContratoData = {

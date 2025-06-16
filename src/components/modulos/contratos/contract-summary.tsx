@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 import { useContractDataManager } from "./shared/contract-data-manager";
 import { useSessaoSimples } from "@/hooks/globais/use-sessao-simples";
 
@@ -14,11 +15,13 @@ import { FinancialSummary } from "./summary-sections/financial-summary";
 import { EnvironmentsList } from "./summary-sections/environments-list";
 import { ActionBar } from "./summary-sections/action-bar";
 import { DebugPersistenciaCompacto } from "../../shared/debug-persistencia";
+// ✅ CRONOGRAMA SIMPLES: Reutilizar tabela do orçamento
+import { TabelaPagamentosConsolidada } from "../orcamento/tabela-pagamentos-consolidada";
 
 const ContractSummary = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { cliente, ambientes, carregarClienteDaURL } = useSessaoSimples();
+  const { cliente, ambientes, formasPagamento, carregarClienteDaURL } = useSessaoSimples();
   const { contratoData, updateField, updateStatus, isLoading } = useContractDataManager();
 
   // ✅ PADRÃO QUE FUNCIONA: Igual ambiente-page.tsx
@@ -44,14 +47,35 @@ const ContractSummary = () => {
     });
   }, [cliente, ambientes]);
 
-  // Loading state
-  if (isLoading) {
+  // ✅ CRONOGRAMA SIMPLES: Debug básico (proteção F5)
+  useEffect(() => {
+    console.log('📋 ContractSummary - Dados para cronograma:', {
+      quantidadeFormas: formasPagamento?.length || 0,
+      valorFinal: contratoData?.valor_final || 0,
+      temDadosSuficientes: !!(formasPagamento && formasPagamento.length > 0 && contratoData?.valor_final),
+      temCliente: !!cliente,
+      temAmbientes: ambientes?.length > 0
+    });
+  }, [formasPagamento, contratoData?.valor_final, cliente, ambientes]);
+
+  // ✅ PROTEÇÃO F5: Loading ou sem dados suficientes
+  if (isLoading || !contratoData) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Carregando contrato...</p>
+            <p className="mt-4 text-muted-foreground">
+              {!contratoData ? 'Carregando dados do contrato...' : 'Carregando contrato...'}
+            </p>
+            {!cliente && !isLoading && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500 mb-2">Sem dados de sessão. Redirecionando...</p>
+                <Link href="/painel/orcamento" className="text-blue-600 hover:underline">
+                  Voltar ao Orçamento
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -111,6 +135,18 @@ const ContractSummary = () => {
 
         {/* Ambientes Section */}
         <EnvironmentsList contratoData={contratoData} />
+
+        {/* ✅ CRONOGRAMA SIMPLES: Usar tabela do orçamento */}
+        {formasPagamento && formasPagamento.length > 0 && contratoData?.valor_final && (
+          <TabelaPagamentosConsolidada 
+            formasPagamento={formasPagamento}
+            valorNegociado={contratoData.valor_final}
+            onParcelaChange={(formaId, numeroParcela, campo, novoValor) => {
+              console.log('📝 Editando parcela no contrato:', { formaId, numeroParcela, campo, novoValor });
+              // TODO: Implementar edição de parcelas no contrato se necessário
+            }}
+          />
+        )}
 
         {/* Action Bar */}
         <ActionBar 
