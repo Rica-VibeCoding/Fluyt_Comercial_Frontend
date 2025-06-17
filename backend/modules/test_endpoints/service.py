@@ -13,6 +13,7 @@ from datetime import datetime
 from ..shared.database import get_supabase_client
 from .schemas import (
     TestClienteCreate, 
+    TestClienteUpdate,
     TestAmbienteCreate, 
     TestOrcamentoCreate, 
     TestCalculoEngine,
@@ -22,16 +23,23 @@ from .schemas import (
 class TestService:
     def __init__(self):
         self._supabase = None
+        print("🔍 TestService.__init__() - Inicializando TestService REAL")
 
     @property
     def supabase(self):
         """Lazy loading do cliente Supabase"""
         if self._supabase is None:
             try:
+                print("🔍 TestService.supabase - Tentando criar cliente Supabase...")
                 self._supabase = get_supabase_client()
+                print("✅ TestService.supabase - Cliente Supabase criado com sucesso!")
             except ValueError as e:
                 # Para testes, vamos simular dados se não houver Supabase configurado
+                print(f"❌ TestService.supabase - Erro ao criar cliente: {e}")
                 raise ValueError(f"Supabase não configurado: {e}")
+            except Exception as e:
+                print(f"❌ TestService.supabase - Erro inesperado: {type(e).__name__}: {e}")
+                raise
         return self._supabase
 
     def calcular_comissao_faixa_unica(self, valor_venda: Decimal, loja_id: str, vendedor_id: str) -> Decimal:
@@ -134,11 +142,20 @@ class TestService:
     async def listar_clientes_teste(self, loja_id: str) -> TestResponse:
         """Listar clientes por loja - Teste RLS"""
         try:
+            print(f"🔍 TestService.listar_clientes_teste - Buscando clientes da loja {loja_id}")
+            
             # Buscar clientes da loja específica
             response = self.supabase.table('c_clientes')\
-                .select('*, c_lojas(nome)')\
+                .select('*')\
                 .eq('loja_id', loja_id)\
+                .order('created_at', desc=True)\
                 .execute()
+            
+            print(f"✅ TestService.listar_clientes_teste - Query executada com sucesso")
+            print(f"📊 TestService.listar_clientes_teste - Total de clientes: {len(response.data)}")
+            
+            if response.data:
+                print(f"🔍 Primeiro cliente encontrado: {response.data[0].get('nome', 'Sem nome')}")
 
             return TestResponse(
                 success=True,
@@ -151,9 +168,127 @@ class TestService:
             )
 
         except Exception as e:
+            print(f"❌ TestService.listar_clientes_teste - Erro: {type(e).__name__}: {e}")
             return TestResponse(
                 success=False,
                 message="Erro ao listar clientes",
+                errors=[str(e)]
+            )
+
+    async def atualizar_cliente_teste(self, cliente_id: str, dados: TestClienteUpdate) -> TestResponse:
+        """Atualizar cliente para teste - SEM JWT"""
+        try:
+            # Montar dados de atualização (apenas campos fornecidos)
+            update_data = {}
+            
+            if dados.nome is not None:
+                update_data['nome'] = dados.nome
+            if dados.cpf_cnpj is not None:
+                update_data['cpf_cnpj'] = dados.cpf_cnpj
+            if dados.telefone is not None:
+                update_data['telefone'] = dados.telefone
+            if dados.email is not None:
+                update_data['email'] = dados.email
+            if dados.endereco is not None:
+                update_data['endereco'] = dados.endereco
+            if dados.cidade is not None:
+                update_data['cidade'] = dados.cidade
+            if dados.cep is not None:
+                update_data['cep'] = dados.cep
+            if dados.tipo_venda is not None:
+                update_data['tipo_venda'] = dados.tipo_venda.value
+            if dados.observacao is not None:
+                update_data['observacao'] = dados.observacao
+            
+            update_data['updated_at'] = datetime.utcnow().isoformat()
+
+            if not update_data:
+                return TestResponse(
+                    success=False,
+                    message="Nenhum campo foi fornecido para atualização",
+                    errors=["Pelo menos um campo deve ser fornecido"]
+                )
+
+            # Verificar se cliente existe
+            cliente_response = self.supabase.table('c_clientes')\
+                .select('*')\
+                .eq('id', cliente_id)\
+                .execute()
+            
+            if not cliente_response.data:
+                return TestResponse(
+                    success=False,
+                    message="Cliente não encontrado",
+                    errors=[f"Cliente {cliente_id} não existe"]
+                )
+
+            # Atualizar cliente
+            response = self.supabase.table('c_clientes')\
+                .update(update_data)\
+                .eq('id', cliente_id)\
+                .execute()
+            
+            return TestResponse(
+                success=True,
+                message="Cliente atualizado com sucesso",
+                data={'cliente': response.data[0]}
+            )
+
+        except Exception as e:
+            return TestResponse(
+                success=False,
+                message="Erro ao atualizar cliente",
+                errors=[str(e)]
+            )
+
+    async def excluir_cliente_teste(self, cliente_id: str) -> TestResponse:
+        """Excluir cliente para teste - SEM JWT (soft delete)"""
+        try:
+            # Verificar se cliente existe
+            cliente_response = self.supabase.table('c_clientes')\
+                .select('*')\
+                .eq('id', cliente_id)\
+                .execute()
+            
+            if not cliente_response.data:
+                return TestResponse(
+                    success=False,
+                    message="Cliente não encontrado",
+                    errors=[f"Cliente {cliente_id} não existe"]
+                )
+
+            # Verificar se tem orçamentos associados
+            orcamentos_response = self.supabase.table('c_orcamentos')\
+                .select('id')\
+                .eq('cliente_id', cliente_id)\
+                .execute()
+            
+            if orcamentos_response.data:
+                return TestResponse(
+                    success=False,
+                    message="Cliente possui orçamentos associados",
+                    errors=[f"Cliente possui {len(orcamentos_response.data)} orçamento(s). Não é possível excluir."]
+                )
+
+            # Soft delete
+            response = self.supabase.table('c_clientes')\
+                .update({
+                    'deleted_at': datetime.utcnow().isoformat(),
+                    'updated_at': datetime.utcnow().isoformat()
+                })\
+                .eq('id', cliente_id)\
+                .execute()
+            
+            return TestResponse(
+                success=True,
+                message="Cliente excluído com sucesso",
+                data={'cliente_id': cliente_id}
+            )
+
+        except Exception as e:
+            return TestResponse(
+                success=False,
+                message="Erro ao excluir cliente",
                 errors=[str(e)]
             )
 

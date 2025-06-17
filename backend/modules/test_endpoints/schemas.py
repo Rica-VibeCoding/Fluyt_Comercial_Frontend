@@ -41,6 +41,36 @@ class TestClienteCreate(BaseModel):
             raise ValueError('CEP deve ter 8 dígitos')
         return v
 
+class TestClienteUpdate(BaseModel):
+    """Schema para atualizar cliente em teste"""
+    nome: Optional[str] = Field(None, min_length=1, max_length=255)
+    cpf_cnpj: Optional[str] = Field(None, min_length=11, max_length=18)
+    telefone: Optional[str] = Field(None, min_length=10, max_length=15)
+    email: Optional[str] = Field(None, max_length=255)
+    endereco: Optional[str] = Field(None, min_length=5, max_length=500)
+    cidade: Optional[str] = Field(None, min_length=2, max_length=100)
+    cep: Optional[str] = Field(None, min_length=8, max_length=9)
+    tipo_venda: Optional[TipoVenda] = None
+    observacao: Optional[str] = None
+
+    @validator('cpf_cnpj')
+    def validate_cpf_cnpj(cls, v):
+        if v is None:
+            return v
+        v = ''.join(filter(str.isdigit, v))
+        if len(v) not in [11, 14]:
+            raise ValueError('CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos')
+        return v
+
+    @validator('cep')
+    def validate_cep(cls, v):
+        if v is None:
+            return v
+        v = ''.join(filter(str.isdigit, v))
+        if len(v) != 8:
+            raise ValueError('CEP deve ter 8 dígitos')
+        return v
+
 class TestAmbienteCreate(BaseModel):
     """Schema para criar ambiente em teste"""
     nome_ambiente: str = Field(..., min_length=1, max_length=255)

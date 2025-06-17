@@ -34,17 +34,22 @@ export function ClientePage() {
   };
 
   const handleSalvarCliente = async (dados: any) => {
-    if (clienteEditando) {
-      await atualizarCliente(clienteEditando.id, dados);
-    } else {
-      const vendedor = vendedores.find(v => v.id === dados.vendedor_id);
-      await adicionarCliente({
-        ...dados,
-        vendedor_nome: vendedor?.nome || ''
-      });
+    try {
+      if (clienteEditando) {
+        await atualizarCliente(clienteEditando.id, dados);
+      } else {
+        const vendedor = vendedores.find(v => v.id === dados.vendedor_id);
+        await adicionarCliente({
+          ...dados,
+          vendedor_nome: vendedor?.nome || 'Não definido'
+        });
+      }
+      setModalAberto(false);
+      setClienteEditando(null);
+    } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
+      // O erro será tratado pelo hook useClientes
     }
-    setModalAberto(false);
-    setClienteEditando(null);
   };
 
   return (

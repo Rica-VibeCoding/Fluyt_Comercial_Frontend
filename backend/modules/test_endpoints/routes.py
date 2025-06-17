@@ -10,6 +10,7 @@ from decimal import Decimal
 
 from .schemas import (
     TestClienteCreate,
+    TestClienteUpdate,
     TestAmbienteCreate, 
     TestOrcamentoCreate,
     TestCalculoEngine,
@@ -19,26 +20,80 @@ from .schemas import (
 from .service import TestService
 from .mock_service import MockTestService
 
-router = APIRouter(prefix="/test", tags=["🚨 TESTE TEMPORÁRIO"])
+router = APIRouter(tags=["TESTE_TEMPORARIO"])  # SEM PREFIX AQUI
+
+# Singleton para manter estado entre requisições
+_test_service_instance = None
+
+# FORÇA RESET DO SINGLETON - REMOVER DEPOIS
+import time
+_timestamp_reset = time.time()
 
 def get_test_service():
-    """Retorna uma instância do TestService ou MockTestService se Supabase não estiver disponível"""
-    try:
-        service = TestService()
-        # Testar se consegue acessar o Supabase
-        _ = service.supabase
-        return service
-    except ValueError:
-        # Supabase não configurado, usar mock
-        return MockTestService()
+    """Retorna uma instância singleton do TestService ou MockTestService"""
+    global _test_service_instance
+    
+    # FORÇA USAR TESTSERVICE REAL - REMOVER DEPOIS  
+    _test_service_instance = None
+    
+    if _test_service_instance is None:
+        try:
+            # Tentar usar TestService real
+            from .service import TestService
+            service = TestService()
+            _test_service_instance = service
+            print(f"✅ Usando TestService REAL (Supabase)")
+        except Exception as e:
+            print(f"❌ ERRO ao criar TestService: {type(e).__name__}: {e}")
+            print(f"⚠️  Usando MockTestService como fallback")
+            from .mock_service import MockTestService
+            mock_service = MockTestService()
+            # Adicionar clientes de teste para debug
+            mock_service.created_clientes = [
+                {
+                    "id": "mock-001",
+                    "nome": "Cliente Teste 1",
+                    "cpf_cnpj": "12345678901",
+                    "telefone": "11999999999",
+                    "email": "teste1@email.com",
+                    "endereco": "Rua Teste, 123",
+                    "cidade": "São Paulo",
+                    "cep": "01234567",
+                    "loja_id": "317c3115-e071-40a6-9bc5-7c3227e0d82c",
+                    "tipo_venda": "NORMAL",
+                    "created_at": "2025-01-01T10:00:00"
+                },
+                {
+                    "id": "mock-002",
+                    "nome": "Cliente Teste 2",
+                    "cpf_cnpj": "98765432101",
+                    "telefone": "11888888888",
+                    "email": "teste2@email.com",
+                    "endereco": "Av. Exemplo, 456",
+                    "cidade": "São Paulo",
+                    "cep": "09876543",
+                    "loja_id": "317c3115-e071-40a6-9bc5-7c3227e0d82c",
+                    "tipo_venda": "NORMAL",
+                    "created_at": "2025-01-02T14:30:00"
+                }
+            ]
+            _test_service_instance = mock_service
+    
+    return _test_service_instance
 
 @router.get("/")
 async def info_testes():
     """Informações sobre os endpoints de teste"""
+    # Verificar qual serviço está sendo usado
+    test_service = get_test_service()
+    service_type = type(test_service).__name__
+    
     return {
         "aviso": "⚠️ ENDPOINTS TEMPORÁRIOS SEM AUTENTICAÇÃO",
         "objetivo": "Testar funcionalidades completas do sistema",
         "remover_apos": "Validação completa",
+        "service_em_uso": service_type,
+        "usando_mock": service_type == "MockTestService",
         "endpoints_disponiveis": [
             "GET /test/dados-iniciais - Buscar lojas, equipe, configs",
             "POST /test/cliente - Criar cliente",
@@ -50,6 +105,25 @@ async def info_testes():
             "POST /test/rls - Testar isolamento RLS",
             "POST /test/validacoes - Testar validações Pydantic"
         ]
+    }
+
+@router.get("/debug/service")
+async def debug_service():
+    """Debug: Verificar qual serviço está em uso e dados"""
+    test_service = get_test_service()
+    service_type = type(test_service).__name__
+    
+    # Se for MockTestService, mostrar clientes criados
+    if hasattr(test_service, 'created_clientes'):
+        clientes_mock = test_service.created_clientes
+    else:
+        clientes_mock = "N/A - TestService real"
+    
+    return {
+        "service_type": service_type,
+        "is_mock": service_type == "MockTestService",
+        "clientes_mock": clientes_mock,
+        "supabase_configured": hasattr(test_service, '_supabase')
     }
 
 @router.get("/dados-iniciais", response_model=TestResponse)
@@ -67,8 +141,38 @@ async def criar_cliente_teste(dados: TestClienteCreate):
 @router.get("/clientes", response_model=TestResponse)
 async def listar_clientes_teste(loja_id: str = Query(..., description="ID da loja")):
     """Listar clientes por loja - Teste RLS"""
+    print(f"🚨 ROTA CHAMADA: listar_clientes_teste com loja_id={loja_id}")
     test_service = get_test_service()
-    return await test_service.listar_clientes_teste(loja_id)
+    print(f"🚨 SERVICE TIPO: {type(test_service).__name__}")
+    
+    # Log adicional para debug
+    if type(test_service).__name__ == "MockTestService":
+        print(f"⚠️  ATENÇÃO: Usando MockTestService - dados não são do Supabase!")
+    else:
+        print(f"✅ Usando TestService REAL - buscando dados do Supabase")
+    
+    result = await test_service.listar_clientes_teste(loja_id)
+    print(f"🚨 RESULTADO: {result.message}")
+    
+    # Log dos clientes retornados
+    if result.success and result.data.get('clientes'):
+        print(f"📊 Total de clientes retornados: {len(result.data['clientes'])}")
+        if result.data['clientes']:
+            print(f"👤 Primeiro cliente: {result.data['clientes'][0].get('nome', 'Sem nome')}")
+    
+    return result
+
+@router.put("/cliente/{cliente_id}", response_model=TestResponse)
+async def atualizar_cliente_teste(cliente_id: str, dados: TestClienteUpdate):
+    """Atualizar cliente para teste - SEM JWT"""
+    test_service = get_test_service()
+    return await test_service.atualizar_cliente_teste(cliente_id, dados)
+
+@router.delete("/cliente/{cliente_id}", response_model=TestResponse)
+async def excluir_cliente_teste(cliente_id: str):
+    """Excluir cliente para teste - SEM JWT"""
+    test_service = get_test_service()
+    return await test_service.excluir_cliente_teste(cliente_id)
 
 @router.post("/ambiente", response_model=TestResponse)
 async def criar_ambiente_teste(dados: TestAmbienteCreate):

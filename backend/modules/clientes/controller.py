@@ -6,7 +6,7 @@ Define endpoints REST para operações de cliente.
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from typing import List, Optional, Dict, Any
 from core.auth import get_current_user, require_vendedor_ou_superior
-from core.database import get_database
+from core.database import get_database, get_service_database
 from supabase import Client
 import uuid
 
@@ -21,6 +21,61 @@ from .services import ClienteService
 
 # Router para o módulo de clientes
 router = APIRouter()
+
+
+@router.get("/teste-conexao-real",
+    summary="🔗 Testar conexão com dados reais do Supabase",
+    description="Endpoint sem autenticação para verificar se está conectado aos dados reais",
+    tags=["🧪 TESTE"]
+)
+async def testar_conexao_dados_reais_sem_auth(
+    db: Client = Depends(get_service_database)
+):
+    """
+    Testa a conexão com dados reais do Supabase SEM AUTENTICAÇÃO.
+    Usa service_database que bypassa RLS.
+    
+    **Retorna:** Estatísticas básicas dos clientes reais.
+    """
+    try:
+        # Buscar estatísticas reais dos clientes
+        result_total = db.table('c_clientes').select('*', count='exact').execute()
+        
+        # Clientes por cidade
+        result_cidades = db.table('c_clientes').select('cidade', count='exact').execute()
+        
+        # Clientes recentes
+        result_recentes = db.table('c_clientes').select('id', 'nome', 'cidade', 'created_at').order('created_at', desc=True).limit(3).execute()
+        
+        # Agrupar cidades
+        cidades = {}
+        if result_cidades.data:
+            for cliente in result_cidades.data:
+                cidade = cliente.get('cidade', 'N/A')
+                cidades[cidade] = cidades.get(cidade, 0) + 1
+        
+        return {
+            "🟢 STATUS": "CONECTADO AOS DADOS REAIS DO SUPABASE",
+            "📊 PROJETO": "momwbpxqnvgehotfmvde",
+            "🗄️ TABELA": "c_clientes",
+            "📈 ESTATISTICAS": {
+                "total_clientes": result_total.count if result_total.count else len(result_total.data),
+                "distribuicao_cidades": cidades,
+                "clientes_recentes": result_recentes.data if result_recentes.data else []
+            },
+            "❌ MOCK_DATA": False,
+            "⏰ TIMESTAMP": "2025-01-11T19:30:00Z",
+            "🔧 DATABASE": "SERVICE_CLIENT_BYPASS_RLS"
+        }
+        
+    except Exception as e:
+        return {
+            "🔴 STATUS": "ERRO NA CONEXÃO COM SUPABASE",
+            "❌ ERRO": str(e),
+            "📊 PROJETO": "momwbpxqnvgehotfmvde",
+            "🗄️ TABELA": "c_clientes",
+            "⏰ TIMESTAMP": "2025-01-11T19:30:00Z"
+        }
 
 
 @router.post("/", 
@@ -56,7 +111,7 @@ async def listar_clientes(
     telefone: Optional[str] = Query(None, description="Filtro por telefone"),
     cidade: Optional[str] = Query(None, description="Filtro por cidade"),
     tipo_venda: Optional[str] = Query(None, description="Filtro por tipo de venda (NORMAL/FUTURA)"),
-    procedencia: Optional[str] = Query(None, description="Filtro por procedência"),
+    procedencia_id: Optional[str] = Query(None, description="Filtro por ID da procedência"),
     
     # Paginação
     skip: int = Query(0, ge=0, description="Registros a pular"),
@@ -78,7 +133,7 @@ async def listar_clientes(
         telefone=telefone,
         cidade=cidade,
         tipo_venda=tipo_venda,
-        procedencia=procedencia
+        procedencia_id=procedencia_id
     )
     
     service = ClienteService(db)

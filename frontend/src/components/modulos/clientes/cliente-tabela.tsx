@@ -254,11 +254,11 @@ export function ClienteTabela({
                           )}
 
                           {/* Observações */}
-                          {cliente.observacoes && (
+                          {(cliente.observacoes || cliente.observacao) && (
                             <div className="space-y-2">
                               <div className="text-sm font-medium text-slate-600">Observações:</div>
                               <div className="text-sm italic bg-blue-50 p-3 rounded-md text-slate-900 border-l-4 border-blue-200">
-                                {cliente.observacoes}
+                                {cliente.observacoes || cliente.observacao}
                               </div>
                             </div>
                           )}

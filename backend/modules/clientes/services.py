@@ -56,11 +56,18 @@ class ClienteService:
                 'telefone': cliente_data.telefone,
                 'email': cliente_data.email,
                 'endereco': cliente_data.endereco,
+                'logradouro': cliente_data.logradouro,
+                'numero': cliente_data.numero,
+                'complemento': cliente_data.complemento,
+                'bairro': cliente_data.bairro,
                 'cidade': cliente_data.cidade,
+                'uf': cliente_data.uf,
                 'cep': cliente_data.cep,
+                'rg_ie': cliente_data.rg_ie,
                 'tipo_venda': cliente_data.tipo_venda.value,
-                'procedencia': cliente_data.procedencia,
-                'observacao': cliente_data.observacao
+                'procedencia_id': cliente_data.procedencia_id,
+                'vendedor_id': cliente_data.vendedor_id,
+                'observacoes': cliente_data.observacoes
             }
             
             # Criar cliente
@@ -104,7 +111,7 @@ class ClienteService:
                     email=cliente_data.get('email'),
                     cidade=cliente_data['cidade'],
                     tipo_venda=cliente_data['tipo_venda'],
-                    procedencia=cliente_data.get('procedencia'),
+                    procedencia_id=cliente_data.get('procedencia_id'),
                     created_at=cliente_data['created_at']
                 )
                 clientes.append(cliente_item)
@@ -177,21 +184,42 @@ class ClienteService:
             
             if cliente_data.endereco is not None:
                 dados_atualizacao['endereco'] = cliente_data.endereco
+                
+            if cliente_data.logradouro is not None:
+                dados_atualizacao['logradouro'] = cliente_data.logradouro
+                
+            if cliente_data.numero is not None:
+                dados_atualizacao['numero'] = cliente_data.numero
+                
+            if cliente_data.complemento is not None:
+                dados_atualizacao['complemento'] = cliente_data.complemento
+                
+            if cliente_data.bairro is not None:
+                dados_atualizacao['bairro'] = cliente_data.bairro
             
             if cliente_data.cidade is not None:
                 dados_atualizacao['cidade'] = cliente_data.cidade
+                
+            if cliente_data.uf is not None:
+                dados_atualizacao['uf'] = cliente_data.uf
             
             if cliente_data.cep is not None:
                 dados_atualizacao['cep'] = cliente_data.cep
+                
+            if cliente_data.rg_ie is not None:
+                dados_atualizacao['rg_ie'] = cliente_data.rg_ie
             
             if cliente_data.tipo_venda is not None:
                 dados_atualizacao['tipo_venda'] = cliente_data.tipo_venda.value
             
-            if cliente_data.procedencia is not None:
-                dados_atualizacao['procedencia'] = cliente_data.procedencia
+            if cliente_data.procedencia_id is not None:
+                dados_atualizacao['procedencia_id'] = cliente_data.procedencia_id
+                
+            if cliente_data.vendedor_id is not None:
+                dados_atualizacao['vendedor_id'] = cliente_data.vendedor_id
             
-            if cliente_data.observacao is not None:
-                dados_atualizacao['observacao'] = cliente_data.observacao
+            if cliente_data.observacoes is not None:
+                dados_atualizacao['observacoes'] = cliente_data.observacoes
             
             # Atualizar apenas se há dados para atualizar
             if dados_atualizacao:
@@ -254,30 +282,26 @@ class ClienteService:
             current_user: Usuário logado
             
         Returns:
-            ClienteResponse ou None se não encontrado
+            ClienteResponse: Cliente encontrado ou None
         """
         try:
             loja_id = current_user['loja_id']
             
-            # Limpar CPF/CNPJ (remover caracteres especiais)
-            cpf_cnpj_limpo = ''.join(filter(str.isdigit, cpf_cnpj))
+            # Buscar cliente
+            cliente_data = await self.repository.buscar_cliente_por_cpf_cnpj(cpf_cnpj, loja_id)
             
-            # Buscar usando filtros
-            filters = ClienteFilters(cpf_cnpj=cpf_cnpj_limpo)
-            clientes = await self.repository.listar_clientes(loja_id, filters, 0, 1)
-            
-            if clientes:
-                return ClienteResponse(**clientes[0])
+            if cliente_data:
+                return ClienteResponse(**cliente_data)
             else:
                 return None
                 
         except Exception as e:
-            logger.error(f"Erro ao buscar cliente por CPF/CNPJ: {str(e)}")
-            raise Exception(f"Erro ao buscar cliente por CPF/CNPJ: {str(e)}")
+            logger.error(f"Erro ao buscar cliente por CPF/CNPJ {cpf_cnpj}: {str(e)}")
+            raise Exception(f"Erro ao buscar cliente: {str(e)}")
     
     async def validar_dados_cliente(self, cliente_data: ClienteCreate) -> Dict[str, Any]:
         """
-        Valida dados do cliente (regras de negócio específicas)
+        Valida dados do cliente aplicando regras de negócio
         
         Args:
             cliente_data: Dados do cliente para validar
@@ -287,40 +311,37 @@ class ClienteService:
         """
         try:
             erros = []
-            warnings = []
+            avisos = []
             
-            # Validação de CPF básica (algoritmo simplificado)
-            if len(cliente_data.cpf_cnpj) == 11:
-                # É CPF
-                if cliente_data.cpf_cnpj == cliente_data.cpf_cnpj[0] * 11:
-                    erros.append("CPF inválido: todos os dígitos são iguais")
+            # Validação de CPF/CNPJ
+            cpf_cnpj_limpo = ''.join(filter(str.isdigit, cliente_data.cpf_cnpj))
+            if len(cpf_cnpj_limpo) not in [11, 14]:
+                erros.append("CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos")
             
-            # Validação de telefone básica
-            if len(cliente_data.telefone.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')) < 10:
-                erros.append("Telefone deve ter pelo menos 10 dígitos")
+            # Validação de email
+            if cliente_data.email and '@' not in cliente_data.email:
+                erros.append("Email inválido")
             
-            # Validação de email mais rigorosa
-            if cliente_data.email and '.' not in cliente_data.email:
-                warnings.append("Email pode estar incompleto (sem domínio)")
-            
-            # Validação de CEP básica
-            cep_numeros = ''.join(filter(str.isdigit, cliente_data.cep))
-            if len(cep_numeros) != 8:
+            # Validação de CEP
+            cep_limpo = ''.join(filter(str.isdigit, cliente_data.cep))
+            if len(cep_limpo) != 8:
                 erros.append("CEP deve ter 8 dígitos")
             
-            resultado = {
-                'valido': len(erros) == 0,
-                'erros': erros,
-                'warnings': warnings
+            # Validação de telefone
+            telefone_limpo = ''.join(filter(str.isdigit, cliente_data.telefone))
+            if len(telefone_limpo) < 10:
+                avisos.append("Telefone parece estar incompleto")
+            
+            return {
+                "valido": len(erros) == 0,
+                "erros": erros,
+                "avisos": avisos
             }
             
-            logger.debug(f"Validação cliente: {resultado}")
-            return resultado
-            
         except Exception as e:
-            logger.error(f"Erro na validação: {str(e)}")
+            logger.error(f"Erro ao validar dados do cliente: {str(e)}")
             return {
-                'valido': False,
-                'erros': [f"Erro na validação: {str(e)}"],
-                'warnings': []
+                "valido": False,
+                "erros": [f"Erro interno na validação: {str(e)}"],
+                "avisos": []
             }

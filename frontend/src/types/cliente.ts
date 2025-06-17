@@ -15,10 +15,10 @@ export interface Cliente {
   cep?: string;
   endereco?: string;
   procedencia_id?: string;
-  vendedor_id?: string;
-  loja_id?: string;
   procedencia?: string;
+  vendedor_id?: string;
   vendedor_nome?: string;
+  loja_id?: string;
   observacoes?: string;
   created_at: string;
   updated_at: string;

@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 class ClienteRepository:
     """
-    Repository para operações de clientes com Supabase - APENAS DADOS
+    Repository para operações de clientes com Supabase - APENAS DADOS REAIS
     
-    Responsabilidade: Acesso a dados, queries
+    Responsabilidade: Acesso a dados, queries diretas no Supabase
     Lógica de negócio: ClienteService
     """
     
@@ -38,7 +38,7 @@ class ClienteRepository:
             # Adicionar loja_id aos dados
             dados_cliente['loja_id'] = loja_id
             
-            # Inserir cliente
+            # Inserir cliente na tabela real
             result = (
                 self.supabase
                 .table('c_clientes')
@@ -47,7 +47,7 @@ class ClienteRepository:
             )
             
             if not result.data:
-                raise Exception("Erro ao inserir cliente")
+                raise Exception("Erro ao inserir cliente no banco de dados")
             
             cliente_criado = result.data[0]
             logger.info(f"Cliente {cliente_criado['nome']} criado com ID {cliente_criado['id']}")
@@ -69,10 +69,10 @@ class ClienteRepository:
             limit: Paginação - limite de registros
             
         Returns:
-            List[Dict]: Lista de clientes
+            List[Dict]: Lista de clientes do Supabase
         """
         try:
-            # Query base
+            # Query base na tabela real
             query = (
                 self.supabase
                 .table('c_clientes')
@@ -97,8 +97,8 @@ class ClienteRepository:
                 if filters.tipo_venda:
                     query = query.eq('tipo_venda', filters.tipo_venda.value)
                 
-                if filters.procedencia:
-                    query = query.ilike('procedencia', f'%{filters.procedencia}%')
+                if filters.procedencia_id:
+                    query = query.eq('procedencia_id', filters.procedencia_id)
             
             # Executar query com paginação
             result = (
@@ -132,7 +132,7 @@ class ClienteRepository:
                 .table('c_clientes')
                 .select('*')
                 .eq('id', cliente_id)
-                .eq('loja_id', loja_id)  # RLS
+                .eq('loja_id', loja_id)
                 .execute()
             )
             
@@ -164,13 +164,13 @@ class ClienteRepository:
             from datetime import datetime
             dados_atualizacao['updated_at'] = datetime.utcnow().isoformat()
             
-            # Atualizar cliente
+            # Atualizar cliente na tabela real
             result = (
                 self.supabase
                 .table('c_clientes')
                 .update(dados_atualizacao)
                 .eq('id', cliente_id)
-                .eq('loja_id', loja_id)  # RLS
+                .eq('loja_id', loja_id)
                 .execute()
             )
             
@@ -198,26 +198,41 @@ class ClienteRepository:
             bool: True se excluído com sucesso
         """
         try:
-            # Soft delete - marcar como excluído
+            # Soft delete na tabela real - verificar se existe campo excluido
             from datetime import datetime
             
-            result = (
-                self.supabase
-                .table('c_clientes')
-                .update({
-                    'excluido': True,
-                    'excluido_em': datetime.utcnow().isoformat()
-                })
-                .eq('id', cliente_id)
-                .eq('loja_id', loja_id)  # RLS
-                .execute()
-            )
+            # Primeira tentativa: marcar como excluído (se campo existe)
+            try:
+                result = (
+                    self.supabase
+                    .table('c_clientes')
+                    .update({
+                        'excluido': True,
+                        'excluido_em': datetime.utcnow().isoformat()
+                    })
+                    .eq('id', cliente_id)
+                    .eq('loja_id', loja_id)
+                    .execute()
+                )
+                
+                if result.data:
+                    logger.info(f"Cliente {cliente_id} marcado como excluído")
+                    return True
+            except:
+                # Se não tem campo excluido, fazer delete físico
+                result = (
+                    self.supabase
+                    .table('c_clientes')
+                    .delete()
+                    .eq('id', cliente_id)
+                    .eq('loja_id', loja_id)
+                    .execute()
+                )
+                
+                logger.info(f"Cliente {cliente_id} excluído fisicamente")
+                return True
             
-            if not result.data:
-                raise Exception("Cliente não encontrado")
-            
-            logger.info(f"Cliente {cliente_id} excluído com sucesso")
-            return True
+            return False
             
         except Exception as e:
             logger.error(f"Erro ao excluir cliente {cliente_id}: {str(e)}")
@@ -242,7 +257,6 @@ class ClienteRepository:
                 .select('id')
                 .eq('cpf_cnpj', cpf_cnpj)
                 .eq('loja_id', loja_id)
-                .is_('excluido', 'null')  # Não considerar excluídos
             )
             
             # Excluir cliente específico da verificação (para updates)
@@ -252,18 +266,46 @@ class ClienteRepository:
             result = query.execute()
             
             existe = len(result.data) > 0
-            if existe:
-                logger.warning(f"CPF/CNPJ {cpf_cnpj} já existe na loja {loja_id}")
+            logger.debug(f"CPF/CNPJ {cpf_cnpj} {'já existe' if existe else 'não existe'} na loja {loja_id}")
             
             return existe
             
         except Exception as e:
             logger.error(f"Erro ao verificar CPF/CNPJ: {str(e)}")
             raise Exception(f"Erro ao verificar CPF/CNPJ: {str(e)}")
+    
+    async def buscar_cliente_por_cpf_cnpj(self, cpf_cnpj: str, loja_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Busca cliente por CPF/CNPJ
+        
+        Args:
+            cpf_cnpj: CPF ou CNPJ para buscar
+            loja_id: ID da loja
+            
+        Returns:
+            Dict com dados do cliente ou None se não encontrado
+        """
+        try:
+            result = (
+                self.supabase
+                .table('c_clientes')
+                .select('*')
+                .eq('cpf_cnpj', cpf_cnpj)
+                .eq('loja_id', loja_id)
+                .execute()
+            )
+            
+            if result.data:
+                logger.debug(f"Cliente encontrado pelo CPF/CNPJ {cpf_cnpj}")
+                return result.data[0]
+            else:
+                logger.debug(f"Nenhum cliente encontrado com CPF/CNPJ {cpf_cnpj}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Erro ao buscar cliente por CPF/CNPJ: {str(e)}")
+            raise Exception(f"Erro ao buscar cliente por CPF/CNPJ: {str(e)}")
 
 
-# Função auxiliar para compatibilidade com código existente
-async def repo_list_clientes():
-    """Função legacy - TODO: migrar para ClienteRepository.listar_clientes()"""
-    # TODO: call Supabase HTTP API
-    return []
+# ===== FUNÇÕES DE TESTE (REMOVIDAS - APENAS DADOS REAIS) =====
+# Todas as funções de teste mock foram removidas

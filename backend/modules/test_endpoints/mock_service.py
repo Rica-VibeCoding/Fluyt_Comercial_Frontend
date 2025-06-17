@@ -10,6 +10,7 @@ from datetime import datetime
 
 from .schemas import (
     TestClienteCreate, 
+    TestClienteUpdate,
     TestAmbienteCreate, 
     TestOrcamentoCreate, 
     TestCalculoEngine,
@@ -18,6 +19,7 @@ from .schemas import (
 
 class MockTestService:
     def __init__(self):
+        print("⚠️ MockTestService.__init__() - Usando serviço MOCK!")
         # Dados simulados
         self.mock_lojas = [
             {
@@ -197,9 +199,76 @@ class MockTestService:
             message=f"Clientes mock encontrados para loja {loja_id}",
             data={
                 "clientes": clientes_loja,
-                "total": len(clientes_loja),
-                "loja_id": loja_id
+                "total": len(clientes_loja)
             }
+        )
+
+    async def atualizar_cliente_teste(self, cliente_id: str, dados: TestClienteUpdate) -> TestResponse:
+        """Atualizar cliente mock"""
+        # Encontrar cliente
+        cliente = next((c for c in self.created_clientes if c["id"] == cliente_id), None)
+        if not cliente:
+            return TestResponse(
+                success=False,
+                message="Cliente não encontrado",
+                errors=[f"Cliente {cliente_id} não existe nos dados mock"]
+            )
+
+        # Atualizar campos fornecidos
+        if dados.nome is not None:
+            cliente["nome"] = dados.nome
+        if dados.cpf_cnpj is not None:
+            cliente["cpf_cnpj"] = dados.cpf_cnpj
+        if dados.telefone is not None:
+            cliente["telefone"] = dados.telefone
+        if dados.email is not None:
+            cliente["email"] = dados.email
+        if dados.endereco is not None:
+            cliente["endereco"] = dados.endereco
+        if dados.cidade is not None:
+            cliente["cidade"] = dados.cidade
+        if dados.cep is not None:
+            cliente["cep"] = dados.cep
+        if dados.tipo_venda is not None:
+            cliente["tipo_venda"] = dados.tipo_venda.value
+        if dados.observacao is not None:
+            cliente["observacao"] = dados.observacao
+        
+        cliente["updated_at"] = datetime.utcnow().isoformat()
+
+        return TestResponse(
+            success=True,
+            message="Cliente mock atualizado com sucesso",
+            data={"cliente": cliente}
+        )
+
+    async def excluir_cliente_teste(self, cliente_id: str) -> TestResponse:
+        """Excluir cliente mock"""
+        # Encontrar cliente
+        cliente = next((c for c in self.created_clientes if c["id"] == cliente_id), None)
+        if not cliente:
+            return TestResponse(
+                success=False,
+                message="Cliente não encontrado",
+                errors=[f"Cliente {cliente_id} não existe nos dados mock"]
+            )
+
+        # Verificar orçamentos (mock)
+        orcamentos_cliente = [o for o in self.created_orcamentos if o.get("cliente_id") == cliente_id]
+        if orcamentos_cliente:
+            return TestResponse(
+                success=False,
+                message="Cliente possui orçamentos associados",
+                errors=[f"Cliente possui {len(orcamentos_cliente)} orçamento(s). Não é possível excluir."]
+            )
+
+        # Remover da lista (hard delete no mock)
+        self.created_clientes = [c for c in self.created_clientes if c["id"] != cliente_id]
+
+        return TestResponse(
+            success=True,
+            message="Cliente mock excluído com sucesso",
+            data={"cliente_id": cliente_id}
         )
 
     async def criar_ambiente_teste(self, dados: TestAmbienteCreate) -> TestResponse:
