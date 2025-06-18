@@ -49,9 +49,9 @@ export default function GestaoLojas() {
     endereco: '',
     telefone: '',
     email: '',
-    gerente: '',
+    gerente_id: '',
     empresaId: '',
-    metaMes: 100000
+    dataAbertura: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,13 +73,13 @@ export default function GestaoLojas() {
     setEditingLoja(loja);
     setFormData({
       nome: loja.nome,
-      codigo: loja.codigo,
-      endereco: loja.endereco,
-      telefone: loja.telefone,
-      email: loja.email,
-      gerente: loja.gerente,
+      codigo: loja.codigo || '',
+      endereco: loja.endereco || '',
+      telefone: loja.telefone || '',
+      email: loja.email || '',
+      gerente_id: loja.gerente_id || '',
       empresaId: loja.empresaId,
-      metaMes: loja.metaMes
+      dataAbertura: loja.dataAbertura || ''
     });
     setIsDialogOpen(true);
   };
@@ -92,9 +92,9 @@ export default function GestaoLojas() {
       endereco: '',
       telefone: '',
       email: '',
-      gerente: '',
+      gerente_id: '',
       empresaId: '',
-      metaMes: 100000
+      dataAbertura: ''
     });
     setIsDialogOpen(true);
   };
@@ -108,9 +108,9 @@ export default function GestaoLojas() {
       endereco: '',
       telefone: '',
       email: '',
-      gerente: '',
+      gerente_id: '',
       empresaId: '',
-      metaMes: 100000
+      dataAbertura: ''
     });
   };
 
@@ -225,13 +225,13 @@ export default function GestaoLojas() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="endereco" className="text-xs font-medium text-slate-700">Endereço *</Label>
+                      <Label htmlFor="endereco" className="text-xs font-medium text-slate-700">Endereço</Label>
                       <Input
                         id="endereco"
                         value={formData.endereco}
                         onChange={(e) => setFormData(prev => ({ ...prev, endereco: e.target.value }))}
                         className="h-8 text-sm border-slate-300 focus:border-slate-400"
-                        required
+                        placeholder="Endereço completo da loja"
                       />
                     </div>
 
@@ -257,24 +257,26 @@ export default function GestaoLojas() {
                     </div>
 
                     <div>
-                      <Label htmlFor="gerente" className="text-xs font-medium text-slate-700">Gerente</Label>
-                      <Input
-                        id="gerente"
-                        value={formData.gerente}
-                        onChange={(e) => setFormData(prev => ({ ...prev, gerente: e.target.value }))}
-                        className="h-8 text-sm border-slate-300 focus:border-slate-400"
-                      />
+                      <Label htmlFor="gerente_id" className="text-xs font-medium text-slate-700">Gerente *</Label>
+                      <Select value={formData.gerente_id} onValueChange={(value) => setFormData(prev => ({ ...prev, gerente_id: value }))}>
+                        <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
+                          <SelectValue placeholder="Selecione o gerente" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gerente-1">Cleiton</SelectItem>
+                          <SelectItem value="gerente-2">Tom</SelectItem>
+                          <SelectItem value="gerente-3">Ricardo</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>
-                      <Label htmlFor="metaMes" className="text-xs font-medium text-slate-700">Meta Mensal (R$)</Label>
+                      <Label htmlFor="dataAbertura" className="text-xs font-medium text-slate-700">Data de Abertura</Label>
                       <Input
-                        id="metaMes"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={formData.metaMes}
-                        onChange={(e) => setFormData(prev => ({ ...prev, metaMes: Number(e.target.value) }))}
+                        id="dataAbertura"
+                        type="date"
+                        value={formData.dataAbertura}
+                        onChange={(e) => setFormData(prev => ({ ...prev, dataAbertura: e.target.value }))}
                         className="h-8 text-sm border-slate-300 focus:border-slate-400"
                       />
                     </div>

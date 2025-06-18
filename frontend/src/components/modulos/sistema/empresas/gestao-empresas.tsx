@@ -4,23 +4,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Plus, Building2, Search, Filter } from 'lucide-react';
-import { useEmpresas } from '@/hooks/modulos/sistema/use-empresas';
+import { Plus, Building2, Search, Filter, RefreshCw } from 'lucide-react';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 import { EmpresaTable } from './empresa-table';
 import type { EmpresaFormData } from '@/types/sistema';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 export function GestaoEmpresas() {
   const {
     empresas,
     loading,
-    estatisticas,
-    criarEmpresa,
-    atualizarEmpresa,
-    alternarStatusEmpresa,
-    excluirEmpresa,
-    buscarEmpresas
-  } = useEmpresas();
+    totalEmpresas,
+    empresasAtivas,
+    buscarEmpresas,
+    recarregarDados
+  } = useEmpresasReal();
+
+  // Criar estatísticas no formato esperado pelo componente
+  const estatisticas = {
+    total: totalEmpresas,
+    ativas: empresasAtivas,
+    inativas: totalEmpresas - empresasAtivas,
+    totalFuncionarios: 0 // Será implementado pelo backend
+  };
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<any>(null);
@@ -39,6 +46,30 @@ export function GestaoEmpresas() {
   // Filtrar empresas baseado na busca
   const empresasFiltradas = termoBusca ? buscarEmpresas(termoBusca) : empresas;
 
+  // Funções CRUD temporárias (aguardando implementação C.Testa)
+  const criarEmpresa = async (data: EmpresaFormData): Promise<boolean> => {
+    console.log('🔗 [PLACEHOLDER] Criar empresa:', data);
+    toast.error('Criação de empresas será implementada pelo C.Testa');
+    return false;
+  };
+
+  const atualizarEmpresa = async (id: string, data: EmpresaFormData): Promise<boolean> => {
+    console.log('🔗 [PLACEHOLDER] Atualizar empresa:', { id, data });
+    toast.error('Edição de empresas será implementada pelo C.Testa');
+    return false;
+  };
+
+  const excluirEmpresa = async (id: string): Promise<boolean> => {
+    console.log('🔗 [PLACEHOLDER] Excluir empresa:', id);
+    toast.error('Exclusão de empresas será implementada pelo C.Testa');
+    return false;
+  };
+
+  const alternarStatusEmpresa = async (id: string): Promise<void> => {
+    console.log('🔗 [PLACEHOLDER] Alterar status empresa:', id);
+    toast.error('Alteração de status será implementada pelo C.Testa');
+  };
+
   const handleSubmit = async (data: EmpresaFormData) => {
     let sucesso = false;
     if (editingEmpresa) {
@@ -56,10 +87,10 @@ export function GestaoEmpresas() {
     setEditingEmpresa(empresa);
     form.reset({
       nome: empresa.nome,
-      cnpj: empresa.cnpj,
-      email: empresa.email,
-      telefone: empresa.telefone,
-      endereco: empresa.endereco
+      cnpj: empresa.cnpj || '',
+      email: empresa.email || '',
+      telefone: empresa.telefone || '',
+      endereco: empresa.endereco || ''
     });
     setIsDialogOpen(true);
   };
@@ -118,18 +149,32 @@ export function GestaoEmpresas() {
           />
         </div>
 
-        {/* Botão Nova Empresa */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={handleNewEmpresa}
-              className="gap-1.5 h-8 px-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-medium text-white text-xs"
-            >
-              <Building2 className="h-3.5 w-3.5" />
-              Nova Empresa
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl h-[70vh] flex flex-col bg-white dark:bg-slate-900">
+        {/* Botões de Ação */}
+        <div className="flex gap-2">
+          {/* Botão Recarregar */}
+          <Button 
+            onClick={recarregarDados}
+            disabled={loading}
+            variant="outline"
+            className="gap-1.5 h-8 px-3 border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg font-medium text-slate-600 text-xs"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Recarregar
+          </Button>
+
+          {/* Botão Nova Empresa */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={handleNewEmpresa}
+                className="gap-1.5 h-8 px-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 shadow-md hover:shadow-lg transition-all duration-200 rounded-lg font-medium text-white text-xs"
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                Nova Empresa
+              </Button>
+            </DialogTrigger>
+            
+            <DialogContent className="max-w-2xl h-[70vh] flex flex-col bg-white dark:bg-slate-900">
             <DialogHeader className="border-b border-slate-200 dark:border-slate-700 p-2 pb-1">
               <div className="flex items-center gap-2">
                 <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
@@ -170,7 +215,7 @@ export function GestaoEmpresas() {
                           name="cnpj"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-xs font-medium text-slate-700">CNPJ *</FormLabel>
+                              <FormLabel className="text-xs font-medium text-slate-700">CNPJ</FormLabel>
                               <FormControl>
                                 <Input 
                                   placeholder="00.000.000/0000-00"
@@ -278,6 +323,7 @@ export function GestaoEmpresas() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Tabela de Empresas */}

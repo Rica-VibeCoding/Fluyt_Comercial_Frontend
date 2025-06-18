@@ -63,14 +63,14 @@ export function EmpresaTable({
               <TableCell className="py-2">
                 <div>
                   <div className="font-medium">{empresa.nome}</div>
-                  <div className="text-sm text-muted-foreground">{empresa.endereco}</div>
+                  <div className="text-sm text-muted-foreground">{empresa.endereco || 'Endereço não informado'}</div>
                 </div>
               </TableCell>
-              <TableCell className="py-2">{empresa.cnpj}</TableCell>
+              <TableCell className="py-2">{empresa.cnpj || 'Não informado'}</TableCell>
               <TableCell className="py-2">
                 <div className="text-sm">
-                  <div>{empresa.email}</div>
-                  <div className="text-muted-foreground">{empresa.telefone}</div>
+                  <div>{empresa.email || 'Email não informado'}</div>
+                  <div className="text-muted-foreground">{empresa.telefone || 'Telefone não informado'}</div>
                 </div>
               </TableCell>
               <TableCell className="py-2">

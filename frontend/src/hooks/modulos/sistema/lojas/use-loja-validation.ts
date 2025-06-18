@@ -28,32 +28,38 @@ export function useLojaValidation() {
       erros.push('Nome da loja deve ter pelo menos 3 caracteres');
     }
 
-    if (!validarCodigo(dados.codigo)) {
+    // Código agora é opcional
+    if (dados.codigo && !validarCodigo(dados.codigo)) {
       erros.push('Código deve ter pelo menos 3 caracteres (apenas letras e números)');
     }
 
-    if (!dados.endereco || dados.endereco.trim().length < 10) {
-      erros.push('Endereço deve ter pelo menos 10 caracteres');
+    // Endereço agora é opcional
+    if (dados.endereco && dados.endereco.trim().length < 5) {
+      erros.push('Endereço deve ter pelo menos 5 caracteres');
     }
 
-    if (!validarTelefone(dados.telefone)) {
+    // Telefone agora é opcional
+    if (dados.telefone && !validarTelefone(dados.telefone)) {
       erros.push('Telefone inválido');
     }
 
-    if (!validarEmail(dados.email)) {
+    // Email agora é opcional
+    if (dados.email && !validarEmail(dados.email)) {
       erros.push('Email inválido');
     }
 
-    if (!dados.gerente || dados.gerente.trim().length < 3) {
-      erros.push('Nome do gerente deve ter pelo menos 3 caracteres');
+    // Gerente é obrigatório (deve ser selecionado)
+    if (!dados.gerente_id) {
+      erros.push('Gerente é obrigatório');
     }
 
     if (!dados.empresaId) {
       erros.push('Empresa é obrigatória');
     }
 
-    if (dados.metaMes <= 0) {
-      erros.push('Meta mensal deve ser maior que zero');
+    // Data de abertura é opcional, mas se preenchida deve ser válida
+    if (dados.dataAbertura && isNaN(Date.parse(dados.dataAbertura))) {
+      erros.push('Data de abertura inválida');
     }
 
     return erros;

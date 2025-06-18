@@ -6,70 +6,55 @@ import { useEmpresas } from './use-empresas';
 import { useLojas } from './use-lojas';
 import { useSetores } from './use-setores';
 
-// Mock data para desenvolvimento
+// Mock data para desenvolvimento - compatível com Supabase
 const mockFuncionarios: Funcionario[] = [
   {
     id: '1',
-    nome: 'João Silva Santos',
-    email: 'joao@fluyt.com.br',
-    telefone: '(11) 98765-4321',
+    nome: 'Cleiton',
+    email: 'cleiton@dart.com.br',
+    telefone: '(11) 99999-1001',
+    setor_id: 'setor-vendas',
     setor: 'Vendas',
-    lojaId: '1',
-    loja: 'Fluyt Móveis & Design',
-    salario: 3500,
-    comissao: 3.5,
-    dataAdmissao: '2024-01-25',
+    loja_id: '1',
+    loja: 'D-Art',
+    salario: 3500.00,
+    data_admissao: '2024-01-15',
     ativo: true,
-    nivelAcesso: 'USUARIO',
-    tipoFuncionario: 'VENDEDOR',
+    nivel_acesso: 'USUARIO',
+    perfil: 'VENDEDOR',
+    limite_desconto: 0.12,
+    comissao_percentual_vendedor: 0.035,
+    comissao_percentual_gerente: null,
+    override_comissao: null,
+    tem_minimo_garantido: false,
+    valor_minimo_garantido: null,
+    valor_medicao: null,
     performance: 95,
-    configuracoes: {
-      limiteDesconto: 15,
-      overrideComissao: 3.5
-    },
-    createdAt: '2024-01-25T10:00:00Z'
+    createdAt: '2024-01-15T10:00:00Z'
   },
   {
     id: '2',
-    nome: 'Maria Fernanda Oliveira',
-    email: 'maria@fluyt.com.br',
-    telefone: '(11) 97777-8888',
+    nome: 'Tom',
+    email: 'tom@dart.com.br',
+    telefone: '(11) 99999-1002',
+    setor_id: 'setor-vendas',
     setor: 'Vendas',
-    lojaId: '1',
-    loja: 'Fluyt Móveis & Design',
-    salario: 6000,
-    comissao: 2,
-    dataAdmissao: '2024-02-01',
+    loja_id: '2',
+    loja: 'Romanza',
+    salario: 5500.00,
+    data_admissao: '2023-06-10',
     ativo: true,
-    nivelAcesso: 'GERENTE',
-    tipoFuncionario: 'GERENTE',
+    nivel_acesso: 'GERENTE',
+    perfil: 'GERENTE',
+    limite_desconto: 0.20,
+    comissao_percentual_vendedor: null,
+    comissao_percentual_gerente: 0.02,
+    override_comissao: null,
+    tem_minimo_garantido: true,
+    valor_minimo_garantido: 3000.00,
+    valor_medicao: null,
     performance: 88,
-    configuracoes: {
-      limiteDesconto: 25,
-      comissaoEspecifica: 2,
-      minimoGarantido: 3000
-    },
-    createdAt: '2024-02-01T10:00:00Z'
-  },
-  {
-    id: '3',
-    nome: 'Carlos Alberto Medeiros',
-    email: 'carlos@fluyt.com.br',
-    telefone: '(11) 99999-1234',
-    setor: 'Medição',
-    lojaId: '2',
-    loja: 'Fluyt Filial Santos',
-    salario: 2800,
-    comissao: 0,
-    dataAdmissao: '2024-02-10',
-    ativo: true,
-    nivelAcesso: 'USUARIO',
-    tipoFuncionario: 'MEDIDOR',
-    performance: 92,
-    configuracoes: {
-      valorMedicao: 150
-    },
-    createdAt: '2024-02-10T10:00:00Z'
+    createdAt: '2023-06-10T10:00:00Z'
   }
 ];
 
@@ -90,46 +75,53 @@ export function useEquipe() {
       erros.push('Nome deve ter pelo menos 2 caracteres');
     }
 
-    if (!dados.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) {
+    // Email agora é opcional
+    if (dados.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) {
       erros.push('Email inválido');
     }
 
-    if (!dados.telefone || dados.telefone.replace(/[^\d]/g, '').length < 10) {
+    // Telefone agora é opcional
+    if (dados.telefone && dados.telefone.replace(/[^\d]/g, '').length < 10) {
       erros.push('Telefone inválido');
     }
 
-
-    if (!dados.setor) {
+    if (!dados.setor_id) {
       erros.push('Setor é obrigatório');
     }
 
-    if (!dados.lojaId) {
+    if (!dados.loja_id) {
       erros.push('Loja é obrigatória');
     }
 
-    if (!dados.nivelAcesso) {
+    if (!dados.nivel_acesso) {
       erros.push('Nível de acesso é obrigatório');
     }
 
-    if (!dados.tipoFuncionario) {
-      erros.push('Tipo de funcionário é obrigatório');
+    if (!dados.perfil) {
+      erros.push('Perfil é obrigatório');
     }
 
-    if (dados.salario < 0) {
+    // Salário agora é opcional
+    if (dados.salario && dados.salario < 0) {
       erros.push('Salário deve ser um valor positivo');
     }
 
-    if (dados.comissao < 0 || dados.comissao > 100) {
-      erros.push('Comissão deve estar entre 0% e 100%');
+    // Data de admissão agora é opcional
+    if (dados.data_admissao && isNaN(Date.parse(dados.data_admissao))) {
+      erros.push('Data de admissão inválida');
     }
 
-    if (!dados.dataAdmissao) {
-      erros.push('Data de admissão é obrigatória');
-    }
-
-    // Validações específicas por tipo
-    if (dados.tipoFuncionario === 'MEDIDOR' && (!dados.configuracoes?.valorMedicao || dados.configuracoes.valorMedicao <= 0)) {
+    // Validações específicas por perfil
+    if (dados.perfil === 'MEDIDOR' && (!dados.valor_medicao || dados.valor_medicao <= 0)) {
       erros.push('Valor por medição é obrigatório para medidores');
+    }
+
+    if (dados.perfil === 'VENDEDOR' && dados.limite_desconto && (dados.limite_desconto < 0 || dados.limite_desconto > 1)) {
+      erros.push('Limite de desconto deve estar entre 0% e 100%');
+    }
+
+    if (dados.perfil === 'GERENTE' && dados.tem_minimo_garantido && (!dados.valor_minimo_garantido || dados.valor_minimo_garantido <= 0)) {
+      erros.push('Valor mínimo garantido é obrigatório quando habilitado');
     }
 
     return erros;
@@ -137,7 +129,9 @@ export function useEquipe() {
 
   // Verificar duplicidade de email
   const verificarEmailDuplicado = useCallback((email: string, funcionarioId?: string): boolean => {
+    if (!email) return false;
     return funcionarios.some(funcionario => 
+      funcionario.email && 
       funcionario.email.toLowerCase() === email.toLowerCase() && 
       funcionario.id !== funcionarioId
     );
@@ -151,7 +145,7 @@ export function useEquipe() {
       // Validações
       const erros = validarFuncionario(dados);
       
-      if (verificarEmailDuplicado(dados.email)) {
+      if (dados.email && verificarEmailDuplicado(dados.email)) {
         erros.push('Email já cadastrado');
       }
 
@@ -160,18 +154,36 @@ export function useEquipe() {
         return false;
       }
 
-      // Buscar nome da loja
+      // Buscar nome da loja e setor
       const lojas = obterLojasAtivas();
-      const loja = lojas.find(l => l.id === dados.lojaId);
+      const setores = obterSetoresAtivos();
+      const loja = lojas.find(l => l.id === dados.loja_id);
+      const setor = setores.find(s => s.id === dados.setor_id);
 
       // Simular API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const novoFuncionario: Funcionario = {
         id: Date.now().toString(),
-        ...dados,
+        nome: dados.nome,
+        email: dados.email || null,
+        telefone: dados.telefone || null,
+        setor_id: dados.setor_id,
+        setor: setor?.nome || '',
+        loja_id: dados.loja_id,
         loja: loja?.nome || '',
+        salario: dados.salario || null,
+        data_admissao: dados.data_admissao || null,
         ativo: true,
+        nivel_acesso: dados.nivel_acesso,
+        perfil: dados.perfil,
+        limite_desconto: dados.limite_desconto || null,
+        comissao_percentual_vendedor: dados.comissao_percentual_vendedor || null,
+        comissao_percentual_gerente: dados.comissao_percentual_gerente || null,
+        override_comissao: dados.override_comissao || null,
+        tem_minimo_garantido: dados.tem_minimo_garantido || false,
+        valor_minimo_garantido: dados.valor_minimo_garantido || null,
+        valor_medicao: dados.valor_medicao || null,
         performance: 0,
         createdAt: new Date().toISOString()
       };
@@ -196,7 +208,7 @@ export function useEquipe() {
       // Validações
       const erros = validarFuncionario(dados);
       
-      if (verificarEmailDuplicado(dados.email, id)) {
+      if (dados.email && verificarEmailDuplicado(dados.email, id)) {
         erros.push('Email já cadastrado');
       }
 
@@ -205,16 +217,39 @@ export function useEquipe() {
         return false;
       }
 
-      // Buscar nome da loja
+      // Buscar nome da loja e setor
       const lojas = obterLojasAtivas();
-      const loja = lojas.find(l => l.id === dados.lojaId);
+      const setores = obterSetoresAtivos();
+      const loja = lojas.find(l => l.id === dados.loja_id);
+      const setor = setores.find(s => s.id === dados.setor_id);
 
       // Simular API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       setFuncionarios(prev => prev.map(funcionario => 
         funcionario.id === id 
-          ? { ...funcionario, ...dados, loja: loja?.nome || '', updatedAt: new Date().toISOString() }
+          ? { 
+              ...funcionario,
+              nome: dados.nome,
+              email: dados.email || null,
+              telefone: dados.telefone || null,
+              setor_id: dados.setor_id,
+              setor: setor?.nome || '',
+              loja_id: dados.loja_id,
+              loja: loja?.nome || '',
+              salario: dados.salario || null,
+              data_admissao: dados.data_admissao || null,
+              nivel_acesso: dados.nivel_acesso,
+              perfil: dados.perfil,
+              limite_desconto: dados.limite_desconto || null,
+              comissao_percentual_vendedor: dados.comissao_percentual_vendedor || null,
+              comissao_percentual_gerente: dados.comissao_percentual_gerente || null,
+              override_comissao: dados.override_comissao || null,
+              tem_minimo_garantido: dados.tem_minimo_garantido || false,
+              valor_minimo_garantido: dados.valor_minimo_garantido || null,
+              valor_medicao: dados.valor_medicao || null,
+              updatedAt: new Date().toISOString() 
+            }
           : funcionario
       ));
 
@@ -298,9 +333,9 @@ export function useEquipe() {
     const termoBusca = termo.toLowerCase().trim();
     return funcionarios.filter(funcionario =>
       funcionario.nome.toLowerCase().includes(termoBusca) ||
-      funcionario.email.toLowerCase().includes(termoBusca) ||
-      funcionario.setor.toLowerCase().includes(termoBusca) ||
-      funcionario.tipoFuncionario.toLowerCase().includes(termoBusca)
+      (funcionario.email && funcionario.email.toLowerCase().includes(termoBusca)) ||
+      (funcionario.setor && funcionario.setor.toLowerCase().includes(termoBusca)) ||
+      funcionario.perfil.toLowerCase().includes(termoBusca)
     );
   }, [funcionarios]);
 
@@ -309,10 +344,10 @@ export function useEquipe() {
     total: funcionarios.length,
     ativos: funcionarios.filter(f => f.ativo).length,
     inativos: funcionarios.filter(f => !f.ativo).length,
-    vendedores: funcionarios.filter(f => f.tipoFuncionario === 'VENDEDOR').length,
-    gerentes: funcionarios.filter(f => f.tipoFuncionario === 'GERENTE').length,
-    medidores: funcionarios.filter(f => f.tipoFuncionario === 'MEDIDOR').length,
-    admins: funcionarios.filter(f => f.tipoFuncionario === 'ADMIN_MASTER').length
+    vendedores: funcionarios.filter(f => f.perfil === 'VENDEDOR').length,
+    gerentes: funcionarios.filter(f => f.perfil === 'GERENTE').length,
+    medidores: funcionarios.filter(f => f.perfil === 'MEDIDOR').length,
+    admins: funcionarios.filter(f => f.perfil === 'ADMIN_MASTER').length
   };
 
   // Resetar dados para mock inicial

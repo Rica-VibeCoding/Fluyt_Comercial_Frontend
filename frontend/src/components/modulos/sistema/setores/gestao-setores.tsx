@@ -17,7 +17,6 @@ export function GestaoSetores() {
     estatisticas,
     criarSetor,
     atualizarSetor,
-    alternarStatusSetor,
     excluirSetor,
     buscarSetores
   } = useSetores();
@@ -28,8 +27,7 @@ export function GestaoSetores() {
 
   const form = useForm<SetorFormData>({
     defaultValues: {
-      nome: '',
-      descricao: ''
+      nome: ''
     }
   });
 
@@ -52,8 +50,7 @@ export function GestaoSetores() {
   const handleEdit = (setor: any) => {
     setEditingSetor(setor);
     form.reset({
-      nome: setor.nome,
-      descricao: setor.descricao
+      nome: setor.nome
     });
     setIsDialogOpen(true);
   };
@@ -61,8 +58,7 @@ export function GestaoSetores() {
   const handleNewSetor = () => {
     setEditingSetor(null);
     form.reset({
-      nome: '',
-      descricao: ''
+      nome: ''
     });
     setIsDialogOpen(true);
   };
@@ -71,8 +67,7 @@ export function GestaoSetores() {
     setIsDialogOpen(false);
     setEditingSetor(null);
     form.reset({
-      nome: '',
-      descricao: ''
+      nome: ''
     });
   };
 
@@ -84,7 +79,7 @@ export function GestaoSetores() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar setores por nome ou descrição..."
+            placeholder="Buscar setores por nome..."
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
             className="pl-10 h-10 border-gray-200 focus:border-slate-400 focus:ring-slate-400 bg-white shadow-sm"
@@ -138,23 +133,7 @@ export function GestaoSetores() {
                           )}
                         />
 
-                        <FormField
-                          control={form.control}
-                          name="descricao"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-xs font-medium text-slate-700">Descrição</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="Descrição do setor (opcional)" 
-                                  className="h-8 text-sm border-slate-300 focus:border-slate-400" 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {/* Campo descrição removido - estrutura Supabase só tem nome */}
                       </div>
                     </div>
                   </div>
@@ -195,7 +174,6 @@ export function GestaoSetores() {
         setores={setoresFiltrados}
         onEdit={handleEdit}
         onDelete={excluirSetor}
-        onToggleStatus={alternarStatusSetor}
         loading={loading}
       />
     </div>

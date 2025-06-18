@@ -80,7 +80,7 @@ export function FuncionarioTable({
             <TableHead className="font-semibold text-slate-700 h-10">Funcionário</TableHead>
             <TableHead className="font-semibold text-slate-700 h-10">Contato</TableHead>
             <TableHead className="font-semibold text-slate-700 h-10">Cargo</TableHead>
-            <TableHead className="font-semibold text-slate-700 h-10">Performance</TableHead>
+            <TableHead className="font-semibold text-slate-700 h-10">Configurações</TableHead>
             <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
             <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
@@ -96,25 +96,34 @@ export function FuncionarioTable({
               </TableCell>
               <TableCell className="py-2">
                 <div className="text-sm">
-                  <div>{funcionario.email}</div>
-                  <div className="text-muted-foreground">{funcionario.telefone}</div>
+                  <div>{funcionario.email || 'Email não informado'}</div>
+                  <div className="text-muted-foreground">{funcionario.telefone || 'Telefone não informado'}</div>
                 </div>
               </TableCell>
               <TableCell className="py-2">
                 <div className="text-sm">
-                  <div>{funcionario.tipoFuncionario}</div>
-                  <div className="text-muted-foreground">{funcionario.setor}</div>
+                  <div>
+                    <Badge variant={getTipoFuncionarioBadge(funcionario.perfil || 'VENDEDOR')}>
+                      {funcionario.perfil || 'VENDEDOR'}
+                    </Badge>
+                  </div>
+                  <div className="text-muted-foreground mt-1">{funcionario.setor || 'Setor não informado'}</div>
                 </div>
               </TableCell>
               <TableCell className="py-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${funcionario.performance}%` }}
-                    ></div>
-                    </div>
-                  <span className="text-sm font-medium">{funcionario.performance}%</span>
+                <div className="text-xs space-y-1">
+                  {funcionario.perfil === 'VENDEDOR' && (
+                    <div>Desconto: {((funcionario.limite_desconto || 0) * 100).toFixed(0)}%</div>
+                  )}
+                  {funcionario.perfil === 'GERENTE' && funcionario.tem_minimo_garantido && (
+                    <div>Mín. garantido: {formatCurrency(funcionario.valor_minimo_garantido || 0)}</div>
+                  )}
+                  {funcionario.perfil === 'MEDIDOR' && (
+                    <div>Valor medição: {formatCurrency(funcionario.valor_medicao || 0)}</div>
+                  )}
+                  {funcionario.salario && (
+                    <div className="text-muted-foreground">Salário: {formatCurrency(funcionario.salario)}</div>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="py-2">

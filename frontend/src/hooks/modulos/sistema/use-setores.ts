@@ -3,39 +3,19 @@ import { toast } from 'sonner';
 import type { Setor, SetorFormData } from '@/types/sistema';
 import { useLocalStorage } from '@/hooks/globais/use-local-storage';
 
-// Mock data para desenvolvimento
+// Mock data para desenvolvimento - compatível com Supabase
 const mockSetores: Setor[] = [
   {
-    id: '1',
-    nome: 'Vendas',
-    descricao: 'Equipe responsável pela venda de produtos e atendimento ao cliente',
-    funcionarios: 8,
-    ativo: true,
+    id: 'b54209a6-50ac-41f6-bf2c-996b6fe0bf2d',
+    nome: 'Medição',
+    funcionarios: 0,
     createdAt: '2024-01-10T10:00:00Z'
   },
   {
-    id: '2',
-    nome: 'Medição',
-    descricao: 'Profissionais responsáveis por medições e projetos técnicos',
-    funcionarios: 3,
-    ativo: true,
+    id: '2faea93f-ed12-476a-8320-48ee7cda5695',
+    nome: 'Vendas',
+    funcionarios: 4,
     createdAt: '2024-01-15T10:00:00Z'
-  },
-  {
-    id: '3',
-    nome: 'Montagem',
-    descricao: 'Equipe de montadores e instaladores',
-    funcionarios: 5,
-    ativo: true,
-    createdAt: '2024-02-01T10:00:00Z'
-  },
-  {
-    id: '4',
-    nome: 'Administrativo',
-    descricao: 'Setor administrativo e financeiro',
-    funcionarios: 0,
-    ativo: false,
-    createdAt: '2024-02-10T10:00:00Z'
   }
 ];
 
@@ -43,16 +23,12 @@ export function useSetores() {
   const [setores, setSetores, clearSetores] = useLocalStorage<Setor[]>('fluyt_setores', mockSetores);
   const [loading, setLoading] = useState(false);
 
-  // Validar dados do setor
+  // Validar dados do setor (ultra simples)
   const validarSetor = useCallback((dados: SetorFormData): string[] => {
     const erros: string[] = [];
 
     if (!dados.nome || dados.nome.trim().length < 2) {
       erros.push('Nome do setor deve ter pelo menos 2 caracteres');
-    }
-
-    if (dados.descricao && dados.descricao.trim().length > 0 && dados.descricao.trim().length < 10) {
-      erros.push('Descrição deve ter pelo menos 10 caracteres se preenchida');
     }
 
     return erros;
@@ -88,9 +64,8 @@ export function useSetores() {
 
       const novoSetor: Setor = {
         id: Date.now().toString(),
-        ...dados,
+        nome: dados.nome,
         funcionarios: 0,
-        ativo: true,
         createdAt: new Date().toISOString()
       };
 
@@ -128,7 +103,7 @@ export function useSetores() {
 
       setSetores(prev => prev.map(setor => 
         setor.id === id 
-          ? { ...setor, ...dados, updatedAt: new Date().toISOString() }
+          ? { ...setor, nome: dados.nome, updatedAt: new Date().toISOString() }
           : setor
       ));
 
@@ -143,30 +118,7 @@ export function useSetores() {
     }
   }, [validarSetor, verificarNomeDuplicado]);
 
-  // Alternar status do setor
-  const alternarStatusSetor = useCallback(async (id: string): Promise<void> => {
-    setLoading(true);
-    
-    try {
-      // Simular API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setSetores(prev => prev.map(setor => 
-        setor.id === id 
-          ? { ...setor, ativo: !setor.ativo, updatedAt: new Date().toISOString() }
-          : setor
-      ));
-
-      const setor = setores.find(s => s.id === id);
-      const novoStatus = !setor?.ativo ? 'ativado' : 'desativado';
-      toast.success(`Setor ${novoStatus} com sucesso!`);
-
-    } catch (error) {
-      toast.error('Erro ao alterar status do setor');
-    } finally {
-      setLoading(false);
-    }
-  }, [setores]);
+  // Função removida: alternarStatusSetor (setores agora são globais, sem campo ativo)
 
   // Excluir setor
   const excluirSetor = useCallback(async (id: string): Promise<boolean> => {
@@ -201,9 +153,9 @@ export function useSetores() {
     }
   }, [setores]);
 
-  // Obter setores ativos
+  // Obter todos os setores (agora globais, sempre ativos)
   const obterSetoresAtivos = useCallback((): Setor[] => {
-    return setores.filter(setor => setor.ativo);
+    return setores;
   }, [setores]);
 
   // Obter setor por ID
@@ -211,22 +163,19 @@ export function useSetores() {
     return setores.find(setor => setor.id === id);
   }, [setores]);
 
-  // Buscar setores
+  // Buscar setores (apenas por nome)
   const buscarSetores = useCallback((termo: string): Setor[] => {
     if (!termo.trim()) return setores;
     
     const termoBusca = termo.toLowerCase().trim();
     return setores.filter(setor =>
-      setor.nome.toLowerCase().includes(termoBusca) ||
-      setor.descricao.toLowerCase().includes(termoBusca)
+      setor.nome.toLowerCase().includes(termoBusca)
     );
   }, [setores]);
 
-  // Estatísticas
+  // Estatísticas (simplificadas)
   const estatisticas = {
     total: setores.length,
-    ativos: setores.filter(s => s.ativo).length,
-    inativos: setores.filter(s => !s.ativo).length,
     totalFuncionarios: setores.reduce((total, setor) => total + (setor.funcionarios || 0), 0)
   };
 
@@ -242,7 +191,6 @@ export function useSetores() {
     estatisticas,
     criarSetor,
     atualizarSetor,
-    alternarStatusSetor,
     excluirSetor,
     obterSetoresAtivos,
     obterSetorPorId,

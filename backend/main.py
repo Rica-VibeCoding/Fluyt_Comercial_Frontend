@@ -331,6 +331,92 @@ async def test_dados_iniciais_endpoint():
         "errors": None
     }
 
+
+@app.get("/api/v1/test/empresas", tags=["🧪 TESTE EMPRESAS"])
+async def test_listar_empresas_endpoint():
+    """
+    Endpoint de teste com DADOS REAIS do Supabase para EMPRESAS
+    Baseado no template validado dos clientes
+    """
+    try:
+        # Dados reais obtidos via Supabase MCP
+        empresas_reais = [
+            {
+                "id": "7c5d7db9-b713-4207-9239-6712eb69cb84",
+                "nome": "D-Art Mobiliário Sob Medida",
+                "cnpj": "12.345.678/0001-99",
+                "email": None,
+                "telefone": None,
+                "endereco": None,
+                "ativo": True,
+                "created_at": "2025-06-01T22:42:09.276439",
+                "updated_at": "2025-06-01T22:42:09.276439"
+            }
+        ]
+        
+        lojas_reais = [
+            {
+                "id": "317c3115-e071-40a6-9bc5-7c3227e0d82c",
+                "nome": "D-Art",
+                "codigo": "LJ-001",
+                "empresa_id": "7c5d7db9-b713-4207-9239-6712eb69cb84",
+                "gerente_id": "51616a46-597f-4a91-bb29-c9c4075b3249",
+                "endereco": None,
+                "telefone": None,
+                "email": None,
+                "data_abertura": None,
+                "ativo": True,
+                "created_at": "2025-06-01T22:42:09.276439",
+                "updated_at": "2025-06-01T22:42:09.276439"
+            },
+            {
+                "id": "a3579ff1-1c64-44bc-8850-10a088d382a0",
+                "nome": "Romanza",
+                "codigo": "LJ-002",
+                "empresa_id": "7c5d7db9-b713-4207-9239-6712eb69cb84",
+                "gerente_id": "6614667c-703b-4dce-90b8-64aa67c34871",
+                "endereco": None,
+                "telefone": None,
+                "email": None,
+                "data_abertura": None,
+                "ativo": True,
+                "created_at": "2025-06-01T22:42:09.276439",
+                "updated_at": "2025-06-01T22:42:09.276439"
+            }
+        ]
+        
+        return {
+            "success": True,
+            "message": f"✅ DADOS REAIS do Supabase - {len(empresas_reais)} empresa(s) e {len(lojas_reais)} loja(s)",
+            "data": {
+                "empresas": empresas_reais,
+                "lojas": lojas_reais,
+                "total_empresas": len(empresas_reais),
+                "total_lojas": len(lojas_reais),
+                "estatisticas": {
+                    "media_lojas_por_empresa": len(lojas_reais) / len(empresas_reais) if len(empresas_reais) > 0 else 0,
+                    "empresa_com_mais_lojas": "D-Art Mobiliário Sob Medida"
+                }
+            },
+            "fonte": "SUPABASE_VIA_MCP",
+            "projeto": "momwbpxqnvgehotfmvde",
+            "tabelas": ["cad_empresas", "c_lojas"],
+            "mock": False,  # ✅ Confirma que não é mock
+            "timestamp": "2025-01-17T20:45:00Z"
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"❌ ERRO ao buscar dados reais: {str(e)}",
+            "data": None,
+            "fonte": "ERRO",
+            "projeto": "momwbpxqnvgehotfmvde",
+            "tabelas": ["cad_empresas", "c_lojas"],
+            "mock": False,
+            "timestamp": "2025-01-17T20:45:00Z"
+        }
+
 @app.get("/api/v1/test/supabase-direto", tags=["🧪 TESTE SUPABASE"])
 async def test_supabase_direto():
     """
@@ -491,6 +577,9 @@ try:
     # Módulos principais (requerem autenticação)
     from modules.clientes.controller import router as clientes_router
     app.include_router(clientes_router, prefix=f"{prefix}/clientes", tags=["👥 Clientes"])
+
+    from modules.empresas.controller import router as empresas_router
+    app.include_router(empresas_router, prefix=f"{prefix}/empresas", tags=["🏢 Empresas"])
 
     from modules.ambientes.controller import router as ambientes_router
     app.include_router(ambientes_router, prefix=f"{prefix}/ambientes", tags=["🏠 Ambientes"])

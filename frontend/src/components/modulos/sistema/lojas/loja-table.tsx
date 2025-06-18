@@ -49,7 +49,9 @@ export function LojaTable({ lojas }: LojaTableProps) {
               <TableCell className="py-2">
                 <div>
                   <div className="font-medium">{loja.nome}</div>
-                  <div className="text-sm text-muted-foreground">Código: {loja.codigo} • Gerente: {loja.gerente}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Código: {loja.codigo || 'Não informado'} • Gerente: {loja.gerente || 'Não definido'}
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="py-2">
@@ -57,8 +59,8 @@ export function LojaTable({ lojas }: LojaTableProps) {
               </TableCell>
               <TableCell className="py-2">
                 <div className="text-sm">
-                  <div>{loja.email}</div>
-                  <div className="text-muted-foreground">{loja.telefone}</div>
+                  <div>{loja.email || 'Email não informado'}</div>
+                  <div className="text-muted-foreground">{loja.telefone || 'Telefone não informado'}</div>
                 </div>
               </TableCell>
               <TableCell className="py-2">

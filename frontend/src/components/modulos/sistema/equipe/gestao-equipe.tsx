@@ -33,16 +33,15 @@ export function GestaoEquipe() {
 
   const form = useForm<FuncionarioFormData>({
     defaultValues: {
-    nome: '',
-    email: '',
-    telefone: '',
-    setor: '',
-    lojaId: '',
-    salario: 0,
-    comissao: 0,
-    dataAdmissao: '',
-    nivelAcesso: 'USUARIO',
-    tipoFuncionario: 'VENDEDOR'
+      nome: '',
+      email: '',
+      telefone: '',
+      setor_id: '',
+      loja_id: '',
+      salario: 0,
+      data_admissao: '',
+      nivel_acesso: 'USUARIO',
+      perfil: 'VENDEDOR'
     }
   });
 
@@ -66,16 +65,21 @@ export function GestaoEquipe() {
     setEditingFuncionario(funcionario);
     form.reset({
       nome: funcionario.nome,
-      email: funcionario.email,
-      telefone: funcionario.telefone,
-      setor: funcionario.setor,
-      lojaId: funcionario.lojaId,
-      salario: funcionario.salario,
-      comissao: funcionario.comissao,
-      dataAdmissao: funcionario.dataAdmissao,
-      nivelAcesso: funcionario.nivelAcesso,
-      tipoFuncionario: funcionario.tipoFuncionario,
-      configuracoes: funcionario.configuracoes
+      email: funcionario.email || '',
+      telefone: funcionario.telefone || '',
+      setor_id: funcionario.setor_id,
+      loja_id: funcionario.loja_id,
+      salario: funcionario.salario || 0,
+      data_admissao: funcionario.data_admissao || '',
+      nivel_acesso: funcionario.nivel_acesso,
+      perfil: funcionario.perfil,
+      limite_desconto: funcionario.limite_desconto || 0,
+      comissao_percentual_vendedor: funcionario.comissao_percentual_vendedor || 0,
+      comissao_percentual_gerente: funcionario.comissao_percentual_gerente || 0,
+      override_comissao: funcionario.override_comissao || 0,
+      tem_minimo_garantido: funcionario.tem_minimo_garantido || false,
+      valor_minimo_garantido: funcionario.valor_minimo_garantido || 0,
+      valor_medicao: funcionario.valor_medicao || 0
     });
     setIsDialogOpen(true);
   };
@@ -87,13 +91,12 @@ export function GestaoEquipe() {
       nome: '',
       email: '',
       telefone: '',
-      setor: '',
-      lojaId: '',
+      setor_id: '',
+      loja_id: '',
       salario: 0,
-      comissao: 0,
-      dataAdmissao: '',
-      nivelAcesso: 'USUARIO',
-      tipoFuncionario: 'VENDEDOR'
+      data_admissao: '',
+      nivel_acesso: 'USUARIO',
+      perfil: 'VENDEDOR'
     });
     setIsDialogOpen(true);
   };
@@ -106,13 +109,12 @@ export function GestaoEquipe() {
       nome: '',
       email: '',
       telefone: '',
-      setor: '',
-      lojaId: '',
+      setor_id: '',
+      loja_id: '',
       salario: 0,
-      comissao: 0,
-      dataAdmissao: '',
-      nivelAcesso: 'USUARIO',
-      tipoFuncionario: 'VENDEDOR'
+      data_admissao: '',
+      nivel_acesso: 'USUARIO',
+      perfil: 'VENDEDOR'
     });
   };
 
@@ -280,21 +282,21 @@ export function GestaoEquipe() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                               <FormField
                                 control={form.control}
-                                name="tipoFuncionario"
+                                name="perfil"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-xs font-medium text-slate-700">Tipo de Funcionário *</FormLabel>
+                                    <FormLabel className="text-xs font-medium text-slate-700">Perfil *</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                       <FormControl>
                                         <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
-                                          <SelectValue placeholder="Selecione o tipo" />
+                                          <SelectValue placeholder="Selecione o perfil" />
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
                                         <SelectItem value="VENDEDOR">Vendedor</SelectItem>
                                         <SelectItem value="GERENTE">Gerente</SelectItem>
-                                        <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
-                                        <SelectItem value="ADMINISTRATIVO">Administrativo</SelectItem>
+                                        <SelectItem value="MEDIDOR">Medidor</SelectItem>
+                                        <SelectItem value="ADMIN_MASTER">Admin Master</SelectItem>
                                       </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -304,7 +306,7 @@ export function GestaoEquipe() {
 
                               <FormField
                                 control={form.control}
-                                name="lojaId"
+                                name="loja_id"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs font-medium text-slate-700">Loja *</FormLabel>
@@ -329,7 +331,7 @@ export function GestaoEquipe() {
 
                               <FormField
                                 control={form.control}
-                                name="setor"
+                                name="setor_id"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs font-medium text-slate-700">Setor</FormLabel>
@@ -354,7 +356,7 @@ export function GestaoEquipe() {
 
                               <FormField
                                 control={form.control}
-                                name="dataAdmissao"
+                                name="data_admissao"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs font-medium text-slate-700">Data Admissão</FormLabel>
@@ -394,10 +396,10 @@ export function GestaoEquipe() {
 
                               <FormField
                                 control={form.control}
-                                name="comissao"
+                                name="comissao_percentual_vendedor"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="text-xs font-medium text-slate-700">Comissão (%)</FormLabel>
+                                    <FormLabel className="text-xs font-medium text-slate-700">Comissão Vendedor (%)</FormLabel>
                                     <FormControl>
                                       <Input 
                                         type="number"
@@ -425,7 +427,7 @@ export function GestaoEquipe() {
                             <div className="grid grid-cols-1 gap-1">
                               <FormField
                                 control={form.control}
-                                name="nivelAcesso"
+                                name="nivel_acesso"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-xs font-medium text-slate-700">Nível de Acesso *</FormLabel>
@@ -444,6 +446,57 @@ export function GestaoEquipe() {
                                     </Select>
                                     <FormDescription className="text-xs text-slate-500">
                                       Define as permissões do usuário no sistema
+                                    </FormDescription>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="limite_desconto"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs font-medium text-slate-700">Limite Desconto (%)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.1"
+                                        placeholder="10.0" 
+                                        className="h-8 text-sm border-slate-300 focus:border-slate-400" 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs text-slate-500">
+                                      Limite máximo de desconto que pode aplicar
+                                    </FormDescription>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={form.control}
+                                name="valor_medicao"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-xs font-medium text-slate-700">Valor Medição (R$)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="50.00" 
+                                        className="h-8 text-sm border-slate-300 focus:border-slate-400" 
+                                        {...field}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                      />
+                                    </FormControl>
+                                    <FormDescription className="text-xs text-slate-500">
+                                      Valor por medição realizada
                                     </FormDescription>
                                     <FormMessage />
                                   </FormItem>

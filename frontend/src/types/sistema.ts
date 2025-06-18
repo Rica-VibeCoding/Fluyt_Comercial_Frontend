@@ -14,13 +14,12 @@ export interface BaseEntity {
 // ========================================
 export interface Empresa extends BaseEntity {
   nome: string;
-  cnpj: string;
-  email: string;
-  telefone: string;
-  endereco: string;
+  cnpj: string | null;
+  email: string | null;
+  telefone: string | null;
+  endereco: string | null;
   ativo: boolean;
-  funcionarios?: number;
-  dataFundacao?: string;
+  funcionarios?: number; // Campo calculado automaticamente
 }
 
 export interface EmpresaFormData {
@@ -36,18 +35,19 @@ export interface EmpresaFormData {
 // ========================================
 export interface Loja extends BaseEntity {
   nome: string;
-  codigo: string;
-  endereco: string;
-  telefone: string;
-  email: string;
-  gerente: string;
-  funcionarios: number;
-  vendasMes: number;
-  metaMes: number;
+  codigo: string | null;
+  endereco: string | null;
+  telefone: string | null;
+  email: string | null;
+  gerente_id: string | null; // Relacionamento com cad_equipe
+  gerente?: string; // Campo calculado (nome do gerente)
+  funcionarios?: number; // Campo calculado automaticamente
+  vendasMes?: number; // Placeholder para futuro
+  metaMes?: number; // Placeholder para futuro
   ativa: boolean;
-  empresaId: string;
-  empresa?: string;
-  dataAbertura: string;
+  empresaId: string; // Relacionamento obrigatório com empresa
+  empresa?: string; // Campo calculado (nome da empresa)
+  dataAbertura: string | null; // Data de abertura da loja
 }
 
 export interface LojaFormData {
@@ -56,9 +56,9 @@ export interface LojaFormData {
   endereco: string;
   telefone: string;
   email: string;
-  gerente: string;
+  gerente_id: string; // ID do gerente selecionado
   empresaId: string;
-  metaMes: number;
+  dataAbertura: string;
 }
 
 // ========================================
@@ -69,41 +69,50 @@ export type TipoFuncionario = 'VENDEDOR' | 'GERENTE' | 'MEDIDOR' | 'ADMIN_MASTER
 
 export interface Funcionario extends BaseEntity {
   nome: string;
-  email: string;
-  telefone: string;
-  setor: string;
-  lojaId: string;
-  loja?: string;
-  salario: number;
-  comissao: number;
-  dataAdmissao: string;
+  email: string | null;
+  telefone: string | null;
+  setor_id: string; // Relacionamento com tabela setores
+  setor?: string; // Campo calculado (nome do setor)
+  loja_id: string; // Relacionamento obrigatório com loja
+  loja?: string; // Campo calculado (nome da loja)
+  salario: number | null;
+  data_admissao: string | null;
   ativo: boolean;
-  nivelAcesso: NivelAcesso;
-  tipoFuncionario: TipoFuncionario;
-  performance: number;
+  nivel_acesso: NivelAcesso; // Separado do perfil
+  perfil: TipoFuncionario; // Enum no Supabase (tipoFuncionario)
   
-  // Configurações específicas por tipo
-  configuracoes?: {
-    limiteDesconto?: number;        // Para vendedores
-    overrideComissao?: number;      // Para vendedores
-    comissaoEspecifica?: number;    // Para gerentes
-    minimoGarantido?: number;       // Para gerentes
-    valorMedicao?: number;          // Para medidores
-  };
+  // Campos específicos de configuração do Supabase
+  limite_desconto: number | null;
+  comissao_percentual_vendedor: number | null;
+  comissao_percentual_gerente: number | null;
+  override_comissao: number | null;
+  tem_minimo_garantido: boolean;
+  valor_minimo_garantido: number | null;
+  valor_medicao: number | null;
+  
+  // Campo calculado para compatibilidade
+  performance?: number;
 }
 
 export interface FuncionarioFormData {
   nome: string;
   email: string;
   telefone: string;
-  setor: string;
-  lojaId: string;
+  setor_id: string; // ID do setor selecionado
+  loja_id: string; // ID da loja selecionada
   salario: number;
-  comissao: number;
-  dataAdmissao: string;
-  nivelAcesso: NivelAcesso;
-  tipoFuncionario: TipoFuncionario;
-  configuracoes?: Funcionario['configuracoes'];
+  data_admissao: string;
+  nivel_acesso: NivelAcesso;
+  perfil: TipoFuncionario; // Enum perfil
+  
+  // Configurações específicas por tipo
+  limite_desconto?: number;
+  comissao_percentual_vendedor?: number;
+  comissao_percentual_gerente?: number;
+  override_comissao?: number;
+  tem_minimo_garantido?: boolean;
+  valor_minimo_garantido?: number;
+  valor_medicao?: number;
 }
 
 // ========================================
@@ -111,14 +120,11 @@ export interface FuncionarioFormData {
 // ========================================
 export interface Setor extends BaseEntity {
   nome: string;
-  descricao: string;
-  funcionarios: number;
-  ativo: boolean;
+  funcionarios?: number; // Campo calculado automaticamente
 }
 
 export interface SetorFormData {
   nome: string;
-  descricao: string;
 }
 
 // ========================================

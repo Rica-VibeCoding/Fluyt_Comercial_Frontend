@@ -1,8 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Switch } from '@/components/ui/switch';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -21,15 +19,13 @@ interface SetorTableProps {
   setores: Setor[];
   onEdit: (setor: Setor) => void;
   onDelete: (id: string) => void;
-  onToggleStatus: (id: string) => void;
   loading?: boolean;
 }
 
 export function SetorTable({ 
   setores, 
   onEdit, 
-  onDelete, 
-  onToggleStatus,
+  onDelete,
   loading = false 
 }: SetorTableProps) {
 
@@ -52,7 +48,6 @@ export function SetorTable({
           <TableRow className="bg-slate-50 border-b border-slate-200">
             <TableHead className="font-semibold text-slate-700 h-10">Setor</TableHead>
             <TableHead className="font-semibold text-slate-700 h-10">Funcionários</TableHead>
-            <TableHead className="font-semibold text-slate-700 h-10">Status</TableHead>
             <TableHead className="text-right font-semibold text-slate-700 h-10">Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -62,25 +57,13 @@ export function SetorTable({
               <TableCell className="py-2">
                 <div>
                   <div className="font-medium">{setor.nome}</div>
-                  <div className="text-sm text-muted-foreground">{setor.descricao}</div>
+                  <div className="text-sm text-muted-foreground">Setor global</div>
                 </div>
               </TableCell>
               <TableCell className="py-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{setor.funcionarios}</span>
+                  <span className="font-medium">{setor.funcionarios || 0}</span>
                   <span className="text-xs text-muted-foreground">pessoas</span>
-                </div>
-              </TableCell>
-              <TableCell className="py-2">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={setor.ativo}
-                    onCheckedChange={() => onToggleStatus(setor.id)}
-                    className="data-[state=checked]:bg-slate-600"
-                  />
-                  <Badge variant={setor.ativo ? "default" : "secondary"} className={setor.ativo ? "bg-slate-600 hover:bg-slate-700" : ""}>
-                    {setor.ativo ? 'Ativo' : 'Inativo'}
-                  </Badge>
                 </div>
               </TableCell>
               <TableCell className="text-right py-2">
@@ -109,7 +92,7 @@ export function SetorTable({
                         <AlertDialogDescription>
                           Tem certeza que deseja excluir o setor <strong>{setor.nome}</strong>?
                           Esta ação não pode ser desfeita.
-                          {setor.funcionarios > 0 && (
+                          {(setor.funcionarios || 0) > 0 && (
                             <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
                               <strong>Atenção:</strong> Este setor possui {setor.funcionarios} funcionário(s) vinculado(s).
                             </div>
@@ -120,11 +103,11 @@ export function SetorTable({
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction 
                           onClick={() => {
-                            if (setor.funcionarios === 0) {
+                            if ((setor.funcionarios || 0) === 0) {
                               onDelete(setor.id)
                             }
                           }}
-                          disabled={setor.funcionarios > 0}
+                          disabled={(setor.funcionarios || 0) > 0}
                           className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
                         >
                           Excluir
