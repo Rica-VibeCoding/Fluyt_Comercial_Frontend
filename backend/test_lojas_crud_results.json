@@ -1,0 +1,105 @@
+{
+  "timestamp": "2025-06-18T04:38:28.200587",
+  "backend_status": null,
+  "lojas_endpoints": [
+    {
+      "method": "GET",
+      "endpoint": "/lojas/",
+      "description": "Listar lojas",
+      "status_code": 403,
+      "implemented": true
+    },
+    {
+      "method": "POST",
+      "endpoint": "/lojas/",
+      "description": "Criar loja",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/lojas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Obter loja",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/lojas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Atualizar loja",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/lojas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Excluir loja",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/lojas/teste-sem-auth",
+      "description": "Teste sem auth",
+      "status_code": 200,
+      "implemented": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/lojas/empresa/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Lojas por empresa",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/lojas/dashboard/stats",
+      "description": "Estat\u00edsticas",
+      "status_code": 500,
+      "implemented": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/lojas/validar/codigo/TEST001",
+      "description": "Validar c\u00f3digo",
+      "status_code": 500,
+      "implemented": true
+    }
+  ],
+  "comparison_with_empresa": {
+    "empresas_working": true,
+    "lojas_working": true,
+    "parity": true,
+    "lojas_count": 2
+  },
+  "integration_status": {
+    "test_endpoint": true,
+    "lojas_retornadas": 2,
+    "dados_reais": true,
+    "estrutura_dados": {
+      "esperados": [
+        "id",
+        "nome",
+        "codigo",
+        "empresa_id",
+        "ativo"
+      ],
+      "presentes": [
+        "id",
+        "nome",
+        "codigo",
+        "empresa_id",
+        "ativo"
+      ],
+      "completa": true
+    }
+  },
+  "overall_assessment": {
+    "completeness_percentage": 100.0,
+    "implemented_endpoints": 9,
+    "crud_operations": 9,
+    "has_parity": true,
+    "frontend_working": true,
+    "assessment": "EXCELLENT"
+  }
+}

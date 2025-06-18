@@ -161,3 +161,153 @@ class EmpresaRepository:
         except Exception as e:
             logger.error(f"Erro ao obter empresa com lojas {empresa_id}: {str(e)}")
             raise Exception(f"Erro ao obter empresa com lojas: {str(e)}")
+
+    # ===== OPERAÇÕES DE ESCRITA =====
+    
+    async def criar_empresa(self, empresa_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Cria nova empresa no banco"""
+        try:
+            # Preparar dados para inserção
+            dados_insercao = {
+                'nome': empresa_data['nome'],
+                'cnpj': empresa_data['cnpj'],
+                'email': empresa_data.get('email'),
+                'telefone': empresa_data.get('telefone'),
+                'endereco': empresa_data.get('endereco'),
+                'ativo': empresa_data.get('ativo', True),
+                'created_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            # Inserir empresa
+            result = (
+                self.supabase
+                .table('cad_empresas')
+                .insert(dados_insercao)
+                .execute()
+            )
+            
+            if result.data:
+                logger.info(f"Empresa criada com sucesso: {result.data[0]['id']}")
+                return result.data[0]
+            else:
+                raise Exception("Falha ao criar empresa - nenhum dado retornado")
+                
+        except Exception as e:
+            logger.error(f"Erro ao criar empresa: {str(e)}")
+            raise Exception(f"Erro ao criar empresa: {str(e)}")
+    
+    async def atualizar_empresa(self, empresa_id: str, empresa_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Atualiza empresa existente"""
+        try:
+            # Preparar dados para atualização (apenas campos não None)
+            dados_atualizacao = {
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            # Adicionar apenas campos fornecidos
+            for campo in ['nome', 'cnpj', 'email', 'telefone', 'endereco', 'ativo']:
+                if campo in empresa_data and empresa_data[campo] is not None:
+                    dados_atualizacao[campo] = empresa_data[campo]
+            
+            # Atualizar empresa
+            result = (
+                self.supabase
+                .table('cad_empresas')
+                .update(dados_atualizacao)
+                .eq('id', empresa_id)
+                .execute()
+            )
+            
+            if result.data:
+                logger.info(f"Empresa {empresa_id} atualizada com sucesso")
+                return result.data[0]
+            else:
+                raise Exception("Empresa não encontrada para atualização")
+                
+        except Exception as e:
+            logger.error(f"Erro ao atualizar empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao atualizar empresa: {str(e)}")
+    
+    async def excluir_empresa(self, empresa_id: str) -> bool:
+        """Exclui empresa (soft delete)"""
+        try:
+            # Verificar se empresa tem lojas ativas
+            lojas = await self.listar_lojas_por_empresa(empresa_id)
+            lojas_ativas = [loja for loja in lojas if loja.get('ativo', True)]
+            
+            if lojas_ativas:
+                raise Exception(f"Não é possível excluir empresa com {len(lojas_ativas)} lojas ativas")
+            
+            # Fazer soft delete (marcar como inativo)
+            result = (
+                self.supabase
+                .table('cad_empresas')
+                .update({
+                    'ativo': False,
+                    'updated_at': datetime.utcnow().isoformat()
+                })
+                .eq('id', empresa_id)
+                .execute()
+            )
+            
+            if result.data:
+                logger.info(f"Empresa {empresa_id} marcada como inativa")
+                return True
+            else:
+                raise Exception("Empresa não encontrada para exclusão")
+                
+        except Exception as e:
+            logger.error(f"Erro ao excluir empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao excluir empresa: {str(e)}")
+    
+    async def alternar_status_empresa(self, empresa_id: str, ativo: bool) -> Dict[str, Any]:
+        """Alterna status ativo/inativo da empresa"""
+        try:
+            result = (
+                self.supabase
+                .table('cad_empresas')
+                .update({
+                    'ativo': ativo,
+                    'updated_at': datetime.utcnow().isoformat()
+                })
+                .eq('id', empresa_id)
+                .execute()
+            )
+            
+            if result.data:
+                status_texto = "ativada" if ativo else "desativada"
+                logger.info(f"Empresa {empresa_id} {status_texto}")
+                return result.data[0]
+            else:
+                raise Exception("Empresa não encontrada")
+                
+        except Exception as e:
+            logger.error(f"Erro ao alterar status empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao alterar status empresa: {str(e)}")
+    
+    async def verificar_cnpj_duplicado(self, cnpj: str, empresa_id: Optional[str] = None) -> bool:
+        """Verifica se CNPJ já existe (para validação de unicidade)"""
+        try:
+            query = (
+                self.supabase
+                .table('cad_empresas')
+                .select('id')
+                .eq('cnpj', cnpj)
+            )
+            
+            # Se estiver atualizando, excluir a própria empresa da verificação
+            if empresa_id:
+                query = query.neq('id', empresa_id)
+            
+            result = query.execute()
+            
+            existe_duplicado = len(result.data) > 0
+            if existe_duplicado:
+                logger.warning(f"CNPJ {cnpj} já existe no sistema")
+            
+            return existe_duplicado
+            
+        except Exception as e:
+            logger.error(f"Erro ao verificar CNPJ duplicado: {str(e)}")
+            return False  # Em caso de erro, permitir operação

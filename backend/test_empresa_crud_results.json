@@ -1,0 +1,83 @@
+{
+  "timestamp": "2025-06-18T04:35:00.293073",
+  "backend_status": true,
+  "endpoints_found": [
+    {
+      "method": "GET",
+      "endpoint": "/empresas/",
+      "description": "Listar empresas",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "POST",
+      "endpoint": "/empresas/",
+      "description": "Criar empresa",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/empresas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Obter empresa",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/empresas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Atualizar empresa",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/empresas/123e4567-e89b-12d3-a456-426614174000",
+      "description": "Excluir empresa",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "PATCH",
+      "endpoint": "/empresas/123e4567-e89b-12d3-a456-426614174000/status",
+      "description": "Alterar status",
+      "status_code": 403,
+      "exists": true
+    },
+    {
+      "method": "GET",
+      "endpoint": "/empresas/teste-conexao-real",
+      "description": "Teste sem auth",
+      "status_code": 403,
+      "exists": true
+    }
+  ],
+  "crud_tests": {
+    "conexao_supabase": false,
+    "auth_requirements": {
+      "/empresas/": "PROTEGIDO_CORRETAMENTE"
+    }
+  },
+  "frontend_integration": {
+    "endpoint_funcionando": true,
+    "empresas_retornadas": 1,
+    "lojas_retornadas": 2,
+    "dados_reais": true,
+    "estrutura_dados": {
+      "esperados": [
+        "id",
+        "nome",
+        "cnpj",
+        "created_at"
+      ],
+      "presentes": [
+        "id",
+        "nome",
+        "cnpj",
+        "created_at"
+      ],
+      "completa": true
+    }
+  },
+  "overall_status": "PARTIAL"
+}

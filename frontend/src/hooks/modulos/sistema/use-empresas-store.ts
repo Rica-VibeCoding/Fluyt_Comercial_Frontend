@@ -1,11 +1,14 @@
 /**
- * Hook simplificado para empresas usando Zustand store
+ * Hook DESCONTINUADO - REDIRECIONAMENTO PARA useEmpresasReal
+ * Agente 1 - Migração: Este hook foi substituído por useEmpresasReal
+ * @deprecated Use useEmpresasReal instead
  */
 
 import { useCallback } from 'react';
 import { useSistemaStore } from '@/store/sistema-store';
 import { Empresa } from '@/types/sistema';
 import { toast } from 'sonner';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 
 // Mock de dados para desenvolvimento
 const mockEmpresas: Empresa[] = [
@@ -38,114 +41,54 @@ const mockEmpresas: Empresa[] = [
 ];
 
 export function useEmpresasStore() {
-  const {
-    empresas,
-    loadingEmpresas,
-    erroEmpresas,
-    setEmpresas,
-    adicionarEmpresa,
-    atualizarEmpresa,
-    removerEmpresa,
-    setLoadingEmpresas,
-    setErroEmpresas
-  } = useSistemaStore();
+  // 🔄 REDIRECIONAMENTO: Usar o hook unificado real
+  const empresasReal = useEmpresasReal();
+  
+  // ⚠️ COMPATIBILIDADE: Manter interface antiga para componentes legacy
+  toast.info('⚠️ useEmpresasStore descontinuado - migre para useEmpresasReal');
 
   const carregarEmpresas = useCallback(async () => {
-    setLoadingEmpresas(true);
-    setErroEmpresas(null);
-    
-    try {
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setEmpresas(mockEmpresas);
-      toast.success('Empresas carregadas com sucesso');
-    } catch (error) {
-      const mensagem = 'Erro ao carregar empresas';
-      setErroEmpresas(mensagem);
-      toast.error(mensagem);
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, [setEmpresas, setLoadingEmpresas, setErroEmpresas]);
+    // Redirecionar para o hook real
+    await empresasReal.recarregarDados();
+  }, [empresasReal]);
 
+  // 🔄 COMPATIBILIDADE: Redirecionar para hook real
   const criarEmpresa = useCallback(async (dadosEmpresa: Omit<Empresa, 'id' | 'createdAt' | 'updatedAt'>) => {
-    setLoadingEmpresas(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const novaEmpresa: Empresa = {
-        ...dadosEmpresa,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      adicionarEmpresa(novaEmpresa);
-      toast.success('Empresa criada com sucesso');
-      return novaEmpresa;
-    } catch (error) {
-      const mensagem = 'Erro ao criar empresa';
-      setErroEmpresas(mensagem);
-      toast.error(mensagem);
-      throw error;
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, [adicionarEmpresa, setLoadingEmpresas, setErroEmpresas]);
+    // Converter formato para compatibilidade
+    const formData = {
+      nome: dadosEmpresa.nome,
+      cnpj: dadosEmpresa.cnpj || '',
+      email: dadosEmpresa.email || '',
+      telefone: dadosEmpresa.telefone || '',
+      endereco: dadosEmpresa.endereco || ''
+    };
+    return await empresasReal.criarEmpresa(formData);
+  }, [empresasReal]);
 
   const editarEmpresa = useCallback(async (id: string, dadosAtualizados: Partial<Empresa>) => {
-    setLoadingEmpresas(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      atualizarEmpresa(id, {
-        ...dadosAtualizados,
-        updatedAt: new Date().toISOString()
-      });
-      
-      toast.success('Empresa atualizada com sucesso');
-    } catch (error) {
-      const mensagem = 'Erro ao atualizar empresa';
-      setErroEmpresas(mensagem);
-      toast.error(mensagem);
-      throw error;
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, [atualizarEmpresa, setLoadingEmpresas, setErroEmpresas]);
+    const formData = {
+      nome: dadosAtualizados.nome || '',
+      cnpj: dadosAtualizados.cnpj || '',
+      email: dadosAtualizados.email || '',
+      telefone: dadosAtualizados.telefone || '',
+      endereco: dadosAtualizados.endereco || ''
+    };
+    return await empresasReal.atualizarEmpresa(id, formData);
+  }, [empresasReal]);
 
   const excluirEmpresa = useCallback(async (id: string) => {
-    setLoadingEmpresas(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      removerEmpresa(id);
-      toast.success('Empresa excluída com sucesso');
-    } catch (error) {
-      const mensagem = 'Erro ao excluir empresa';
-      setErroEmpresas(mensagem);
-      toast.error(mensagem);
-      throw error;
-    } finally {
-      setLoadingEmpresas(false);
-    }
-  }, [removerEmpresa, setLoadingEmpresas, setErroEmpresas]);
+    return await empresasReal.excluirEmpresa(id);
+  }, [empresasReal]);
 
   const alternarStatusEmpresa = useCallback(async (id: string, ativo: boolean) => {
-    try {
-      await editarEmpresa(id, { ativo });
-    } catch (error) {
-      console.error('Erro ao alterar status da empresa:', error);
-    }
-  }, [editarEmpresa]);
+    await empresasReal.alternarStatusEmpresa(id);
+  }, [empresasReal]);
 
   return {
-    empresas,
-    loading: loadingEmpresas,
-    erro: erroEmpresas,
+    // 🔄 Redirecionar dados do hook real
+    empresas: empresasReal.empresas,
+    loading: empresasReal.loading,
+    erro: empresasReal.error,
     carregarEmpresas,
     criarEmpresa,
     editarEmpresa,

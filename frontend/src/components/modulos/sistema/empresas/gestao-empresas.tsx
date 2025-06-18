@@ -17,7 +17,12 @@ export function GestaoEmpresas() {
     loading,
     totalEmpresas,
     empresasAtivas,
-    buscarEmpresas
+    buscarEmpresas,
+    // 🔧 CRUD Functions (será implementado pelo Agente 3)
+    criarEmpresa,
+    atualizarEmpresa,
+    excluirEmpresa,
+    alternarStatusEmpresa
   } = useEmpresasReal();
 
   // Criar estatísticas no formato esperado pelo componente
@@ -44,30 +49,6 @@ export function GestaoEmpresas() {
 
   // Filtrar empresas baseado na busca
   const empresasFiltradas = termoBusca ? buscarEmpresas(termoBusca) : empresas;
-
-  // Funções CRUD temporárias (aguardando implementação C.Testa)
-  const criarEmpresa = async (data: EmpresaFormData): Promise<boolean> => {
-    console.log('🔗 [PLACEHOLDER] Criar empresa:', data);
-    toast.error('Criação de empresas será implementada pelo C.Testa');
-    return false;
-  };
-
-  const atualizarEmpresa = async (id: string, data: EmpresaFormData): Promise<boolean> => {
-    console.log('🔗 [PLACEHOLDER] Atualizar empresa:', { id, data });
-    toast.error('Edição de empresas será implementada pelo C.Testa');
-    return false;
-  };
-
-  const excluirEmpresa = async (id: string): Promise<boolean> => {
-    console.log('🔗 [PLACEHOLDER] Excluir empresa:', id);
-    toast.error('Exclusão de empresas será implementada pelo C.Testa');
-    return false;
-  };
-
-  const alternarStatusEmpresa = async (id: string): Promise<void> => {
-    console.log('🔗 [PLACEHOLDER] Alterar status empresa:', id);
-    toast.error('Alteração de status será implementada pelo C.Testa');
-  };
 
   const handleSubmit = async (data: EmpresaFormData) => {
     let sucesso = false;

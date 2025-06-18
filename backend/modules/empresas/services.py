@@ -128,6 +128,136 @@ class EmpresaService:
             logger.error(f"Erro ao obter empresa com lojas {empresa_id}: {str(e)}")
             raise Exception(f"Erro ao obter empresa com lojas: {str(e)}")
     
+    async def criar_empresa(self, empresa_data: EmpresaCreate) -> EmpresaResponse:
+        """
+        Cria nova empresa
+        
+        Args:
+            empresa_data: Dados da empresa a ser criada
+            
+        Returns:
+            EmpresaResponse: Empresa criada
+        """
+        try:
+            # Validar CNPJ único
+            cnpj_duplicado = await self.repository.verificar_cnpj_duplicado(empresa_data.cnpj)
+            if cnpj_duplicado:
+                raise Exception(f"CNPJ {empresa_data.cnpj} já está cadastrado no sistema")
+            
+            # Converter para dict
+            empresa_dict = empresa_data.dict()
+            
+            # Criar empresa
+            empresa_criada = await self.repository.criar_empresa(empresa_dict)
+            
+            logger.info(f"Empresa '{empresa_criada['nome']}' criada com sucesso")
+            return EmpresaResponse(**empresa_criada)
+            
+        except Exception as e:
+            logger.error(f"Erro ao criar empresa: {str(e)}")
+            raise Exception(f"Erro ao criar empresa: {str(e)}")
+    
+    async def atualizar_empresa(self, empresa_id: str, empresa_data: EmpresaUpdate) -> EmpresaResponse:
+        """
+        Atualiza empresa existente
+        
+        Args:
+            empresa_id: ID da empresa
+            empresa_data: Dados para atualização
+            
+        Returns:
+            EmpresaResponse: Empresa atualizada
+        """
+        try:
+            # Verificar se empresa existe
+            empresa_existente = await self.repository.obter_empresa(empresa_id)
+            if not empresa_existente:
+                raise Exception("Empresa não encontrada")
+            
+            # Validar CNPJ único (se sendo alterado)
+            if empresa_data.cnpj and empresa_data.cnpj != empresa_existente.get('cnpj'):
+                cnpj_duplicado = await self.repository.verificar_cnpj_duplicado(
+                    empresa_data.cnpj, 
+                    empresa_id
+                )
+                if cnpj_duplicado:
+                    raise Exception(f"CNPJ {empresa_data.cnpj} já está cadastrado no sistema")
+            
+            # Converter para dict (apenas campos não None)
+            empresa_dict = empresa_data.dict(exclude_none=True)
+            
+            # Atualizar empresa
+            empresa_atualizada = await self.repository.atualizar_empresa(empresa_id, empresa_dict)
+            
+            logger.info(f"Empresa '{empresa_atualizada['nome']}' atualizada com sucesso")
+            return EmpresaResponse(**empresa_atualizada)
+            
+        except Exception as e:
+            logger.error(f"Erro ao atualizar empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao atualizar empresa: {str(e)}")
+    
+    async def excluir_empresa(self, empresa_id: str) -> Dict[str, Any]:
+        """
+        Exclui empresa (soft delete)
+        
+        Args:
+            empresa_id: ID da empresa
+            
+        Returns:
+            Dict: Resultado da operação
+        """
+        try:
+            # Verificar se empresa existe
+            empresa_existente = await self.repository.obter_empresa(empresa_id)
+            if not empresa_existente:
+                raise Exception("Empresa não encontrada")
+            
+            # Excluir empresa (soft delete)
+            sucesso = await self.repository.excluir_empresa(empresa_id)
+            
+            if sucesso:
+                logger.info(f"Empresa '{empresa_existente['nome']}' excluída com sucesso")
+                return {
+                    "sucesso": True,
+                    "mensagem": f"Empresa '{empresa_existente['nome']}' foi desativada",
+                    "empresa_id": empresa_id
+                }
+            else:
+                raise Exception("Falha ao excluir empresa")
+                
+        except Exception as e:
+            logger.error(f"Erro ao excluir empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao excluir empresa: {str(e)}")
+    
+    async def alternar_status_empresa(self, empresa_id: str, ativo: bool) -> EmpresaResponse:
+        """
+        Alterna status ativo/inativo da empresa
+        
+        Args:
+            empresa_id: ID da empresa
+            ativo: Novo status
+            
+        Returns:
+            EmpresaResponse: Empresa com status atualizado
+        """
+        try:
+            # Verificar se empresa existe
+            empresa_existente = await self.repository.obter_empresa(empresa_id)
+            if not empresa_existente:
+                raise Exception("Empresa não encontrada")
+            
+            # Alterar status
+            empresa_atualizada = await self.repository.alternar_status_empresa(empresa_id, ativo)
+            
+            status_texto = "ativada" if ativo else "desativada"
+            logger.info(f"Empresa '{empresa_atualizada['nome']}' {status_texto}")
+            
+            return EmpresaResponse(**empresa_atualizada)
+            
+        except Exception as e:
+            logger.error(f"Erro ao alterar status empresa {empresa_id}: {str(e)}")
+            raise Exception(f"Erro ao alterar status empresa: {str(e)}")
+    
     # ===== OPERAÇÕES DE LOJAS =====
     
     async def listar_lojas(self, filters: Optional[LojaFilters] = None, skip: int = 0, limit: int = 50) -> List[LojaListItem]:

@@ -190,6 +190,127 @@ export class EmpresasApiService {
       throw error;
     }
   }
+
+  /**
+   * CRIAR EMPRESA (POST)
+   * Cria nova empresa no backend
+   */
+  async criarEmpresa(dados: Partial<EmpresaApi>): Promise<EmpresaApi> {
+    console.log('📝 Criando nova empresa:', dados);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/empresas/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dados),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
+      }
+
+      const novaEmpresa = await response.json();
+      console.log('✅ Empresa criada com sucesso:', novaEmpresa);
+      return novaEmpresa;
+      
+    } catch (error) {
+      console.error('❌ Erro ao criar empresa:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * ATUALIZAR EMPRESA (PUT)
+   * Atualiza empresa existente
+   */
+  async atualizarEmpresa(id: string, dados: Partial<EmpresaApi>): Promise<EmpresaApi> {
+    console.log(`📝 Atualizando empresa ${id}:`, dados);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/empresas/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dados),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
+      }
+
+      const empresaAtualizada = await response.json();
+      console.log('✅ Empresa atualizada com sucesso:', empresaAtualizada);
+      return empresaAtualizada;
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar empresa:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * EXCLUIR EMPRESA (DELETE)
+   * Remove empresa do sistema
+   */
+  async excluirEmpresa(id: string): Promise<void> {
+    console.log(`🗑️ Excluindo empresa ${id}`);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/empresas/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
+      }
+
+      console.log('✅ Empresa excluída com sucesso');
+      
+    } catch (error) {
+      console.error('❌ Erro ao excluir empresa:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * ALTERNAR STATUS EMPRESA (PATCH)
+   * Ativa ou desativa empresa
+   */
+  async alternarStatusEmpresa(id: string, ativo: boolean): Promise<EmpresaApi> {
+    console.log(`🔄 Alterando status da empresa ${id} para:`, ativo ? 'ativo' : 'inativo');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/empresas/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ativo }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Erro HTTP: ${response.status}`);
+      }
+
+      const empresaAtualizada = await response.json();
+      console.log('✅ Status alterado com sucesso:', empresaAtualizada);
+      return empresaAtualizada;
+      
+    } catch (error) {
+      console.error('❌ Erro ao alterar status:', error);
+      throw error;
+    }
+  }
 }
 
 // Instância singleton para uso global

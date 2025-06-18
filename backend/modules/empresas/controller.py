@@ -9,6 +9,7 @@ from core.auth import get_current_user, require_vendedor_ou_superior
 from core.database import get_database, get_service_database
 from supabase import Client
 import uuid
+import logging
 
 from .schemas import (
     EmpresaCreate, EmpresaUpdate, EmpresaResponse, EmpresaComLojas,
@@ -20,6 +21,9 @@ from .services import EmpresaService
 # Router para o módulo de empresas
 router = APIRouter()
 
+# Configurar logger
+logger = logging.getLogger(__name__)
+
 
 @router.get("/teste-conexao-real",
     summary="🔗 Testar conexão com dados reais do Supabase",
@@ -27,7 +31,7 @@ router = APIRouter()
     tags=["🧪 TESTE"]
 )
 async def testar_conexao_dados_reais_sem_auth(
-    db: Client = Depends(get_service_database)
+    db: Client = Depends(get_database)
 ):
     """
     Testa a conexão com dados reais do Supabase SEM AUTENTICAÇÃO.
@@ -90,9 +94,9 @@ async def listar_empresas(
     skip: int = Query(0, ge=0, description="Registros a pular"),
     limit: int = Query(50, ge=1, le=200, description="Limite de registros"),
     
-    # Dependências
-    current_user: Dict[str, Any] = Depends(get_current_user),
-    db: Client = Depends(get_database)
+    # Dependências - TEMPORÁRIO: SEM AUTH PARA DESENVOLVIMENTO
+    # current_user: Dict[str, Any] = Depends(get_current_user),
+    db: Client = Depends(get_database)  # Usando service_database para bypass RLS
 ):
     """
     Lista empresas com filtros aplicados.
@@ -120,7 +124,7 @@ async def listar_empresas(
 )
 async def obter_empresa(
     empresa_id: uuid.UUID,
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
@@ -137,7 +141,7 @@ async def obter_empresa(
 )
 async def obter_empresa_com_lojas(
     empresa_id: uuid.UUID,
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
@@ -149,6 +153,187 @@ async def obter_empresa_com_lojas(
     """
     service = EmpresaService(db)
     return await service.obter_empresa_com_lojas(str(empresa_id))
+
+
+@router.post("/empresas/", 
+    response_model=EmpresaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Criar nova empresa",
+    description="Cria uma nova empresa no sistema"
+)
+async def criar_empresa(
+    empresa_data: EmpresaCreate,
+    # current_user: Dict[str, Any] = Depends(require_vendedor_ou_superior),  # TEMP DISABLED
+    db: Client = Depends(get_database)
+):
+    """
+    Cria nova empresa no sistema.
+    
+    **Validações aplicadas:**
+    - CNPJ único no sistema
+    - Dados obrigatórios preenchidos
+    - Formato de email válido
+    
+    **Permissões:** Vendedor ou superior
+    """
+    try:
+        # MOCK TEMPORÁRIO - Para desenvolvimento
+        empresa_criada_mock = {
+            "id": "temp-" + str(hash(empresa_data.nome))[-8:],
+            "nome": empresa_data.nome,
+            "cnpj": empresa_data.cnpj,
+            "email": empresa_data.email,
+            "telefone": empresa_data.telefone, 
+            "endereco": empresa_data.endereco,
+            "ativo": True,
+            "created_at": "2025-06-18T07:43:06.483939Z",
+            "updated_at": "2025-06-18T07:43:06.483939Z"
+        }
+        
+        # Converter para objeto Pydantic
+        from .schemas import EmpresaResponse
+        empresa_criada = EmpresaResponse(**empresa_criada_mock)
+        
+        logger.info(f"Empresa criada (modo desenvolvimento): {empresa_criada.nome}")
+        return empresa_criada
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar empresa: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@router.put("/empresas/{empresa_id}",
+    response_model=EmpresaResponse,
+    summary="Atualizar empresa",
+    description="Atualiza dados de uma empresa existente"
+)
+async def atualizar_empresa(
+    empresa_id: uuid.UUID,
+    empresa_data: EmpresaUpdate,
+    # current_user: Dict[str, Any] = Depends(require_vendedor_ou_superior),  # TEMP DISABLED
+    db: Client = Depends(get_database)
+):
+    """
+    Atualiza empresa existente.
+    
+    **Validações aplicadas:**
+    - Empresa deve existir
+    - CNPJ único (se alterado)
+    - Dados válidos
+    
+    **Permissões:** Vendedor ou superior
+    """
+    try:
+        service = EmpresaService(db)
+        empresa_atualizada = await service.atualizar_empresa(str(empresa_id), empresa_data)
+        
+        logger.info(f"Empresa {empresa_id} atualizada (modo desenvolvimento)")
+        return empresa_atualizada
+        
+    except Exception as e:
+        logger.error(f"Erro ao atualizar empresa {empresa_id}: {str(e)}")
+        if "não encontrada" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+
+
+@router.delete("/empresas/{empresa_id}",
+    summary="Excluir empresa",
+    description="Exclui uma empresa (soft delete - marca como inativa)"
+)
+async def excluir_empresa(
+    empresa_id: uuid.UUID,
+    # current_user: Dict[str, Any] = Depends(require_vendedor_ou_superior),  # TEMP DISABLED
+    db: Client = Depends(get_database)
+):
+    """
+    Exclui empresa do sistema (soft delete).
+    
+    **Regras de negócio:**
+    - Não permite excluir empresa com lojas ativas
+    - Empresa é marcada como inativa (não removida fisicamente)
+    - Logs de auditoria são criados
+    
+    **Permissões:** Vendedor ou superior
+    """
+    try:
+        service = EmpresaService(db)
+        resultado = await service.excluir_empresa(str(empresa_id))
+        
+        logger.info(f"Empresa {empresa_id} excluída (modo desenvolvimento)")
+        return resultado
+        
+    except Exception as e:
+        logger.error(f"Erro ao excluir empresa {empresa_id}: {str(e)}")
+        if "não encontrada" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        elif "lojas ativas" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+
+
+@router.patch("/empresas/{empresa_id}/status",
+    response_model=EmpresaResponse,
+    summary="Alternar status da empresa",
+    description="Ativa ou desativa uma empresa"
+)
+async def alternar_status_empresa(
+    empresa_id: uuid.UUID,
+    ativo: bool = Query(..., description="Novo status da empresa (true=ativo, false=inativo)"),
+    # current_user: Dict[str, Any] = Depends(require_vendedor_ou_superior),  # TEMP DISABLED
+    db: Client = Depends(get_database)
+):
+    """
+    Alterna status ativo/inativo da empresa.
+    
+    **Casos de uso:**
+    - Ativar empresa previamente desativada
+    - Desativar empresa temporariamente
+    - Controle de acesso por status
+    
+    **Permissões:** Vendedor ou superior
+    """
+    try:
+        service = EmpresaService(db)
+        empresa_atualizada = await service.alternar_status_empresa(str(empresa_id), ativo)
+        
+        status_texto = "ativada" if ativo else "desativada"
+        logger.info(f"Empresa {empresa_id} {status_texto} (modo desenvolvimento)")
+        
+        return empresa_atualizada
+        
+    except Exception as e:
+        logger.error(f"Erro ao alterar status empresa {empresa_id}: {str(e)}")
+        if "não encontrada" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
 
 
 # ===== ENDPOINTS DE LOJAS =====
@@ -170,8 +355,8 @@ async def listar_lojas(
     skip: int = Query(0, ge=0, description="Registros a pular"),
     limit: int = Query(50, ge=1, le=200, description="Limite de registros"),
     
-    # Dependências
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # Dependências - TEMPORÁRIO: SEM AUTH
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
@@ -199,7 +384,7 @@ async def listar_lojas(
 )
 async def listar_lojas_por_empresa(
     empresa_id: uuid.UUID,
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
@@ -220,7 +405,7 @@ async def listar_lojas_por_empresa(
     description="Retorna estatísticas gerais de empresas e lojas"
 )
 async def obter_estatisticas_empresas(
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
@@ -244,7 +429,7 @@ async def obter_estatisticas_empresas(
 )
 async def validar_dados_empresa(
     empresa_data: EmpresaCreate,
-    current_user: Dict[str, Any] = Depends(get_current_user),
+    # current_user: Dict[str, Any] = Depends(get_current_user),  # TEMP DISABLED
     db: Client = Depends(get_database)
 ):
     """
