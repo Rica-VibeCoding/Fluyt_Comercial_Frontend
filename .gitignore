@@ -39,7 +39,7 @@ __pycache__/
 venv/
 backend/venv/
 
-# Variáveis de ambiente
+# Variáveis de ambientes
 .env
 .env.*
 
@@ -48,3 +48,7 @@ bun.lockb
 
 # Claude AI (Claude folders)
 .claude/
+
+
+venv_linux/
+backend/venv_linux/
