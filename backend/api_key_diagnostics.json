@@ -1,0 +1,32 @@
+{
+  "current_keys": {
+    "anon_key_present": true,
+    "service_key_present": true,
+    "anon_key_length": 208,
+    "service_key_length": 219
+  },
+  "key_validation": {
+    "anon_key": {
+      "status_code": 401,
+      "valid": false,
+      "response": "{\"message\":\"Invalid API key\",\"hint\":\"Double check your Supabase `anon` or `service_role` API key.\"}"
+    },
+    "service_key": {
+      "status_code": 401,
+      "valid": false,
+      "response": "{\"message\":\"Invalid API key\",\"hint\":\"Double check your Supabase `anon` or `service_role` API key.\"}"
+    }
+  },
+  "solutions": [
+    {
+      "issue": "Invalid anon key",
+      "solution": "Regenerate anon key from Supabase dashboard",
+      "url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde/settings/api"
+    },
+    {
+      "issue": "Invalid service key",
+      "solution": "Regenerate service_role key from Supabase dashboard",
+      "url": "https://app.supabase.com/project/momwbpxqnvgehotfmvde/settings/api"
+    }
+  ]
+}

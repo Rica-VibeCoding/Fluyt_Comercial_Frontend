@@ -1,0 +1,111 @@
+{
+  "test_results": {
+    "mcp_server_status": "SUCCESS",
+    "test_timestamp": "2025-06-16T12:00:00Z",
+    "tests_performed": [
+      {
+        "test_name": "List Available MCP Tools",
+        "status": "SUCCESS",
+        "description": "Successfully listed all available Supabase MCP tools",
+        "tools_count": 27,
+        "key_tools": [
+          "list_projects",
+          "list_tables", 
+          "execute_sql",
+          "apply_migration",
+          "get_logs",
+          "get_advisors",
+          "create_project",
+          "deploy_edge_function"
+        ]
+      },
+      {
+        "test_name": "List Projects",
+        "status": "SUCCESS", 
+        "description": "Successfully retrieved project list",
+        "projects_found": [
+          {
+            "id": "nzgifjdewdfibcopolof",
+            "name": "Geral",
+            "region": "sa-east-1",
+            "status": "ACTIVE_HEALTHY"
+          },
+          {
+            "id": "momwbpxqnvgehotfmvde",
+            "name": "Fluyt",
+            "region": "us-east-2", 
+            "status": "ACTIVE_HEALTHY"
+          }
+        ]
+      },
+      {
+        "test_name": "List Tables",
+        "status": "SUCCESS",
+        "description": "Successfully listed tables from both auth and public schemas",
+        "schemas_tested": ["auth", "public"],
+        "auth_tables_found": [
+          "audit_log_entries",
+          "flow_state", 
+          "identities",
+          "instances",
+          "mfa_amr_claims",
+          "mfa_challenges",
+          "mfa_factors",
+          "one_time_tokens",
+          "refresh_tokens",
+          "saml_providers",
+          "saml_relay_states",
+          "sessions",
+          "sso_domains",
+          "sso_providers", 
+          "users"
+        ],
+        "public_tables_found": [
+          "auditoria_alteracoes",
+          "bancos",
+          "c_ambientes",
+          "c_aprovacao_historico",
+          "c_clientes",
+          "c_contratos",
+          "c_cronograma_pagamentos",
+          "c_formapgto_parcelas",
+          "c_formas_pagamento",
+          "c_lojas",
+          "c_orcamento_ambientes",
+          "c_orcamentos",
+          "c_pagamentos_detalhes",
+          "cad_comissoes",
+          "cad_config_loja",
+          "cad_empresas",
+          "cad_equipe",
+          "cad_montadores",
+          "cad_procedencias",
+          "cad_setores",
+          "cad_status_orcamento",
+          "cad_transportadoras",
+          "xml_logs"
+        ]
+      },
+      {
+        "test_name": "Check User Exists",
+        "status": "SUCCESS",
+        "description": "Successfully found user ricardo.nilton@hotmail.com in auth.users table",
+        "user_data": {
+          "id": "03de5532-db40-4f78-aa66-63d30060ea4e",
+          "email": "ricardo.nilton@hotmail.com", 
+          "created_at": "2025-05-21 02:36:40.420875+00",
+          "confirmed_at": "2025-05-21 02:36:40.424206+00"
+        }
+      }
+    ],
+    "summary": {
+      "all_tests_passed": true,
+      "mcp_server_functional": true,
+      "database_accessible": true,
+      "user_verification": "User ricardo.nilton@hotmail.com exists and is confirmed",
+      "project_id_used": "momwbpxqnvgehotfmvde",
+      "total_public_tables": 23,
+      "total_auth_tables": 15
+    }
+  }
+}

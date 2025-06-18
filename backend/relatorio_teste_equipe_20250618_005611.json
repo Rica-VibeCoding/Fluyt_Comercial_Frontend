@@ -1,0 +1,29 @@
+{
+  "inicio": "2025-06-18T00:56:09.514382",
+  "testes": {
+    "servidor": false
+  },
+  "resumo": {
+    "duracao_total": "2.06s",
+    "total_testes": 1,
+    "sucessos": 0,
+    "falhas": 1,
+    "percentual_sucesso": "0.0%",
+    "status_geral": "❌ FALHOU (1 erro(s))"
+  },
+  "logs": [
+    "[00:56:09] INFO: 🚀 INICIANDO TESTE COMPLETO CRUD EQUIPE",
+    "[00:56:09] INFO: ============================================================",
+    "[00:56:09] INFO: 🔍 VERIFICANDO DISPONIBILIDADE DO SERVIDOR",
+    "[00:56:11] ERROR: ❌ Servidor responde mas com status 404",
+    "[00:56:11] ERROR: ❌ TESTE ABORTADO: Servidor não disponível",
+    "[00:56:11] INFO: \n============================================================",
+    "[00:56:11] INFO: 📊 RELATÓRIO FINAL",
+    "[00:56:11] INFO: ⏱️ Duração: 2.06s",
+    "[00:56:11] INFO: 📈 Sucessos: 0/1",
+    "[00:56:11] INFO: 📉 Falhas: 1",
+    "[00:56:11] INFO: 🎯 Taxa de sucesso: 0.0%",
+    "[00:56:11] INFO: 🏆 Status: ❌ FALHOU (1 erro(s))"
+  ],
+  "fim": "2025-06-18T00:56:11.572334"
+}

@@ -1,0 +1,74 @@
+{
+  "timestamp": "2025-06-16T04:04:15.058767",
+  "library_availability": {
+    "supabase-py": true,
+    "httpx": true,
+    "requests": true
+  },
+  "connection_tests": {
+    "requests_rest_api": {
+      "success": true,
+      "status_code": 401,
+      "response_size": 99,
+      "headers": {
+        "Date": "Mon, 16 Jun 2025 07:04:15 GMT",
+        "Content-Type": "application/json;charset=UTF-8",
+        "Content-Length": "99",
+        "Connection": "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+        "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS,TRACE,CONNECT",
+        "access-control-max-age": "3600",
+        "sb-project-ref": "momwbpxqnvgehotfmvde",
+        "X-Content-Type-Options": "nosniff",
+        "Set-Cookie": "__cf_bm=8qos26.EDclseYf7wEe.7dqdslCrvHLI8C5vL1NXG.4-1750057455-1.0.1.1-hbGwdggpwCI2Egsqbux5Q2c1aa3MvcP149GZ_yzRBHI_ygxDiPVNuv_PrH2ao2oTX_WhC3vZLokTbMYkILwdRE0dW2Ufwx0egGeSB5UZ3yM; path=/; expires=Mon, 16-Jun-25 07:34:15 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "Vary": "Accept-Encoding",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+        "Server": "cloudflare",
+        "CF-RAY": "950873b7ee79f1cb-GRU",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    "httpx_rest_api": {
+      "success": true,
+      "status_code": 401,
+      "response_size": 99,
+      "headers": {
+        "date": "Mon, 16 Jun 2025 07:04:15 GMT",
+        "content-type": "application/json;charset=UTF-8",
+        "content-length": "99",
+        "connection": "keep-alive",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS,TRACE,CONNECT",
+        "access-control-max-age": "3600",
+        "sb-project-ref": "momwbpxqnvgehotfmvde",
+        "x-content-type-options": "nosniff",
+        "set-cookie": "__cf_bm=otsm1LMI760bwMshDsFbFnNBBRq9Gz_wyPgtILSJ9_Q-1750057455-1.0.1.1-7t7v5bTyoEZaNpY4g9FZtrOaRYX8bwIBLhMYqN7sau6AyztXRYhlivHjtiA97Yh0S9BNJPtGS7bOW17xACmLPBYtaIGzP3I0dscTOHaKz4c; path=/; expires=Mon, 16-Jun-25 07:34:15 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None",
+        "vary": "Accept-Encoding",
+        "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+        "server": "cloudflare",
+        "cf-ray": "950873b9cf88f1b1-GRU",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    }
+  },
+  "operation_tests": {
+    "client_creation": {
+      "success": false,
+      "error": "Client.__init__() got an unexpected keyword argument 'proxy'",
+      "error_type": "TypeError"
+    }
+  },
+  "errors": [
+    "Client creation failed: Client.__init__() got an unexpected keyword argument 'proxy'"
+  ],
+  "summary": {
+    "overall_status": "success",
+    "libraries_available": 3,
+    "connection_tests_passed": "2/2",
+    "operation_tests_passed": "0/1",
+    "mcp_compatibility": "low",
+    "recommendations": [
+      "Verify service role key permissions"
+    ]
+  }
+}
