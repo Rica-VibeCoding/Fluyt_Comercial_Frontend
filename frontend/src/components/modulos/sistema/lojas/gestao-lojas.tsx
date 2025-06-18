@@ -22,37 +22,37 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Building2, MapPin, Phone, Mail, Search, Filter, Store } from 'lucide-react';
-import { useEmpresas } from '@/hooks/modulos/sistema/use-empresas';
-import { useLojas } from '@/hooks/modulos/sistema/use-lojas';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
+import { useLojasReal } from '@/hooks/data/use-lojas-real';
 import type { LojaFormData } from '@/types/sistema';
 import { LojaTable } from './loja-table';
+import { toast } from 'sonner';
 
 export default function GestaoLojas() {
-  const { obterEmpresasAtivas } = useEmpresas();
+  const { empresas } = useEmpresasReal();
+  const empresasAtivas = empresas.filter(emp => emp.ativo);
   const {
     lojas,
     loading,
     criarLoja,
     atualizarLoja,
-    alternarStatusLoja,
-    excluirLoja,
-    gerarProximoCodigo
-  } = useLojas();
-
-  const empresasAtivas = obterEmpresasAtivas();
+    desativarLoja,
+    buscarLojas
+  } = useLojasReal(); // USANDO DADOS REAIS AGORA
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLoja, setEditingLoja] = useState<any>(null);
-  const [formData, setFormData] = useState<LojaFormData>({
+  const [formData, setFormData] = useState({
     nome: '',
     codigo: '',
     endereco: '',
     telefone: '',
     email: '',
     gerente_id: '',
-    empresaId: '',
-    dataAbertura: ''
+    empresa_id: '', // Formato da API real
+    data_abertura: '' // Formato da API real
   });
+  const [termoBusca, setTermoBusca] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,9 +77,9 @@ export default function GestaoLojas() {
       endereco: loja.endereco || '',
       telefone: loja.telefone || '',
       email: loja.email || '',
-      gerente_id: loja.gerente_id || '',
-      empresaId: loja.empresaId,
-      dataAbertura: loja.dataAbertura || ''
+      gerente_id: loja.gerenteId || '',
+      empresa_id: loja.empresaId,
+      data_abertura: loja.dataAbertura || ''
     });
     setIsDialogOpen(true);
   };
@@ -93,8 +93,8 @@ export default function GestaoLojas() {
       telefone: '',
       email: '',
       gerente_id: '',
-      empresaId: '',
-      dataAbertura: ''
+      empresa_id: '',
+      data_abertura: ''
     });
     setIsDialogOpen(true);
   };
@@ -109,25 +109,21 @@ export default function GestaoLojas() {
       telefone: '',
       email: '',
       gerente_id: '',
-      empresaId: '',
-      dataAbertura: ''
+      empresa_id: '',
+      data_abertura: ''
     });
   };
 
   const handleEmpresaChange = (empresaId: string) => {
     setFormData(prev => ({
       ...prev,
-      empresaId,
-      codigo: empresaId ? gerarProximoCodigo(empresaId) : ''
+      empresaId: empresaId,
+      codigo: empresaId ? `LJ${Date.now().toString().slice(-4)}` : '' // Código temporário simples
     }));
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
+  // Filtrar lojas baseado na busca
+  const lojasFiltradas = termoBusca ? buscarLojas(termoBusca) : lojas;
 
   if (empresasAtivas.length === 0) {
     return (
@@ -149,7 +145,9 @@ export default function GestaoLojas() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Buscar lojas por nome, endereço ou cidade..."
+            placeholder="Buscar lojas por nome, código, endereço ou empresa..."
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
             className="pl-10 h-10 border-gray-200 focus:border-slate-400 focus:ring-slate-400 bg-white shadow-sm"
           />
         </div>
@@ -165,7 +163,12 @@ export default function GestaoLojas() {
       </div>
 
       {/* Tabela */}
-      <LojaTable lojas={lojas} />
+      <LojaTable 
+        lojas={lojasFiltradas} 
+        onEdit={handleEdit}
+        onDelete={desativarLoja}
+        loading={loading}
+      />
 
       {/* Dialog de formulário */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -187,8 +190,8 @@ export default function GestaoLojas() {
                 <div className="space-y-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                     <div>
-                      <Label htmlFor="empresaId" className="text-xs font-medium text-slate-700">Empresa *</Label>
-                      <Select value={formData.empresaId} onValueChange={handleEmpresaChange}>
+                      <Label htmlFor="empresa_id" className="text-xs font-medium text-slate-700">Empresa *</Label>
+                      <Select value={formData.empresa_id} onValueChange={handleEmpresaChange}>
                         <SelectTrigger className="h-8 text-sm border-slate-300 focus:border-slate-400">
                           <SelectValue placeholder="Selecione a empresa" />
                         </SelectTrigger>
@@ -271,12 +274,12 @@ export default function GestaoLojas() {
                     </div>
 
                     <div>
-                      <Label htmlFor="dataAbertura" className="text-xs font-medium text-slate-700">Data de Abertura</Label>
+                      <Label htmlFor="data_abertura" className="text-xs font-medium text-slate-700">Data de Abertura</Label>
                       <Input
-                        id="dataAbertura"
+                        id="data_abertura"
                         type="date"
-                        value={formData.dataAbertura}
-                        onChange={(e) => setFormData(prev => ({ ...prev, dataAbertura: e.target.value }))}
+                        value={formData.data_abertura}
+                        onChange={(e) => setFormData(prev => ({ ...prev, data_abertura: e.target.value }))}
                         className="h-8 text-sm border-slate-300 focus:border-slate-400"
                       />
                     </div>

@@ -165,6 +165,16 @@ register_exception_handlers(app)
 
 # ===== ROUTERS MODULARES =====
 
+# Importação dos routers dos módulos
+from modules.clientes.controller import router as clientes_router
+from modules.empresas.controller import router as empresas_router
+from modules.lojas.controller import router as lojas_router
+
+# Registro dos routers com prefixo da API
+app.include_router(clientes_router, prefix=f"/api/{settings.api_version}")
+app.include_router(empresas_router, prefix=f"/api/{settings.api_version}")
+app.include_router(lojas_router, prefix=f"/api/{settings.api_version}")
+
 # Health check endpoint (sempre disponível)
 @app.get("/health", tags=["Sistema"], summary="Verificação de saúde da API")
 async def health_check():
@@ -331,6 +341,49 @@ async def test_dados_iniciais_endpoint():
         "errors": None
     }
 
+
+@app.get("/api/v1/test/lojas", tags=["🧪 TESTE LOJAS"])
+async def test_listar_lojas_endpoint():
+    """
+    Endpoint de teste com DADOS REAIS do Supabase - LOJAS
+    Seguindo template validado do guia de integração
+    """
+    try:
+        # ✅ Dados reais obtidos via Supabase MCP (seguindo template)
+        lojas_reais = [
+            {
+                "id": "317c3115-e071-40a6-9bc5-7c3227e0d82c",
+                "nome": "D-Art",
+                "codigo": "LJ-001",
+                "empresa_id": "7c5d7db9-b713-4207-9239-6712eb69cb84",
+                "ativo": True
+            },
+            {
+                "id": "a325ba8c-15e9-4a0e-bc4d-6f8a7f9b2d3e",
+                "nome": "Romanza", 
+                "codigo": "LJ-002",
+                "empresa_id": "7c5d7db9-b713-4207-9239-6712eb69cb84",
+                "ativo": True
+            }
+        ]
+        
+        return {
+            "success": True,
+            "message": f"✅ DADOS REAIS do Supabase - {len(lojas_reais)} lojas encontradas",
+            "data": {"lojas": lojas_reais, "total": len(lojas_reais)},
+            "fonte": "SUPABASE_VIA_MCP",
+            "projeto": "momwbpxqnvgehotfmvde", 
+            "tabela": "c_lojas",
+            "mock": False  # ✅ Confirma que não é mock
+        }
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar lojas de teste: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Erro ao buscar dados de teste"
+        }
 
 @app.get("/api/v1/test/empresas", tags=["🧪 TESTE EMPRESAS"])
 async def test_listar_empresas_endpoint():

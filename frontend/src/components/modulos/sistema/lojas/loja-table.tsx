@@ -16,9 +16,12 @@ import type { Loja } from '@/types/sistema';
 
 interface LojaTableProps {
   lojas: Loja[];
+  onEdit?: (loja: Loja) => void;
+  onDelete?: (id: string) => Promise<boolean>;
+  loading?: boolean;
 }
 
-export function LojaTable({ lojas }: LojaTableProps) {
+export function LojaTable({ lojas, onEdit, onDelete, loading }: LojaTableProps) {
   if (lojas.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 border-0 rounded-lg bg-white shadow-md">

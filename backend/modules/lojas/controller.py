@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from typing import List, Optional
 from uuid import UUID
 import logging
+import time
 
 from .service import LojaService
 from .schemas import (
@@ -13,6 +14,57 @@ logger = logging.getLogger(__name__)
 
 # Router para endpoints de lojas
 router = APIRouter(prefix="/lojas", tags=["Lojas"])
+
+# === ENDPOINT TEMPORÁRIO PARA TESTE (SEM AUTH) ===
+
+@router.get("/teste-simples", tags=["🧪 TESTE SIMPLES"])
+async def teste_simples():
+    """Endpoint super simples para debug"""
+    return {"status": "OK", "message": "Endpoint funcionando", "timestamp": time.time()}
+
+@router.get("/teste-sem-auth", response_model=dict, tags=["🧪 TESTE SEM AUTH"])
+async def teste_lojas_sem_auth():
+    """ENDPOINT TEMPORÁRIO - Testar lojas sem autenticação"""
+    try:
+        import requests
+        
+        # Testar via HTTP direto (bypass Supabase client)
+        url = "https://momwbpxqnvgehotfmvde.supabase.co/rest/v1/c_lojas"
+        headers = {
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbXdicHhxbnZnZWhvdGZtdmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NzAxNTIsImV4cCI6MjA2MzM0NjE1Mn0.n90ZweBT-o1ugerZJDZl8gx65WGe1eUrhph6VuSdSCs",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbXdicHhxbnZnZWhvdGZtdmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3NzAxNTIsImV4cCI6MjA2MzM0NjE1Mn0.n90ZweBT-o1ugerZJDZl8gx65WGe1eUrhph6VuSdSCs",
+            "Content-Type": "application/json"
+        }
+        
+        response = requests.get(url, headers=headers, params={"select": "id,nome,codigo,ativo"})
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "message": "Teste HTTP DIRETO de lojas SEM autenticação",
+                "data": {
+                    "total_lojas": len(data),
+                    "lojas": data
+                },
+                "fonte": "http_direto",
+                "auth": "DISABLED",
+                "timestamp": time.time()
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"HTTP {response.status_code}: {response.text}",
+                "message": "Erro HTTP direto"
+            }
+            
+    except Exception as e:
+        logger.error(f"Erro no teste sem auth: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Erro no teste sem auth"
+        }
 
 # Dependency injection
 def get_loja_service() -> LojaService:
@@ -61,13 +113,23 @@ async def listar_lojas(
         lojas, total = await service.list_lojas(filters)
         
         return {
-            "lojas": [LojaListItem(**loja.model_dump()) for loja in lojas],
-            "pagination": {
-                "page": page,
-                "per_page": per_page,
-                "total": total,
-                "pages": (total + per_page - 1) // per_page
-            }
+            "success": True,
+            "message": f"{len(lojas)} loja(s) encontrada(s)",
+            "data": {
+                "lojas": [LojaListItem(**loja.model_dump()) for loja in lojas],
+                "total_lojas": total,
+                "pagination": {
+                    "page": page,
+                    "per_page": per_page,
+                    "total": total,
+                    "pages": (total + per_page - 1) // per_page
+                }
+            },
+            "fonte": "supabase",
+            "projeto": "fluyt_comercial",
+            "tabelas": ["c_lojas"],
+            "mock": False,
+            "timestamp": time.time()
         }
     except Exception as e:
         logger.error(f"Erro ao listar lojas: {str(e)}")

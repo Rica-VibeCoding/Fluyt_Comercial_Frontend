@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Funcionario } from '@/types/sistema';
 import { useLocalStorage } from '@/hooks/globais/use-local-storage';
-import { useEmpresas } from '../use-empresas';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 import { useLojas } from '../use-lojas';
 import { useSetores } from '../use-setores';
 import { useEquipeCrud } from './use-equipe-crud';
@@ -30,7 +30,8 @@ export function useEquipeRefactored() {
   } = useEquipeUtils(funcionarios);
 
   // Hooks para relacionamentos
-  const { obterEmpresasAtivas } = useEmpresas();
+  const { empresas } = useEmpresasReal();
+  const obterEmpresasAtivas = () => empresas.filter(emp => emp.ativo);
   const { obterLojasAtivas } = useLojas();
   const { obterSetoresAtivos } = useSetores();
 

@@ -39,12 +39,12 @@ export interface Loja extends BaseEntity {
   endereco: string | null;
   telefone: string | null;
   email: string | null;
-  gerente_id: string | null; // Relacionamento com cad_equipe
+  gerenteId: string | null; // Relacionamento com cad_equipe
   gerente?: string; // Campo calculado (nome do gerente)
   funcionarios?: number; // Campo calculado automaticamente
   vendasMes?: number; // Placeholder para futuro
   metaMes?: number; // Placeholder para futuro
-  ativa: boolean;
+  ativo: boolean;
   empresaId: string; // Relacionamento obrigatório com empresa
   empresa?: string; // Campo calculado (nome da empresa)
   dataAbertura: string | null; // Data de abertura da loja
@@ -52,13 +52,13 @@ export interface Loja extends BaseEntity {
 
 export interface LojaFormData {
   nome: string;
-  codigo: string;
-  endereco: string;
-  telefone: string;
-  email: string;
-  gerente_id: string; // ID do gerente selecionado
-  empresaId: string;
-  dataAbertura: string;
+  codigo?: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+  gerente_id?: string; // ID do gerente selecionado
+  empresa_id: string; // Compatível com API do C.Testa
+  data_abertura?: string; // Compatível com API do C.Testa
 }
 
 // ========================================

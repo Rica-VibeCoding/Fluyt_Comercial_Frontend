@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Funcionario, FuncionarioFormData } from '@/types/sistema';
 import { useLocalStorage } from '@/hooks/globais/use-local-storage';
-import { useEmpresas } from './use-empresas';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 import { useLojas } from './use-lojas';
 import { useSetores } from './use-setores';
 
@@ -63,7 +63,8 @@ export function useEquipe() {
   const [loading, setLoading] = useState(false);
   
   // Hooks para relacionamentos
-  const { obterEmpresasAtivas } = useEmpresas();
+  const { empresas } = useEmpresasReal();
+  const obterEmpresasAtivas = () => empresas.filter(emp => emp.ativo);
   const { obterLojasAtivas } = useLojas();
   const { obterSetoresAtivos } = useSetores();
 

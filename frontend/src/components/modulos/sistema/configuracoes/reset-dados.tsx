@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { RefreshCw, Database, AlertTriangle, Building2, Store, Loader2 } from 'lucide-react';
-import { useEmpresas } from '@/hooks/modulos/sistema/use-empresas';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 import { useLojas } from '@/hooks/modulos/sistema/use-lojas';
 
 export function ResetDados() {
@@ -14,7 +14,7 @@ export function ResetDados() {
     setIsClient(true);
   }, []);
 
-  const { resetarDados: resetarEmpresas } = useEmpresas();
+  const { recarregarDados: recarregarEmpresas } = useEmpresasReal();
   const { resetarDados: resetarLojas } = useLojas();
   
   // Loading durante hidratação
@@ -68,9 +68,9 @@ export function ResetDados() {
                     <Building2 className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-sm">Reset Empresas</h3>
+                    <h3 className="font-medium text-sm">Recarregar Empresas</h3>
                     <p className="text-xs text-muted-foreground">
-                      Restaura empresas iniciais
+                      Recarrega dados reais do Supabase
                     </p>
                   </div>
                   <AlertDialog>
@@ -82,15 +82,15 @@ export function ResetDados() {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Reset Dados de Empresas</AlertDialogTitle>
+                        <AlertDialogTitle>Recarregar Dados de Empresas</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Isso irá remover todas as empresas criadas e restaurar apenas os dados iniciais. Esta ação não pode ser desfeita.
+                          Isso irá recarregar os dados das empresas diretamente do Supabase, atualizando as informações exibidas.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={resetarEmpresas} className="bg-blue-600 hover:bg-blue-700">
-                          Confirmar Reset
+                        <AlertDialogAction onClick={recarregarEmpresas} className="bg-blue-600 hover:bg-blue-700">
+                          Recarregar Dados
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

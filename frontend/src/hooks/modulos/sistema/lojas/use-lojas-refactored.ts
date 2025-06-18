@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from '@/hooks/globais/use-local-storage';
-import { useEmpresas } from '../use-empresas';
+import { useEmpresasReal } from '@/hooks/data/use-empresas-real';
 import { useLojaValidation } from './use-loja-validation';
 import { useLojaUtils } from './use-loja-utils';
 import { useLojaCrud } from './use-loja-crud';
@@ -15,7 +15,7 @@ export function useLojas() {
   const [loading, setLoading] = useState(false);
 
   // Hooks especializados
-  const { obterEmpresaPorId } = useEmpresas();
+  const { obterEmpresaPorId } = useEmpresasReal();
   const validation = useLojaValidation();
   const utils = useLojaUtils(lojas);
   const crud = useLojaCrud(lojas, setLojas, setLoading, obterEmpresaPorId);

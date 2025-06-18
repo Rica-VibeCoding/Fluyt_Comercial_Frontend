@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .repository import LojaRepository
 from .schemas import LojaCreate, LojaUpdate, LojaResponse, LojaFilters, LojaComRelacionamentos
-from modules.empresas.repository import EmpresaRepository
+from modules.shared.database import get_supabase_client
 
 logger = logging.getLogger(__name__)
 
@@ -14,17 +14,19 @@ class LojaService:
     
     def __init__(self):
         self.repository = LojaRepository()
-        self.empresa_repository = EmpresaRepository()
+        # Inicializar cliente Supabase para validações de empresa
+        self.supabase = get_supabase_client()
     
     async def create_loja(self, loja_data: LojaCreate) -> LojaResponse:
         """Criar nova loja com validações"""
         try:
             # Validar se empresa existe
-            empresa = await self.empresa_repository.get_by_id(loja_data.empresa_id)
-            if not empresa:
+            empresa_result = self.supabase.table('cad_empresas').select('id, nome, ativo').eq('id', str(loja_data.empresa_id)).execute()
+            if not empresa_result.data:
                 raise ValueError(f"Empresa {loja_data.empresa_id} não encontrada")
             
-            if not empresa.ativo:
+            empresa = empresa_result.data[0]
+            if not empresa['ativo']:
                 raise ValueError("Não é possível criar loja para empresa inativa")
             
             # Validar código único
@@ -35,7 +37,7 @@ class LojaService:
             # Criar loja
             loja = await self.repository.create(loja_data)
             
-            logger.info(f"Loja criada: {loja.nome} (Código: {loja.codigo}) para empresa {empresa.nome}")
+            logger.info(f"Loja criada: {loja.nome} (Código: {loja.codigo}) para empresa {empresa['nome']}")
             return loja
             
         except ValueError as e:
@@ -69,11 +71,12 @@ class LojaService:
                 return None
             
             # Carregar empresa
-            empresa = await self.empresa_repository.get_by_id(loja.empresa_id)
+            empresa_result = self.supabase.table('cad_empresas').select('id, nome').eq('id', str(loja.empresa_id)).execute()
+            empresa = empresa_result.data[0] if empresa_result.data else None
             
             # Montar resposta com relacionamentos
             loja_dict = loja.model_dump()
-            loja_dict["empresa"] = {"id": empresa.id, "nome": empresa.nome} if empresa else None
+            loja_dict["empresa"] = {"id": empresa['id'], "nome": empresa['nome']} if empresa else None
             loja_dict["gerente"] = None  # TODO: Implementar quando módulo equipe estiver pronto
             
             return LojaComRelacionamentos(**loja_dict)
@@ -94,8 +97,8 @@ class LojaService:
         """Listar lojas de uma empresa"""
         try:
             # Validar se empresa existe
-            empresa = await self.empresa_repository.get_by_id(empresa_id)
-            if not empresa:
+            empresa_result = self.supabase.table('cad_empresas').select('id').eq('id', str(empresa_id)).execute()
+            if not empresa_result.data:
                 raise ValueError(f"Empresa {empresa_id} não encontrada")
             
             return await self.repository.list_by_empresa(empresa_id)
@@ -117,10 +120,11 @@ class LojaService:
             
             # Validar empresa se foi alterada
             if loja_data.empresa_id and loja_data.empresa_id != loja_atual.empresa_id:
-                empresa = await self.empresa_repository.get_by_id(loja_data.empresa_id)
-                if not empresa:
+                empresa_result = self.supabase.table('cad_empresas').select('id, ativo').eq('id', str(loja_data.empresa_id)).execute()
+                if not empresa_result.data:
                     raise ValueError(f"Empresa {loja_data.empresa_id} não encontrada")
-                if not empresa.ativo:
+                empresa = empresa_result.data[0]
+                if not empresa['ativo']:
                     raise ValueError("Não é possível vincular loja a empresa inativa")
             
             # Validar código único se foi alterado

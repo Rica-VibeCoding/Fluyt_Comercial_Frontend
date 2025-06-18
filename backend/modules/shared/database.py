@@ -26,6 +26,8 @@ def get_supabase_client() -> Client:
             )
         
         print(f"🔗 Conectando ao Supabase: {SUPABASE_URL}")
+        
+        # Criar cliente sem options para evitar conflitos
         _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
         print("✅ Cliente Supabase criado com sucesso!")
     
